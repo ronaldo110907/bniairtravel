@@ -18,9 +18,7 @@ export default function SearchBar() {
             <select className="mt-3 w-full border-none bg-transparent text-lg font-bold outline-none">
               <option>장가계</option>
               <option>백두산</option>
-              <option>상해</option>
-              <option>항주</option>
-              <option>주가각</option>
+              <option>상해·항주·주가각</option>
               <option>여강</option>
             </select>
           </div>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const images = [
   "/images/hero/hero1.jpg",
@@ -12,14 +13,34 @@ const images = [
 
 export default function Hero() {
   const [current, setCurrent] = useState(0);
+  const [heroTitle, setHeroTitle] = useState("여행을 넘어,");
+  const [heroSubTitle, setHeroSubTitle] = useState("감동을 만나다.");
+  const [heroText, setHeroText] = useState("당신의 특별한 여행이 시작됩니다.");
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length);
     }, 6000);
 
+    loadSettings();
+
     return () => clearInterval(timer);
   }, []);
+
+  async function loadSettings() {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("key,value")
+      .in("key", ["hero_title"]);
+
+    const setting = data?.find((item) => item.key === "hero_title");
+
+    if (setting?.value) {
+      const parts = setting.value.split(",");
+      setHeroTitle(parts[0] || "여행을 넘어,");
+      setHeroSubTitle(parts[1] || "감동을 만나다.");
+    }
+  }
 
   return (
     <section className="relative h-screen overflow-hidden">
@@ -52,7 +73,7 @@ export default function Hero() {
             transition={{ duration: 1 }}
             className="text-6xl font-black leading-tight md:text-8xl"
           >
-            여행을 넘어,
+            {heroTitle}
           </motion.h1>
 
           <motion.h2
@@ -64,7 +85,7 @@ export default function Hero() {
             }}
             className="mt-3 text-6xl font-black md:text-8xl"
           >
-            감동을 만나다.
+            {heroSubTitle}
           </motion.h2>
 
           <motion.p
@@ -76,7 +97,7 @@ export default function Hero() {
             }}
             className="mt-10 text-xl text-gray-200"
           >
-            당신의 특별한 여행이 시작됩니다.
+            {heroText}
           </motion.p>
 
           <motion.button

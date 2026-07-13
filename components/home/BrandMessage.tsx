@@ -14,9 +14,9 @@ export default function BrandMessage() {
           viewport={{ once: true }}
           className="text-4xl font-black leading-relaxed text-gray-900 md:text-6xl"
         >
-          우리는 여행을 판매하지 않습니다.
+          여행은 목적지가 아닌,
           <br />
-          당신의 기억에 오래 남을 순간을 준비합니다.
+          기억을 만드는 아름다운 시간입니다.
         </motion.p>
 
         <motion.p

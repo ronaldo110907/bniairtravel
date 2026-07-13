@@ -7,7 +7,8 @@ import SpecialOffer from "@/components/home/SpecialOffer";
 import Schedule from "@/components/home/Schedule";
 import Gallery from "@/components/home/Gallery";
 import Review from "@/components/home/Review";
-import BestTour from "@/components/home/BestTour";
+import Recommend from "@/components/home/Recommend";
+import NoticePopup from "@/components/NoticePopup";
 
 
 export default function Home() {
@@ -17,10 +18,12 @@ export default function Home() {
      <Hero />
      <SearchBar />
      <SpecialOffer />
+     <Discover />
+     <BrandMessage />
      <Schedule />
      <Gallery />
      <Review />
-     <BestTour />
+     <Recommend />
     </>
   );
 }

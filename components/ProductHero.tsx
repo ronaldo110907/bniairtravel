@@ -1,0 +1,86 @@
+"use client";
+
+import Link from "next/link";
+type Product={
+  title:string;
+  subtitle?:string|null;
+  hero_path?:string|null;
+  departure_airport?:string|null;
+  airline?:string|null;
+  duration?:string|null;
+};
+
+export default function ProductHero({ product }: { product:any }) {
+  return (
+    <section className="relative min-h-[680px] overflow-hidden bg-black">
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster={product?.hero_path || "/images/zhangjiajie/cover.jpg"}
+      >
+        <source src="/video/hero.mp4" type="video/mp4" />
+      </video>
+
+      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
+
+      <div className="relative z-10 mx-auto flex min-h-[680px] max-w-6xl items-center px-6 py-24">
+        <div className="max-w-3xl text-white">
+          <p className="mb-5 text-sm font-medium tracking-[0.38em] text-white/70">
+            PREMIUM CHINA TRAVEL
+          </p>
+
+          <h1 className="text-5xl font-bold leading-[1.08] md:text-7xl">
+            장가계
+            <br />
+            하늘과 맞닿은 비경
+          </h1>
+
+          <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
+            청주공항에서 직항으로 떠나는 장가계 여행.
+            웅장한 자연과 핵심 관광지를 여유로운 일정으로 만나보세요.
+          </p>
+
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link
+              href="#departure-calendar"
+              className="inline-flex items-center justify-center rounded-full bg-[#b88a44] px-7 py-4 text-sm font-bold text-white transition hover:bg-[#9f7435]"
+            >
+              출발일 확인
+            </Link>
+
+            <Link
+              href="/reservation"
+              className="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/10 px-7 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white hover:text-black"
+            >
+              예약 문의
+            </Link>
+          </div>
+
+          <div className="mt-12 grid max-w-2xl gap-3 sm:grid-cols-3">
+            <HeroInfo label="출발" value={product?.departure_airport ?? "청주공항 직항"} />
+            <HeroInfo label="항공" value={product?.airline ?? "이스타항공"} />
+            <HeroInfo label="일정" value={product?.duration ?? "3박4일 / 4박5일"} />
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-center text-white/55">
+        <p className="mb-2 text-[10px] tracking-[0.3em]">SCROLL</p>
+        <div className="mx-auto h-10 w-px bg-gradient-to-b from-white/60 to-transparent" />
+      </div>
+    </section>
+  );
+}
+
+function HeroInfo({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/15 bg-black/15 px-5 py-4 backdrop-blur-md">
+      <p className="text-xs text-white/50">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+    </div>
+  );
+}
