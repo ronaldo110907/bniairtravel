@@ -1,19 +1,41 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
+import { supabase } from "@/lib/supabase";
 
+type GalleryItem = {
+  id: string;
+  title: string;
+  desc: string;
+  src: string;
+};
 
-export default function GallerySlider({ product }: { product:any }) {
+export default function GallerySlider({ product }: { product: any }) {
+  const [galleryImages, setGalleryImages] = useState<GalleryItem[]>([]);
   const [active, setActive] = useState(0);
-  const [selectedImage, setSelectedImage] = useState<{
-    src: string;
-    title: string;
-  } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
 
-  const galleryImages = useMemo(() => product?.gallery ?? [], [product]);
+  useEffect(() => {
+    loadGallery();
+  }, [product?.id]);
 
-  const current = galleryImages[active];
+  async function loadGallery() {
+    if (!product?.id) return;
+
+    const { data } = await supabase
+      .from("gallery")
+      .select("*")
+      .eq("product_id", product.id)
+      .order("sort");
+
+    setGalleryImages(data || []);
+  }
+
+  const current = useMemo(
+    () => galleryImages[active],
+    [galleryImages, active]
+  );
 
   if (!current) return null;
 
@@ -27,23 +49,13 @@ export default function GallerySlider({ product }: { product:any }) {
         <h2 className="text-4xl font-bold md:text-5xl">
           {product?.title ?? "여행지"} 갤러리
         </h2>
-
-        <p className="mt-5 max-w-2xl leading-7 text-black/55">
-          압도적인 자연 풍경과 여행의 감동을 미리 만나보세요.
-        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
         <button
           type="button"
-          onClick={() =>
-            setSelectedImage({
-              src: current.src,
-              title: current.title,
-            })
-          }
+          onClick={() => setSelectedImage(current)}
           className="group relative overflow-hidden rounded-[36px] bg-black text-left shadow-xl"
-          aria-label={`${current.title} 이미지 크게 보기`}
         >
           <img
             src={current.src}
@@ -53,16 +65,14 @@ export default function GallerySlider({ product }: { product:any }) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-          <div className="absolute bottom-6 left-6 right-6 text-white md:bottom-8 md:left-8">
-            <p className="mb-2 text-sm tracking-[0.25em] text-white/60">
-              {product?.title?.toUpperCase?.() ?? "TRAVEL"}
+          <div className="absolute bottom-6 left-6 right-6 text-white">
+            <p className="text-sm text-white/60">
+              {product?.title}
             </p>
-
-            <h3 className="text-3xl font-bold md:text-4xl">
+            <h3 className="text-3xl font-bold">
               {current.title}
             </h3>
-
-            <p className="mt-3 text-sm leading-6 text-white/75 md:text-base">
+            <p className="mt-3 text-white/75">
               {current.desc}
             </p>
           </div>
@@ -74,32 +84,21 @@ export default function GallerySlider({ product }: { product:any }) {
               key={item.id}
               type="button"
               onClick={() => setActive(index)}
-              className={[
-                "group overflow-hidden rounded-[28px] border p-3 text-left transition duration-300",
-                active === index
-                  ? "border-[#c8a15a] bg-[#fff8ee] shadow-lg"
-                  : "border-[#ece7df] bg-white hover:border-[#c8a15a] hover:shadow-md",
-              ].join(" ")}
+              className="overflow-hidden rounded-[28px] border p-3 text-left"
             >
-              <div className="grid grid-cols-[110px_1fr] gap-4 sm:grid-cols-[140px_1fr]">
-                <div className="overflow-hidden rounded-2xl">
-                  <img
-                    src={item.src}
-                    alt={item.title}
-                    className="h-24 w-full object-cover transition duration-700 group-hover:scale-110 sm:h-28"
-                  />
-                </div>
+              <div className="grid grid-cols-[110px_1fr] gap-4">
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  className="h-24 w-full rounded-2xl object-cover"
+                />
 
-                <div className="flex flex-col justify-center">
-                  <p className="text-xs font-bold text-[#b88a44]">
-                    {String(index + 1).padStart(2, "0")}
+                <div>
+                  <p className="text-xs text-[#b88a44]">
+                    {index + 1}
                   </p>
-
-                  <h4 className="mt-1 text-lg font-bold sm:text-xl">
-                    {item.title}
-                  </h4>
-
-                  <p className="mt-2 text-sm leading-6 text-black/50">
+                  <h4 className="font-bold">{item.title}</h4>
+                  <p className="text-sm text-gray-500">
                     {item.desc}
                   </p>
                 </div>

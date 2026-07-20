@@ -129,11 +129,13 @@ export default function EditProductPage() {
       const { data } = supabase.storage
         .from("gallery")
         .getPublicUrl(filePath);
+        console.log("PUBLIC URL =", data.publicUrl);
 
       setForm((prev) => ({
         ...prev,
         [field]: data.publicUrl,
       }));
+      console.log("SET FIELD =", field);
     } catch (error) {
       alert(
         error instanceof Error

@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-type Product={
-  title:string;
-  subtitle?:string|null;
-  hero_path?:string|null;
-  departure_airport?:string|null;
-  airline?:string|null;
-  duration?:string|null;
+
+type Product = {
+  title: string;
+  subtitle?: string | null;
+  hero_path?: string | null;
+  departure_airport?: string | null;
+  airline?: string | null;
+  duration?: string | null;
 };
 
-export default function ProductHero({ product }: { product:any }) {
+export default function ProductHero({ product }: { product: Product }) {
   return (
     <section className="relative min-h-[680px] overflow-hidden bg-black">
       <video
@@ -34,14 +35,14 @@ export default function ProductHero({ product }: { product:any }) {
           </p>
 
           <h1 className="text-5xl font-bold leading-[1.08] md:text-7xl">
-            장가계
+            {product?.title || "장가계"}
             <br />
             하늘과 맞닿은 비경
           </h1>
 
           <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
-            청주공항에서 직항으로 떠나는 장가계 여행.
-            웅장한 자연과 핵심 관광지를 여유로운 일정으로 만나보세요.
+            {product?.subtitle ||
+              "청주공항에서 직항으로 떠나는 장가계 여행. 웅장한 자연과 핵심 관광지를 여유로운 일정으로 만나보세요."}
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">
@@ -61,16 +62,20 @@ export default function ProductHero({ product }: { product:any }) {
           </div>
 
           <div className="mt-12 grid max-w-2xl gap-3 sm:grid-cols-3">
-            <HeroInfo label="출발" value={product?.departure_airport ?? "청주공항 직항"} />
-            <HeroInfo label="항공" value={product?.airline ?? "이스타항공"} />
-            <HeroInfo label="일정" value={product?.duration ?? "3박4일 / 4박5일"} />
+            <HeroInfo
+              label="출발"
+              value={product?.departure_airport || "청주공항 직항"}
+            />
+            <HeroInfo
+              label="항공"
+              value={product?.airline || "이스타항공"}
+            />
+            <HeroInfo
+              label="일정"
+              value={product?.duration || "3박4일 / 4박5일"}
+            />
           </div>
         </div>
-      </div>
-
-      <div className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-center text-white/55">
-        <p className="mb-2 text-[10px] tracking-[0.3em]">SCROLL</p>
-        <div className="mx-auto h-10 w-px bg-gradient-to-b from-white/60 to-transparent" />
       </div>
     </section>
   );

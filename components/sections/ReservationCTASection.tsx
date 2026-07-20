@@ -22,7 +22,7 @@ export default function ReservationCTASection({
         </p>
 
         <h2 className="mt-5 text-4xl font-bold leading-tight md:text-6xl">
-          지금 장가계 여행을
+          지금 {product} 여행을
           <br />
           예약해보세요.
         </h2>

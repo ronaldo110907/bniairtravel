@@ -13,13 +13,14 @@ export default function CTASection() {
             </p>
 
             <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-              장가계 여행,
+              여행,
               <br />
               지금 예약해보세요.
             </h2>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/80">
               출발일, 잔여석, 상품가격을 확인하고
+              <br />
               가장 알맞은 일정으로 안내해드립니다.
             </p>
           </div>

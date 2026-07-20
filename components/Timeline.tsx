@@ -3,208 +3,13 @@
 import { useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
 
-type ItineraryItem = {
-  day: string;
-  icon: string;
-  title: string;
-  description: string;
-  image: string;
-  places: string[];
-  duration: string;
-  meals: {
-    breakfast: string;
-    lunch: string;
-    dinner: string;
-    breakfastImage: string;
-    lunchImage: string;
-    dinnerImage: string;
-  };
-  hotel: string;
-};
-
-const itinerary4N5D: ItineraryItem[] = [
-  {
-    day: "DAY 1",
-    icon: "✈️",
-    title: "청주공항 출발 · 장가계 도착",
-    description:
-      "청주공항 출발 후 장가계에 도착하여 칠성산 관광과 호텔 체크인을 진행합니다.",
-    image: "/images/zhangjiajie/7sungsan.jpg",
-    places: ["청주공항", "장가계공항", "칠성산", "유리전망대", "잔도"],
-    duration: "약 6~7시간",
-    meals: {
-      breakfast: "불포함",
-      lunch: "김밥+생수",
-      dinner: "오리모듬",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/gibbap.jpg",
-      dinnerImage: "/images/meals/duck.png",
-    },
-    hotel: "화천국제호텔 또는 동급",
-  },
-  {
-    day: "DAY 2",
-    icon: "🏔️",
-    title: "황룡동굴 · 대협곡",
-    description:
-      "황룡동굴을 둘러보고 대협곡 유리다리, 트레킹, 유람선 코스를 체험합니다.",
-    image: "/images/zhangjiajie/detail-3.jpg",
-    places: ["황룡동굴", "대협곡 유리다리", "트레킹", "유람선"],
-    duration: "전일 관광",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "산채비빔밥",
-      dinner: "누룽지 닭백숙",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/bibimbap.png",
-      dinnerImage: "/images/meals/chikean.png",
-    },
-    hotel: "화천국제호텔 또는 동급",
-  },
-  {
-    day: "DAY 3",
-    icon: "🌄",
-    title: "천자산 · 원가계",
-    description:
-      "천자산 케이블카와 백룡엘리베이터를 이용해 원가계의 대표 절경을 감상합니다.",
-    image: "/images/zhangjiajie/chunjasan.jpg",
-    places: ["천자산", "원가계", "백룡엘리베이터", "천하제일교", "미혼대", "십리화랑"],
-    duration: "전일 관광",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "버석 샤브샤브",
-      dinner: "삼겹살 무제한",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/mushroom.png",
-      dinnerImage: "/images/meals/samgyeopsal.png",
-    },
-    hotel: "화천국제호텔 또는 동급",
-  },
-  {
-    day: "DAY 4",
-    icon: "🌿",
-    title: "보봉호수 · 천문산 · 천문호선쇼",
-    description:
-      "보봉호수와 천문산 핵심 코스를 둘러보고 저녁에는 천문호선쇼를 관람합니다.",
-    image: "/images/zhangjiajie/detail-2.jpg",
-    places: ["보봉호수", "천문산", "천문동", "귀곡잔도", "유리잔도", "천문호선쇼", "72기루"],
-    duration: "전일 관광",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "보쌈정식",
-      dinner: "소고기 특식",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/bossam.png",
-      dinnerImage: "/images/meals/beef.png",
-    },
-    hotel: "화천국제호텔 또는 동급",
-  },
-  {
-    day: "DAY 5",
-    icon: "🛬",
-    title: "군성사석화 · 청주공항 도착",
-    description:
-      "군성사석화 관람 후 장가계공항으로 이동하여 청주행 항공편에 탑승합니다.",
-    image: "/images/zhangjiajie/gunsung.jpg",
-    places: ["군성사석화", "장가계공항", "청주공항"],
-    duration: "약 5~6시간",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "한식",
-      dinner: "-----",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/gibbap.jpg",
-      dinnerImage: "/images/meals/gibbap.jpg",
-    },
-    hotel: "해당 없음",
-  },
-];
-
-const itinerary3N4D: ItineraryItem[] = [
-  {
-    day: "DAY 1",
-    icon: "✈️",
-    title: "청주공항 출발 · 장가계 도착",
-    description:
-      "청주공항 출발 후 장가계에 도착하여 대협곡 유리다리 코스를 관광합니다.",
-    image: "/images/zhangjiajie/detail-3.jpg",
-    places: ["청주공항", "장가계공항", "대협곡", "유리다리"],
-    duration: "약 6~7시간",
-    meals: {
-      breakfast: "불포함",
-      lunch: "김밥+생수",
-      dinner: "오리모듬",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/gibbap.jpg",
-      dinnerImage: "/images/meals/duck.png",
-    },
-    hotel: "화천국제호텔 또는 동급",
-  },
-  {
-    day: "DAY 2",
-    icon: "🏔️",
-    title: "황룡동굴 · 천자산 · 원가계",
-    description:
-      "황룡동굴과 천자산, 원가계 핵심 절경을 하루 동안 집중적으로 둘러봅니다.",
-    image: "/images/zhangjiajie/chunjasan.jpg",
-    places: ["황룡동굴", "천자산", "원가계", "천하제일교", "미혼대", "백룡엘리베이터", "십리화랑", "72기루"],
-    duration: "전일 관광",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "산채비빔밥",
-      dinner: "삼겹살 무제한",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/mushroom.png",
-      dinnerImage: "/images/meals/samgyeopsal.png",
-    },
-    hotel: "화천국제호텔 또는 동급",
-  },
-  {
-    day: "DAY 3",
-    icon: "🌄",
-    title: "보봉호수 · 천문산 · 천문호선쇼",
-    description:
-      "보봉호수 VIP 코스와 천문산 핵심 코스를 관광하고 천문호선쇼를 관람합니다.",
-    image: "/images/zhangjiajie/detail-2.jpg",
-    places: ["보봉호수", "천문산", "귀곡잔도", "유리잔도", "천문동", "천문호선쇼"],
-    duration: "전일 관광",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "소고기 특식",
-      dinner: "누룽지 닭백숙",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/bibimbap.png",
-      dinnerImage: "/images/meals/chikean.png",
-    },
-    hotel: "화천국제호텔 또는 동급",
-  },
-  {
-    day: "DAY 4",
-    icon: "🛬",
-    title: "군성사석화 · 청주공항 도착",
-    description:
-      "군성사석화 관람 후 장가계공항으로 이동하여 청주행 항공편에 탑승합니다.",
-    image: "/images/zhangjiajie/gunsung.jpg",
-    places: ["군성사석화", "장가계공항", "청주공항"],
-    duration: "약 5~6시간",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "버섯 샤브샤브",
-      dinner: "-----",
-      breakfastImage: "/images/meals/breakfast.jpg",
-      lunchImage: "/images/meals/gibbap.jpg",
-      dinnerImage: "/images/meals/gibbap.jpg",
-    },
-    hotel: "해당 없음",
-  },
-];
+import {
+  itinerary4N5D,
+  itinerary3N4D,
+} from "@/data/zhangjiajie";
 
 export default function Timeline() {
   const [activeCourse, setActiveCourse] = useState<"4N5D" | "3N4D">("4N5D");
-  const [selectedImage, setSelectedImage] = useState<{
-    src: string;
-    title: string;
-  } | null>(null);
 
   const itinerary =
     activeCourse === "4N5D" ? itinerary4N5D : itinerary3N4D;
@@ -319,37 +124,10 @@ export default function Timeline() {
                     <p className="mb-3 text-sm font-bold text-[#B88A44]">
                       식사
                     </p>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        {label:"조식",name:item.meals.breakfast,img:item.meals.breakfastImage},
-                        {label:"중식",name:item.meals.lunch,img:item.meals.lunchImage},
-                        {label:"석식",name:item.meals.dinner,img:item.meals.dinnerImage},
-                      ].map(meal=>(
-                        <div key={meal.label} className="overflow-hidden rounded-xl border bg-white">
-                          {(meal.name === "불포함" || meal.name === "-----") ? (
-                            <div className="flex h-20 w-full flex-col items-center justify-center bg-gray-100 text-gray-500">
-                              <div className="text-3xl">🍽️</div>
-                              <div className="mt-1 text-xs font-semibold">식사 없음</div>
-                            </div>
-                          ) : (
-                            <img
-                              src={meal.img}
-                              alt={meal.name}
-                              onClick={() =>
-                                setSelectedImage({
-                                  src: meal.img,
-                                  title: `${meal.label} · ${meal.name}`,
-                                })
-                              }
-                              className="h-20 w-full cursor-pointer object-cover transition hover:scale-105"
-                            />
-                          )}
-                          <div className="p-2">
-                            <p className="text-[11px] font-bold text-[#B88A44]">{meal.label}</p>
-                            <p className="mt-1 text-xs">{meal.name}</p>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <p>조식 · {item.meals.breakfast}</p>
+                      <p>중식 · {item.meals.lunch}</p>
+                      <p>석식 · {item.meals.dinner}</p>
                     </div>
                   </div>
 
@@ -371,12 +149,6 @@ export default function Timeline() {
       <p className="mt-8 text-center text-sm text-gray-400">
         ※ 현지 사정 및 항공 일정에 따라 관광 순서와 식사, 호텔은 변경될 수 있습니다.
       </p>
-      <ImageLightbox
-        open={selectedImage !== null}
-        image={selectedImage?.src ?? ""}
-        title={selectedImage?.title}
-        onClose={() => setSelectedImage(null)}
-      />
     </section>
   );
 }

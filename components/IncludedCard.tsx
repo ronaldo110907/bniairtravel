@@ -1,11 +1,5 @@
 "use client";
-
-import { excludes, includes } from "@/data/zhangjiajie";
-
-type DisplayItem = {
-  id: number;
-  text: unknown;
-};
+import { includes, excludes, IncludedItem } from "@/data/zhangjiajie";
 
 function Card({
   title,
@@ -13,9 +7,9 @@ function Card({
   icon,
 }: {
   title: string;
-  items: DisplayItem[];
+  items: IncludedItem[];
   icon: string;
-}) {
+}): import("react").JSX.Element {
   return (
     <div className="rounded-[32px] border border-[#ece7df] bg-white p-8 shadow-sm">
       <div className="mb-8 flex items-center gap-4">
@@ -35,11 +29,11 @@ function Card({
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-start gap-4 rounded-2xl border border-[#f1ece4] p-4"
+            className="flex items-center gap-4 rounded-2xl border border-[#f1ece4] p-4"
           >
-            <div className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-[#b88a44]" />
-            <span className="text-[15px] leading-7 text-gray-700">
-              {String(item.text)}
+            <div className="h-2.5 w-2.5 rounded-full bg-[#b88a44]" />
+            <span className="text-[15px] text-gray-700">
+              {item.text}
             </span>
           </div>
         ))}
@@ -50,18 +44,17 @@ function Card({
 
 export default function IncludedCard() {
   return (
-    <section className="mx-auto max-w-7xl px-6 py-24">
-      <div className="mb-14">
+    <section className="mx-auto max-w-6xl px-6 py-24">
+      <div className="mb-12">
         <p className="mb-3 text-sm tracking-[0.35em] text-[#b88a44]">
           TRAVEL INFORMATION
         </p>
-
         <h2 className="text-4xl font-bold md:text-5xl">
           포함 / 불포함 사항
         </h2>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <Card title="포함사항" items={includes} icon="✅" />
         <Card title="불포함사항" items={excludes} icon="❗" />
       </div>

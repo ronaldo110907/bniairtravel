@@ -122,12 +122,42 @@ export default function ProductsPage() {
                     </td>
                     <td>
                       <div className="flex justify-center gap-3">
-                        <Link
-                          href={`/admin/products/${product.id}`}
-                          className="text-blue-600"
-                        >
-                          <Pencil size={18} />
-                        </Link>
+                        <div className="flex flex-wrap justify-center gap-2">
+                          <Link
+                            href={`/admin/products/${product.id}`}
+                            className="text-blue-600"
+                          >
+                            <Pencil size={18} />
+                          </Link>
+
+                          <Link
+                            href={`/admin/products/${product.id}/departures`}
+                            className="rounded bg-gray-100 px-2 py-1 text-xs"
+                          >
+                            일정
+                          </Link>
+
+                          <Link
+                            href={`/admin/products/${product.id}/gallery`}
+                            className="rounded bg-gray-100 px-2 py-1 text-xs"
+                          >
+                            갤러리
+                          </Link>
+
+                          <Link
+                            href={`/admin/products/${product.id}/hotels`}
+                            className="rounded bg-gray-100 px-2 py-1 text-xs"
+                          >
+                            호텔
+                          </Link>
+
+                          <Link
+                            href={`/admin/products/${product.id}/info`}
+                            className="rounded bg-gray-100 px-2 py-1 text-xs"
+                          >
+                            상세
+                          </Link>
+                        </div>
 
                         <button
                           onClick={() => deleteProduct(product.id)}

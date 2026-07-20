@@ -1,7 +1,32 @@
 "use client";
-import { hotels } from "@/data/zhangjiajie";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+
+type Hotel = {
+  id: string;
+  name: string;
+  grade: string;
+  desc: string;
+  image: string;
+};
 
 export default function HotelCard() {
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+
+  useEffect(() => {
+    loadHotels();
+  }, []);
+
+  async function loadHotels() {
+    const { data } = await supabase
+      .from("hotels")
+      .select("*")
+      .order("sort");
+
+    setHotels(data || []);
+  }
+
   return (
     <section className="bg-[#1f1f1f] px-6 py-24 text-white">
       <div className="mx-auto max-w-6xl">

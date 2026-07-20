@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
-
 import { reviews } from "@/data/zhangjiajie";
 
 export default function ReviewSection() {
@@ -26,7 +25,7 @@ export default function ReviewSection() {
         <h2 className="mt-3 text-4xl font-bold">고객 후기</h2>
         <div className="mt-6 flex justify-center gap-10">
           <div>
-            <div className="text-4xl font-bold text-[#C8A15A]">4.9</div>
+            <div className="text-4xl font-bold text-[#C8A15A]">9.8</div>
             <div className="text-gray-500">평균 만족도</div>
           </div>
           <div>

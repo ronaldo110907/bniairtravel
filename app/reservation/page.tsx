@@ -19,12 +19,17 @@ export default function ReservationPage() {
   async function submitReservation(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!name.trim() || !phone.trim()) {
+      alert("예약자명과 연락처를 입력해주세요.");
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await supabase.from("reservations").insert({
       name,
       phone,
-      product,
+      product: product || "상담문의",
       departure_date: departureDate,
       message,
       status: "대기",

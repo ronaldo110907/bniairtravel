@@ -10,7 +10,7 @@ export default function Schedule() {
   const [schedules, setSchedules] = useState<any[]>([]);
 
   useEffect(() => {
-  loadSchedules();
+    loadSchedules();
   }, []);
 
   async function loadSchedules() {

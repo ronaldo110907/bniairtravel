@@ -3,11 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import SelectedInfo from "./SelectedInfo";
-import { Departure } from "@/data/zhangjiajie";
+type Departure = {
+  id: string;
+  date: string;
+  course: "3박4일" | "4박5일";
+  airline: string;
+  price: number;
+  seats: number;
+  status: "available" | "hot" | "closed";
+};
 
 const YEAR = 2026;
 // 상품별 시작월 자동 계산
-const DEFAULT_MONTHS = [9,10,11];
+const DEFAULT_MONTHS = [9, 10, 11];
 
 function getCourseForDate(date: Date): "3박4일" | "4박5일" | null {
   const month = date.getMonth() + 1;
@@ -54,7 +62,7 @@ function buildDepartures(): Departure[] {
 
       generated.push(
         override ?? {
-          id: id++,
+          id: String(id++),
           date,
           course,
           airline: "이스타항공",

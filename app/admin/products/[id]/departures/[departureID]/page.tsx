@@ -62,8 +62,8 @@ export default function EditDeparturePage() {
       .update({
         departure_date: form.departure_date,
         airline: form.airline,
-        price: Number(form.price),
-        seat: Number(form.seat),
+        price: form.price ? Number(form.price) : null,
+        seat: form.seat ? Number(form.seat) : null,
         status: form.status,
         updated_at: new Date().toISOString(),
       })

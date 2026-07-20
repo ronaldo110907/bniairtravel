@@ -24,24 +24,10 @@ export default function KakaoButton() {
 
   return (
     <a
-      href={kakaoUrl || "#"}
-      target="_blank"
+      href={kakaoUrl || "/contact"}
+      target={kakaoUrl ? "_blank" : "_self"}
       rel="noopener noreferrer"
-      className="
-        fixed
-        bottom-6
-        right-6
-        z-50
-        rounded-full
-        bg-yellow-400
-        px-6
-        py-4
-        font-bold
-        text-black
-        shadow-xl
-        transition
-        hover:scale-105
-      "
+      className="fixed bottom-6 right-6 z-50 rounded-full bg-yellow-400 px-6 py-4 font-bold text-black shadow-xl transition hover:scale-105"
     >
       지금 문의하세요
     </a>
