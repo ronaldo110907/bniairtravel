@@ -147,11 +147,7 @@ export default function ReservationsPage() {
   const [page, setPage] = useState(1);
 
   const [selected, setSelected] = useState<Reservation | null>(null);
-  useEffect(() => {
-    if (selected) {
-      console.log("SELECTED DATA", selected);
-    }
-  }, [selected]);
+
   const [openPersonId, setOpenPersonId] = useState<string | null>(null);
   const [previewPassport, setPreviewPassport] = useState<string | null>(null);
   const [passportUploading, setPassportUploading] = useState(false);
@@ -197,13 +193,10 @@ export default function ReservationsPage() {
       setPassportUploading(false);
       return;
     }
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("passports").getPublicUrl(filePath);
     const { error: updateError } = await supabase
       .from("reservation_people")
       .update({
-        passport_image: publicUrl,
+        passport_image: filePath,
       })
       .eq("id", person.id);
 
@@ -254,13 +247,10 @@ export default function ReservationsPage() {
       return;
     }
 
-    console.log("SAVE PERSON RESULT", data);
-
     alert("예약자가 추가되었습니다.");
 
     setShowPersonForm(false);
     await loadPeople(selected.id);
-    console.log("AFTER SAVE SELECTED", selected);
     setPersonDraft({
       name: "",
 
@@ -322,8 +312,6 @@ export default function ReservationsPage() {
       alert(error.message);
       return;
     }
-
-    console.log("UPDATE PERSON RESULT", data);
 
     if (selected) {
       await loadPeople(selected.id);
@@ -583,26 +571,47 @@ export default function ReservationsPage() {
       return;
     }
 
+    const people =
+      (await Promise.all(
+        (data || []).map(async (person) => {
+          if (
+            !person.passport_image ||
+            person.passport_image.startsWith("http://") ||
+            person.passport_image.startsWith("https://")
+          ) {
+            return person;
+          }
+
+          const { data: signedData, error: signedError } =
+            await supabase.storage
+              .from("passports")
+              .createSignedUrl(person.passport_image, 60 * 60);
+
+          if (signedError) {
+            return person;
+          }
+
+          return {
+            ...person,
+            passport_image: signedData?.signedUrl || "",
+          };
+        }),
+      )) || [];
+
     setSelected((prev) => {
       if (!prev) return prev;
 
       return {
         ...prev,
-        people: data || [],
+        people,
       };
     });
   }
   async function loadReservations() {
-    console.log("1. loadReservations 시작");
-
     setLoading(true);
 
     try {
-      console.log("2. Supabase 요청 전");
-
       const { data, error } = await supabase.from("reservations").select("*");
-
-      console.log("3. Supabase 응답 완료", { data, error });
 
       if (error) {
         console.error("RESERVATIONS ERROR", error);
@@ -616,7 +625,6 @@ export default function ReservationsPage() {
       console.error("LOAD RESERVATIONS CATCH", error);
       alert("예약 목록을 불러오지 못했습니다.");
     } finally {
-      console.log("4. loading 종료");
       setLoading(false);
     }
   }
@@ -674,13 +682,6 @@ export default function ReservationsPage() {
   async function savePassportInfo() {
     if (!selected) return;
 
-    console.log("SAVE DATA", {
-      name: selected.passport_name,
-      number: selected.passport_number,
-      birth: selected.passport_birth,
-      expiry: selected.passport_expiry,
-    });
-
     const { data, error } = await supabase
       .from("reservations")
       .update({
@@ -691,8 +692,6 @@ export default function ReservationsPage() {
       })
       .eq("id", selected.id)
       .select();
-    console.log("SAVE RESULT", data);
-
     if (error) {
       console.error("SAVE ERROR DETAIL", JSON.stringify(error, null, 2));
 
@@ -1365,280 +1364,23 @@ export default function ReservationsPage() {
                 {selected.people && selected.people.length > 0 ? (
                   <div className="mt-5 space-y-3">
                     {selected.people.map((person, index) => (
-                      <div
+                      <PersonCard
                         key={person.id}
-                        className="
-          rounded-xl
-          border
-          bg-white
-          p-4
-        "
-                      >
-                        <div
-                          className="
-    mb-3
-    flex
-    cursor-pointer
-    items-center
-    justify-between
-    rounded-lg
-    bg-gray-100
-    p-3
-  "
-                          onClick={() =>
-                            setOpenPersonId(
-                              openPersonId === person.id ? null : person.id,
-                            )
-                          }
-                        >
-                          <div className="flex items-center gap-2">
-                            {index === 0 && (
-                              <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
-                                대표예약자
-                              </span>
-                            )}
-
-                            <div className="font-bold">{person.name}</div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {index !== 0 && (
-                              <button
-                                type="button"
-                                onClick={() => makePrimaryPerson(person)}
-                                className="
-        rounded-full
-        bg-indigo-600
-        px-2
-        py-0.5
-        text-xs
-        font-bold
-        text-white
-      "
-                              >
-                                👑 대표로 변경
-                              </button>
-                            )}
-                            {index > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => void movePersonUp(person)}
-                                className="
-      rounded-full
-      bg-gray-600
-      px-2
-      py-0.5
-      text-xs
-      font-bold
-      text-white
-    "
-                              >
-                                ▲
-                              </button>
-                            )}
-
-                            {index < (selected.people?.length ?? 0) - 1 && (
-                              <button
-                                type="button"
-                                onClick={() => void movePersonDown(person)}
-                                className="
-      rounded-full
-      bg-gray-600
-      px-2
-      py-0.5
-      text-xs
-      font-bold
-      text-white
-    "
-                              >
-                                ▼
-                              </button>
-                            )}
-                            <span
-                              className={
-                                person.passport_image
-                                  ? "rounded-full bg-green-600 px-2 py-0.5 text-xs font-bold text-white"
-                                  : "rounded-full bg-yellow-400 px-2 py-0.5 text-xs font-bold text-white"
-                              }
-                            >
-                              {person.passport_image ? "여권등록" : "미등록"}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
-                          <div>
-                            <div className="text-xs text-gray-500">
-                              한글이름
-                            </div>
-                            <div className="font-semibold">
-                              {person.name || "-"}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500">
-                              영문이름
-                            </div>
-                            <div className="font-semibold">
-                              {person.passport_name || "-"}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500">성별</div>
-                            <div className="font-semibold">
-                              {person.passport_sex || "-"}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500">
-                              생년월일
-                            </div>
-                            <div className="font-semibold">
-                              {person.passport_birth || "-"}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500">
-                              여권번호
-                            </div>
-                            <div className="font-semibold">
-                              {person.passport_number || "-"}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500">국적</div>
-                            <div className="font-semibold">
-                              {person.passport_nationality || "-"}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500">발급일</div>
-                            <div className="font-semibold">
-                              {person.passport_issue || "-"}
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500">만료일</div>
-                            <div className="font-semibold">
-                              {person.passport_expiry || "-"}
-                            </div>
-                          </div>
-                        </div>
-
-                        {person.passport_image && (
-                          <div className="mt-3">
-                            <img
-                              src={person.passport_image}
-                              alt="여권"
-                              className="w-48 rounded-lg border"
-                            />
-                          </div>
-                        )}
-                        <label
-                          className="
-    mt-3
-    mr-2
-    inline-block
-    cursor-pointer
-    rounded-lg
-    bg-green-600
-    px-3
-    py-1
-    text-sm
-    font-bold
-    text-white
-  "
-                        >
-                          여권 등록
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-
-                              if (!file) return;
-
-                              void uploadPersonPassport(person, file);
-
-                              e.target.value = "";
-                            }}
-                          />
-                        </label>
-                        {person.passport_image && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setPreviewPassport(person.passport_image)
-                            }
-                            className="
-      mt-3
-      mr-2
-      rounded-lg
-      bg-indigo-600
-      px-3
-      py-1
-      text-sm
-      font-bold
-      text-white
-      hover:bg-indigo-700
-    "
-                          >
-                            👁 여권보기
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditPerson(person);
-                          }}
-                          className="
-    mt-3
-    mr-2
-    rounded-lg
-    bg-blue-500
-    px-3
-    py-1
-    text-sm
-    font-bold
-    text-white
-  "
-                        >
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (index === 0) {
-                              alert(
-                                "대표예약자는 삭제할 수 없습니다.\n\n다른 예약자를 대표예약자로 변경한 후 삭제해주세요.",
-                              );
-
-                              return;
-                            }
-
-                            deletePerson(person.id);
-                          }}
-                          className="
-    mt-3
-    rounded-lg
-    bg-red-500
-    px-3
-    py-1
-    text-sm
-    font-bold
-    text-white
-  "
-                        >
-                          삭제
-                        </button>
-                      </div>
+                        person={person}
+                        index={index}
+                        totalPeople={selected.people?.length ?? 0}
+                        openPersonId={openPersonId}
+                        onToggle={(id) =>
+                          setOpenPersonId(openPersonId === id ? null : id)
+                        }
+                        onMakePrimary={makePrimaryPerson}
+                        onMoveUp={movePersonUp}
+                        onMoveDown={movePersonDown}
+                        onEdit={setEditPerson}
+                        onDelete={deletePerson}
+                        onUpload={uploadPersonPassport}
+                        onPreview={setPreviewPassport}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -1646,365 +1388,7 @@ export default function ReservationsPage() {
                     등록된 예약자가 없습니다.
                   </div>
                 )}
-                {showPersonForm && (
-                  <div className="mt-5 rounded-xl bg-gray-50 p-5">
-                    <div className="mb-3">
-                      <label className="block mb-1 font-bold">이름</label>
-
-                      <input
-                        className="
-        w-full
-        rounded-lg
-        border
-        px-3 py-2
-        "
-                        value={personDraft.name}
-                        onChange={(e) =>
-                          setPersonDraft({
-                            ...personDraft,
-                            name: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="block mb-1 font-bold">영문명</label>
-
-                      <input
-                        className="
-        w-full
-        rounded-lg
-        border
-        px-3 py-2
-        "
-                        value={personDraft.passport_name}
-                        onChange={(e) =>
-                          setPersonDraft({
-                            ...personDraft,
-                            passport_name: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="block mb-1 font-bold">여권번호</label>
-
-                      <input
-                        className="
-        w-full
-        rounded-lg
-        border
-        px-3 py-2
-        "
-                        value={personDraft.passport_number}
-                        onChange={(e) =>
-                          setPersonDraft({
-                            ...personDraft,
-                            passport_number: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={savePerson}
-                      className="
-  mr-3
-  rounded-lg
-  bg-blue-600
-  px-4 py-2
-  text-white
-  font-bold
-  "
-                    >
-                      저장
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowPersonForm(false)}
-                      className="
-      rounded-lg
-      border
-      px-4 py-2
-      "
-                    >
-                      취소
-                    </button>
-                  </div>
-                )}
-                {editPerson && (
-                  <div className="mt-5 rounded-xl bg-blue-50 p-5">
-                    <div className="mb-3 font-bold">예약자 수정</div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          한글 이름
-                        </label>
-
-                        <input
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-      "
-                          value={editPerson.name}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              name: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          영문 이름
-                        </label>
-
-                        <input
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-    "
-                          value={editPerson.passport_name || ""}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              passport_name: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          성별
-                        </label>
-
-                        <input
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-    "
-                          value={editPerson.passport_sex || ""}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              passport_sex: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          생년월일
-                        </label>
-
-                        <input
-                          type="date"
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-    "
-                          value={editPerson.passport_birth || ""}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              passport_birth: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          여권번호
-                        </label>
-                        <input
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-      "
-                          value={editPerson.passport_number || ""}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              passport_number: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          국적
-                        </label>
-
-                        <input
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-    "
-                          value={editPerson.passport_nationality || ""}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              passport_nationality: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          발급일
-                        </label>
-
-                        <input
-                          type="date"
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-    "
-                          value={editPerson.passport_issue || ""}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              passport_issue: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-bold text-gray-700">
-                          만료일
-                        </label>
-
-                        <input
-                          type="date"
-                          className="
-      w-full
-      rounded-lg
-      border
-      px-3
-      py-2
-    "
-                          value={editPerson.passport_expiry || ""}
-                          onChange={(e) =>
-                            setEditPerson({
-                              ...editPerson,
-                              passport_expiry: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                      <button
-                        type="button"
-                        onClick={updatePerson}
-                        className="
-        rounded-lg
-        bg-blue-600
-        px-4
-        py-2
-        font-bold
-        text-white
-        "
-                      >
-                        저장
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setEditPerson(null)}
-                        className="
-        rounded-lg
-        border
-        px-4
-        py-2
-        font-bold
-        "
-                      >
-                        취소
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
-              {/* 여행 정보 */}
-
-              <div
-                className="
-                rounded-2xl
-                border
-                p-6
-                "
-              >
-                <h3 className="mb-5 font-black text-gray-900">✈ 여행 정보</h3>
-
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Detail label="상품" value={selected.product} />
-
-                  <Detail
-                    label="출발일"
-                    value={formatDate(selected.departure_date)}
-                  />
-                </div>
-
-                <div className="mt-5">
-                  <label
-                    className="
-                    mb-2 block
-                    text-sm font-black
-                    "
-                  >
-                    예약 상태
-                  </label>
-
-                  <select
-                    value={selected.status || "대기"}
-                    onChange={(event) =>
-                      void updateStatus(selected.id, event.target.value)
-                    }
-                    className={`
-                    rounded-full
-                    border
-                    px-5 py-2.5
-                    font-bold
-                    ${statusClass(selected.status || "대기")}
-                   `}
-                  >
-                    {STATUS_OPTIONS.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
               {/* 문의내용 */}
 
               <div>
