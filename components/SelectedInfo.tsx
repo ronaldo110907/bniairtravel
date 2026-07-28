@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 type Departure = {
   date: string;
   airline: string;
@@ -7,6 +9,7 @@ type Departure = {
   price: number;
   seats: number;
   status: "hot" | "closed" | "available";
+  id: string;
 };
 
 interface Props {
@@ -14,6 +17,8 @@ interface Props {
 }
 
 export default function SelectedInfo({ departure }: Props) {
+  const router = useRouter();
+
   if (!departure) {
     return (
       <div className="sticky top-24 overflow-hidden rounded-[32px] bg-[#1d1d1d] text-white shadow-2xl">
@@ -36,15 +41,13 @@ export default function SelectedInfo({ departure }: Props) {
     departure.status === "hot"
       ? "🔥 긴급특가"
       : departure.status === "closed"
-      ? "예약마감"
-      : "예약가능";
+        ? "예약마감"
+        : "예약가능";
 
   return (
     <div className="sticky top-24 overflow-hidden rounded-[32px] bg-[#1d1d1d] text-white shadow-2xl">
       <div className="bg-gradient-to-r from-[#C8A15A] to-[#B78B3F] px-8 py-10">
-        <p className="text-xs tracking-[0.35em] text-white/70">
-          SELECTED TOUR
-        </p>
+        <p className="text-xs tracking-[0.35em] text-white/70">SELECTED TOUR</p>
         <h2 className="mt-3 text-3xl font-bold">선택한 여행상품</h2>
         <p className="mt-2 text-white/80">
           {departure.date.replaceAll("-", ".")}
@@ -62,7 +65,9 @@ export default function SelectedInfo({ departure }: Props) {
         <Item
           icon="👥"
           title="잔여석"
-          value={departure.status === "closed" ? "예약마감" : `${departure.seats}석`}
+          value={
+            departure.status === "closed" ? "예약마감" : `${departure.seats}석`
+          }
         />
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -72,7 +77,14 @@ export default function SelectedInfo({ departure }: Props) {
           </span>
         </div>
 
-        <button className="w-full rounded-2xl bg-[#C8A15A] py-5 text-lg font-bold transition hover:bg-[#B78B3F]">
+        <button
+          onClick={() =>
+            router.push(
+              `/reservation?product=장가계&departure=${departure.date}&departure_id=${departure.id}`,
+            )
+          }
+          className="w-full rounded-2xl bg-[#C8A15A] py-5 text-lg font-bold transition hover:bg-[#B78B3F]"
+        >
           예약 문의하기
         </button>
       </div>

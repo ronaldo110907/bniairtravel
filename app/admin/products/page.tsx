@@ -45,10 +45,17 @@ export default function ProductsPage() {
   async function deleteProduct(id: string) {
     if (!confirm("상품을 삭제하시겠습니까?")) return;
 
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", id);
+    const { count } = await supabase
+      .from("departures")
+      .select("*", { count: "exact", head: true })
+      .eq("product_id", id);
+
+    if ((count ?? 0) > 0) {
+      alert("⚠️ 출발일이 등록된 상품은 삭제할 수 없습니다.");
+      return;
+    }
+
+    const { error } = await supabase.from("products").delete().eq("id", id);
 
     if (error) {
       alert(error.message);

@@ -1,18 +1,25 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function ReservationPage() {
   const searchParams = useSearchParams();
+  const departureId = searchParams.get("departure_id");
   const router = useRouter();
 
   const product = searchParams.get("product") || "";
+  const departure = searchParams.get("departure") || "";
+  useEffect(() => {
+    if (departure) {
+      setDepartureDate(departure);
+    }
+  }, [departure]);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
+  const [departureDate, setDepartureDate] = useState("departure");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,9 +38,13 @@ export default function ReservationPage() {
       phone,
       product: product || "상담문의",
       departure_date: departureDate,
+      departure_id: departureId || null,
       message,
       status: "대기",
     });
+
+    console.log("INSERT ERROR :", error);
+    console.log("departureId :", departureId);
 
     setLoading(false);
 
@@ -49,15 +60,11 @@ export default function ReservationPage() {
   return (
     <main className="min-h-screen bg-[#f7f3ec] px-6 py-24">
       <div className="mx-auto max-w-xl rounded-3xl bg-white p-8 shadow-xl">
-        <h1 className="mb-8 text-3xl font-bold">
-          예약 문의
-        </h1>
+        <h1 className="mb-8 text-3xl font-bold">예약 문의</h1>
 
         <form onSubmit={submitReservation} className="space-y-5">
           <div>
-            <label className="mb-2 block text-sm text-gray-500">
-              상품명
-            </label>
+            <label className="mb-2 block text-sm text-gray-500">상품명</label>
             <input
               value={product}
               readOnly

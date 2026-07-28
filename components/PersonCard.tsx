@@ -43,11 +43,10 @@ export default function PersonCard({
   onUpload,
   onPreview,
 }: PersonCardProps) {
+  const isOpen = openPersonId === person.id;
   void person;
   void index;
   void totalPeople;
-  void openPersonId;
-  void onToggle;
   void onMakePrimary;
   void onMoveUp;
   void onMoveDown;
@@ -76,7 +75,6 @@ export default function PersonCard({
         bg-gray-100
         p-3
       "
-        onClick={() => onToggle(person.id)}
       >
         <div className="flex items-center gap-2">
           {index === 0 && (
@@ -92,7 +90,10 @@ export default function PersonCard({
           {index !== 0 && (
             <button
               type="button"
-              onClick={() => onMakePrimary(person)}
+              onClick={(e) => {
+                e.stopPropagation();
+                void onMakePrimary(person);
+              }}
               className="
         rounded-full
         bg-indigo-600
@@ -109,7 +110,10 @@ export default function PersonCard({
           {index > 0 && (
             <button
               type="button"
-              onClick={() => onMoveUp(person)}
+              onClick={(e) => {
+                e.stopPropagation();
+                void onMoveUp(person);
+              }}
               className="
       rounded-full
       bg-gray-600
@@ -124,10 +128,13 @@ export default function PersonCard({
             </button>
           )}
 
-          {index < totalPeople - 1 && (
+          {index > 0 && index < totalPeople - 1 && (
             <button
               type="button"
-              onClick={() => onMoveDown(person)}
+              onClick={(e) => {
+                e.stopPropagation();
+                void onMoveDown(person);
+              }}
               className="
       rounded-full
       bg-gray-600
@@ -141,6 +148,14 @@ export default function PersonCard({
               ▼
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={() => onToggle(person.id)}
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+          >
+            {isOpen ? "접기" : "상세보기"}
+          </button>
           <span
             className={
               person.passport_image
@@ -152,50 +167,61 @@ export default function PersonCard({
           </span>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
-        <div>
-          <div className="text-xs text-gray-500">한글이름</div>
-          <div className="font-semibold">{person.name || "-"}</div>
-        </div>
+      {isOpen && (
+        <>
+          <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
+            <div>
+              <div className="text-xs text-gray-500">한글이름</div>
+              <div className="font-semibold">{person.name || "-"}</div>
+            </div>
 
-        <div>
-          <div className="text-xs text-gray-500">영문이름</div>
-          <div className="font-semibold">{person.passport_name || "-"}</div>
-        </div>
+            <div>
+              <div className="text-xs text-gray-500">영문이름</div>
+              <div className="font-semibold">{person.passport_name || "-"}</div>
+            </div>
 
-        <div>
-          <div className="text-xs text-gray-500">성별</div>
-          <div className="font-semibold">{person.passport_sex || "-"}</div>
-        </div>
+            <div>
+              <div className="text-xs text-gray-500">성별</div>
+              <div className="font-semibold">{person.passport_sex || "-"}</div>
+            </div>
 
-        <div>
-          <div className="text-xs text-gray-500">생년월일</div>
-          <div className="font-semibold">{person.passport_birth || "-"}</div>
-        </div>
+            <div>
+              <div className="text-xs text-gray-500">생년월일</div>
+              <div className="font-semibold">
+                {person.passport_birth || "-"}
+              </div>
+            </div>
 
-        <div>
-          <div className="text-xs text-gray-500">여권번호</div>
-          <div className="font-semibold">{person.passport_number || "-"}</div>
-        </div>
+            <div>
+              <div className="text-xs text-gray-500">여권번호</div>
+              <div className="font-semibold">
+                {person.passport_number || "-"}
+              </div>
+            </div>
 
-        <div>
-          <div className="text-xs text-gray-500">국적</div>
-          <div className="font-semibold">
-            {person.passport_nationality || "-"}
+            <div>
+              <div className="text-xs text-gray-500">국적</div>
+              <div className="font-semibold">
+                {person.passport_nationality || "-"}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs text-gray-500">발급일</div>
+              <div className="font-semibold">
+                {person.passport_issue || "-"}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs text-gray-500">만료일</div>
+              <div className="font-semibold">
+                {person.passport_expiry || "-"}
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div>
-          <div className="text-xs text-gray-500">발급일</div>
-          <div className="font-semibold">{person.passport_issue || "-"}</div>
-        </div>
-
-        <div>
-          <div className="text-xs text-gray-500">만료일</div>
-          <div className="font-semibold">{person.passport_expiry || "-"}</div>
-        </div>
-      </div>
-
+        </>
+      )}
       {person.passport_image && (
         <div className="mt-4">
           <img

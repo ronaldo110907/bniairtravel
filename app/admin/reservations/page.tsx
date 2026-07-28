@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import * as XLSX from "xlsx-js-style";
 import PersonCard from "@/components/PersonCard";
+import PersonForm from "@/components/PersonForm";
+import { Fragment } from "react";
+import { useSearchParams } from "next/navigation";
 
 type ReservationPeople = {
   id: string;
@@ -44,7 +47,7 @@ type Reservation = {
 
   people?: ReservationPeople[];
 };
-const STATUS_OPTIONS = ["대기", "상담중", "예약완료", "취소"];
+const STATUS_OPTIONS = ["대기", "확정", "취소"];
 const PAGE_SIZE = 20;
 
 function formatDate(value?: string | null) {
@@ -83,7 +86,7 @@ function formatDateTime(value?: string | null) {
 
 function statusClass(status: string) {
   switch (status) {
-    case "상담중":
+    case "대기":
       return `
         border-orange-300
         bg-orange-100
@@ -91,7 +94,7 @@ function statusClass(status: string) {
         shadow-sm
       `;
 
-    case "예약완료":
+    case "확정":
       return `
         border-emerald-300
         bg-emerald-100
@@ -105,13 +108,6 @@ function statusClass(status: string) {
         bg-red-100
         text-red-800
         shadow-sm
-      `;
-
-    default:
-      return `
-        border-gray-300
-        bg-gray-100
-        text-gray-700
       `;
   }
 }
@@ -145,7 +141,8 @@ export default function ReservationsPage() {
   const [createdFrom, setCreatedFrom] = useState("");
   const [createdTo, setCreatedTo] = useState("");
   const [page, setPage] = useState(1);
-
+  const searchParams = useSearchParams();
+  const reservationId = searchParams.get("id");
   const [selected, setSelected] = useState<Reservation | null>(null);
 
   const [openPersonId, setOpenPersonId] = useState<string | null>(null);
@@ -173,6 +170,16 @@ export default function ReservationsPage() {
   useEffect(() => {
     void loadReservations();
   }, []);
+
+  useEffect(() => {
+    if (!reservationId || list.length === 0) return;
+
+    const reservation = list.find((item) => item.id === reservationId);
+
+    if (reservation) {
+      void openDetail(reservation);
+    }
+  }, [reservationId, list]);
 
   async function uploadPersonPassport(person: ReservationPeople, file: File) {
     if (!selected) return;
@@ -270,6 +277,19 @@ export default function ReservationsPage() {
 
     if (!ok) return;
 
+    const { data: personData } = await supabase
+      .from("reservation_people")
+      .select("passport_image")
+      .eq("id", personId)
+      .single();
+
+    if (personData?.passport_image) {
+      const { data, error } = await supabase.storage
+        .from("passports")
+        .remove([personData.passport_image]);
+
+      console.log("DELETE STORAGE", data, error);
+    }
     const { error } = await supabase
       .from("reservation_people")
       .delete()
@@ -368,7 +388,7 @@ export default function ReservationsPage() {
 
     const currentIndex = people.findIndex((p) => p.id === person.id);
 
-    if (currentIndex <= 0) return;
+    if (currentIndex <= 1) return;
 
     const prev = people[currentIndex - 1];
 
@@ -396,7 +416,7 @@ export default function ReservationsPage() {
     );
 
     const currentIndex = people.findIndex((p) => p.id === person.id);
-
+    if (currentIndex === 0) return;
     if (currentIndex >= people.length - 1) return;
 
     const next = people[currentIndex + 1];
@@ -704,9 +724,43 @@ export default function ReservationsPage() {
     if (!confirm("예약 내역을 삭제하시겠습니까?")) return;
 
     setDeletingId(id);
+    const { data: people } = await supabase
+      .from("reservation_people")
+      .select("passport_image")
+      .eq("reservation_id", id);
+    if (people) {
+      const files = people.map((p) => p.passport_image).filter(Boolean);
 
-    const { error } = await supabase.from("reservations").delete().eq("id", id);
+      if (files.length > 0) {
+        const { data: removed, error: storageError } = await supabase.storage
+          .from("passports")
+          .remove(files);
 
+        console.log("FILES :", files);
+        console.log("REMOVED :", removed);
+        console.log("STORAGE ERROR :", storageError);
+      }
+    }
+
+    //예약자삭제//
+    const { error: peopleError } = await supabase
+      .from("reservation_people")
+      .delete()
+      .eq("reservation_id", id);
+
+    if (peopleError) {
+      alert(peopleError.message);
+      return;
+    }
+    //예약삭제//
+    const { data, error } = await supabase
+      .from("reservations")
+      .delete()
+      .eq("id", id)
+      .select();
+    console.log("DELETE ID", id);
+    console.log("DELETE RESULT", data);
+    console.log("DELETE ERROR", error);
     setDeletingId(null);
 
     if (error) {
@@ -722,7 +776,9 @@ export default function ReservationsPage() {
   }
 
   async function openDetail(item: Reservation) {
+    setEditPerson(null);
     setSelected(item);
+    setShowPersonForm(false);
     setMemoDraft(item.memo || "");
     await loadPeople(item.id);
   }
@@ -1361,26 +1417,103 @@ export default function ReservationsPage() {
                 >
                   + 예약자 추가
                 </button>
+                {showPersonForm && (
+                  <div className="mt-5 rounded-xl bg-gray-50 p-5">
+                    <PersonForm
+                      person={personDraft}
+                      setPerson={setPersonDraft}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={savePerson}
+                      className="
+mr-3
+rounded-lg
+bg-blue-600
+px-4 py-2
+text-white
+font-bold
+"
+                    >
+                      저장
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPersonForm(false)}
+                      className="
+rounded-lg
+border
+px-4 py-2
+"
+                    >
+                      취소
+                    </button>
+                  </div>
+                )}
                 {selected.people && selected.people.length > 0 ? (
                   <div className="mt-5 space-y-3">
                     {selected.people.map((person, index) => (
-                      <PersonCard
-                        key={person.id}
-                        person={person}
-                        index={index}
-                        totalPeople={selected.people?.length ?? 0}
-                        openPersonId={openPersonId}
-                        onToggle={(id) =>
-                          setOpenPersonId(openPersonId === id ? null : id)
-                        }
-                        onMakePrimary={makePrimaryPerson}
-                        onMoveUp={movePersonUp}
-                        onMoveDown={movePersonDown}
-                        onEdit={setEditPerson}
-                        onDelete={deletePerson}
-                        onUpload={uploadPersonPassport}
-                        onPreview={setPreviewPassport}
-                      />
+                      <Fragment key={person.id}>
+                        <PersonCard
+                          person={person}
+                          index={index}
+                          totalPeople={selected.people?.length ?? 0}
+                          openPersonId={openPersonId}
+                          onToggle={(id) =>
+                            setOpenPersonId(openPersonId === id ? null : id)
+                          }
+                          onMakePrimary={makePrimaryPerson}
+                          onMoveUp={movePersonUp}
+                          onMoveDown={movePersonDown}
+                          onEdit={setEditPerson}
+                          onDelete={deletePerson}
+                          onUpload={uploadPersonPassport}
+                          onPreview={setPreviewPassport}
+                        />
+                        {editPerson?.id === person.id && (
+                          <div className="mt-5 rounded-xl bg-blue-50 p-5">
+                            <div className="mb-3 font-bold">예약자 수정</div>
+
+                            <PersonForm
+                              person={editPerson}
+                              setPerson={setEditPerson}
+                            />
+
+                            <div className="mt-4 flex gap-2">
+                              <button
+                                type="button"
+                                onClick={updatePerson}
+                                className="
+        rounded-lg
+        bg-blue-600
+        px-4
+        py-2
+        font-bold
+        text-white
+        "
+                              >
+                                저장
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setEditPerson(null)}
+                                className="
+        rounded-lg
+        border
+        px-4
+        py-2
+        font-bold
+        "
+                              >
+                                취소
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </Fragment>
                     ))}
                   </div>
                 ) : (
@@ -1389,6 +1522,7 @@ export default function ReservationsPage() {
                   </div>
                 )}
               </div>
+
               {/* 문의내용 */}
 
               <div>
@@ -1501,7 +1635,11 @@ focus:bg-white
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelected(null)}
+                  onClick={() => {
+                    setEditPerson(null);
+                    setSelected(null);
+                    setShowPersonForm(false);
+                  }}
                   className="
                   rounded-xl
                   border
