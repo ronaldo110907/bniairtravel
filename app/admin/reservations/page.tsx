@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import * as XLSX from "xlsx-js-style";
 import PersonCard from "@/components/PersonCard";
@@ -139,7 +139,7 @@ function toDateInputValue(value?: string | null) {
   return `${year}-${month}-${day}`;
 }
 
-export default function ReservationsPage() {
+function ReservationsContent() {
   const [list, setList] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -2034,5 +2034,12 @@ function Detail({ label, value }: { label: string; value?: string | null }) {
         {value || "-"}
       </p>
     </div>
+  );
+}
+export default function ReservationsPage() {
+  return (
+    <Suspense fallback={<div>불러오는 중...</div>}>
+      <ReservationsContent />
+    </Suspense>
   );
 }

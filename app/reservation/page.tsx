@@ -1,10 +1,10 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-export default function ReservationPage() {
+function ReservationForm() {
   const searchParams = useSearchParams();
   const departureId = searchParams.get("departure_id");
   const router = useRouter();
@@ -111,5 +111,12 @@ export default function ReservationPage() {
         </form>
       </div>
     </main>
+  );
+}
+export default function ReservationPage() {
+  return (
+    <Suspense fallback={<div>불러오는 중...</div>}>
+      <ReservationForm />
+    </Suspense>
   );
 }
