@@ -23,6 +23,17 @@ type ReservationPeople = {
   sort_order: number;
 };
 
+type Product = {
+  id: string;
+  title: string;
+};
+
+type Departure = {
+  id: string;
+  product_id: string;
+  departure_date: string;
+};
+
 type Reservation = {
   id: string;
   name: string;
@@ -153,6 +164,18 @@ export default function ReservationsPage() {
   const [showPersonForm, setShowPersonForm] = useState(false);
   const [editPerson, setEditPerson] = useState<ReservationPeople | null>(null);
   const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newReservation, setNewReservation] = useState({
+    name: "",
+    phone: "",
+    product: "",
+    departure_id: "",
+    departure_date: "",
+    status: "대기",
+    message: "",
+  });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [departures, setDepartures] = useState<Departure[]>([]);
   const [personDraft, setPersonDraft] = useState({
     name: "",
 
@@ -169,6 +192,7 @@ export default function ReservationsPage() {
 
   useEffect(() => {
     void loadReservations();
+    void loadProducts();
   }, []);
 
   useEffect(() => {
@@ -627,6 +651,82 @@ export default function ReservationsPage() {
       };
     });
   }
+  async function loadProducts() {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("title");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setProducts(data ?? []);
+  }
+  async function loadDepartures(productId: string) {
+    console.log("선택된 productId:", productId);
+
+    const { data, error } = await supabase
+      .from("departures")
+      .select("id, product_id, departure_date")
+      .eq("product_id", productId)
+      .order("departure_date");
+
+    console.log("departures:", data);
+    console.log("RESERVATIONS ERROR:", error);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setDepartures(data ?? []);
+  }
+  async function addReservation() {
+    if (
+      !newReservation.name ||
+      !newReservation.phone ||
+      !newReservation.product ||
+      !newReservation.departure_date
+    ) {
+      alert("필수 항목을 모두 입력해주세요.");
+      return;
+    }
+
+    const { error } = await supabase.from("reservations").insert({
+      name: newReservation.name,
+      phone: newReservation.phone,
+      product: newReservation.product,
+      departure_id: newReservation.departure_id, // 추가
+      departure_date: newReservation.departure_date,
+      status: newReservation.status,
+      message: newReservation.message,
+    });
+
+    if (error) {
+      console.log("ERROR >>>", error);
+      alert(error.message);
+      return;
+    }
+    alert("예약이 등록되었습니다.");
+
+    setIsAddModalOpen(false);
+
+    setNewReservation({
+      name: "",
+      phone: "",
+      product: "",
+      departure_id: "",
+      departure_date: "",
+      status: "대기",
+      message: "",
+    });
+
+    setDepartures([]);
+
+    await loadReservations();
+  }
   async function loadReservations() {
     setLoading(true);
 
@@ -955,6 +1055,22 @@ export default function ReservationsPage() {
           </div>
 
           <div className="flex gap-3">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="
+    rounded-xl
+    bg-blue-600
+    px-5
+    py-3
+    text-sm
+    font-bold
+    text-white
+    transition
+    hover:bg-blue-700
+  "
+            >
+              ➕ 예약 등록
+            </button>
             <button
               type="button"
               onClick={() => void loadReservations()}
@@ -1307,6 +1423,183 @@ export default function ReservationsPage() {
           </div>
         </div>
       </div>
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b p-6">
+              <h2 className="text-xl font-bold">예약 등록</h2>
+
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-2xl text-gray-400 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 p-6">
+              <div>
+                <label className="mb-2 block text-sm font-semibold">
+                  예약자명
+                </label>
+
+                <input
+                  type="text"
+                  value={newReservation.name}
+                  onChange={(e) =>
+                    setNewReservation({
+                      ...newReservation,
+                      name: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border px-4 py-3"
+                  placeholder="예약자명을 입력하세요."
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold">
+                  연락처
+                </label>
+
+                <input
+                  type="text"
+                  value={newReservation.phone}
+                  onChange={(e) =>
+                    setNewReservation({
+                      ...newReservation,
+                      phone: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border px-4 py-3"
+                  placeholder="010-0000-0000"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-semibold">상품</label>
+
+                <select
+                  className="w-full rounded-xl border px-4 py-3"
+                  value={newReservation.product}
+                  onChange={(e) => {
+                    const productTitle = e.target.value;
+
+                    const product = products.find(
+                      (p) => p.title === productTitle,
+                    );
+
+                    setNewReservation({
+                      ...newReservation,
+                      product: productTitle,
+                      departure_date: "",
+                    });
+
+                    setDepartures([]);
+
+                    if (product) {
+                      void loadDepartures(product.id);
+                    }
+                  }}
+                >
+                  <option value="">상품 선택</option>
+
+                  {products.map((product) => (
+                    <option key={product.id} value={product.title}>
+                      {product.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold">
+                  출발일
+                </label>
+
+                <select
+                  value={newReservation.departure_date}
+                  onChange={(e) => {
+                    const selectedDeparture = departures.find(
+                      (departure) =>
+                        departure.departure_date === e.target.value,
+                    );
+
+                    setNewReservation({
+                      ...newReservation,
+                      departure_date: e.target.value,
+                      departure_id: selectedDeparture?.id ?? "",
+                    });
+                  }}
+                  className="w-full rounded-xl border px-4 py-3"
+                >
+                  <option value="">출발일 선택</option>
+
+                  {departures.map((departure) => (
+                    <option key={departure.id} value={departure.departure_date}>
+                      {departure.departure_date}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-semibold">상태</label>
+
+                <select
+                  className="w-full rounded-xl border px-4 py-3"
+                  value={newReservation.status}
+                  onChange={(e) =>
+                    setNewReservation({
+                      ...newReservation,
+                      status: e.target.value,
+                    })
+                  }
+                >
+                  <option value="대기">대기</option>
+                  <option value="확정">확정</option>
+                  <option value="취소">취소</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="mb-2 block text-sm font-semibold">
+                  문의내용
+                </label>
+
+                <textarea
+                  rows={4}
+                  value={newReservation.message}
+                  onChange={(e) =>
+                    setNewReservation({
+                      ...newReservation,
+                      message: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border px-4 py-3"
+                  placeholder="문의내용을 입력하세요."
+                />
+              </div>
+              <div className="col-span-2 flex justify-center gap-3 p-6">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="rounded-xl border px-6 py-3 font-semibold hover:bg-gray-100"
+                >
+                  취소
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    void addReservation();
+                  }}
+                  className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+                >
+                  예약 등록
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selected && (
         <div

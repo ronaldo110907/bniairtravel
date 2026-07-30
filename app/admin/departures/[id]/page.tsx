@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ReservationList from "./components/ReservationList";
+import RoomAssignment from "./components/RoomAssignment";
 
 export default function DepartureDetailPage() {
   const params = useParams();
@@ -39,7 +40,12 @@ export default function DepartureDetailPage() {
   async function loadReservations() {
     const { data, error } = await supabase
       .from("reservations")
-      .select("*")
+      .select(
+        `
+      *,
+      people:reservation_people(*)
+    `,
+      )
       .eq("departure_id", params.id)
       .order("created_at", { ascending: true });
 
@@ -50,35 +56,54 @@ export default function DepartureDetailPage() {
 
     setReservations(data || []);
   }
+  const reservedCount = reservations.reduce(
+    (sum, reservation) => sum + (reservation.people?.length || 0),
+    0,
+  );
+
+  const remainSeat = (departure?.seat || 0) - reservedCount;
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">출발일 관리</h1>
 
-      <div className="rounded-xl border p-6">
-        <div className="font-bold">출발 ID</div>
-
-        <div className="mt-2 text-blue-600">{String(params.id)}</div>
-      </div>
-
       {departure && (
-        <div className="mt-4 space-y-2 text-sm">
-          <div>상품 : {departure.products?.title}</div>
-          <div>출발일 : {departure.departure_date}</div>
-          <div>항공사 : {departure.airline}</div>
-          <div>가격 : {departure.price?.toLocaleString()}원</div>
-          <div>좌석 : {departure.seat}석</div>
-          <div>상태 : {departure.status}</div>
+        <div className="mx-auto mt-6 max-w-2xl">
+          <div className="grid grid-cols-2 gap-x-16 gap-y-3 text-sm">
+            <div>
+              <span className="font-semibold text-gray-500">상품 : </span>
+              {departure.products?.title}
+            </div>
+
+            <div>
+              <span className="font-semibold text-gray-500">출발일 : </span>
+              {departure.departure_date}
+            </div>
+
+            <div>
+              <span className="font-semibold text-gray-500">항공 : </span>
+              {departure.airline}
+            </div>
+
+            <div>
+              <span className="font-semibold text-gray-500">총좌석 : </span>
+              {departure.seat}석
+            </div>
+
+            <div>
+              <span className="font-semibold text-gray-500">가격 : </span>
+              {departure.price?.toLocaleString()}원
+            </div>
+
+            <div>
+              <span className="font-semibold text-gray-500">예약 / 잔여 :</span>
+              예약 {reservedCount}명 / 잔여 {remainSeat}석
+            </div>
+          </div>
         </div>
       )}
       <ReservationList reservations={reservations} />
 
-      <div className="rounded-xl border p-6">룸배정</div>
-
-      <div className="rounded-xl border p-6">항공</div>
-
-      <div className="rounded-xl border p-6">여권</div>
-
-      <div className="rounded-xl border p-6">비자</div>
+      <RoomAssignment departureId={String(params.id)} />
 
       <div className="rounded-xl border p-6">정산</div>
     </div>

@@ -33,6 +33,26 @@ export default function DepartureAdminPage() {
     Record<string, number>
   >({});
 
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
+  const [bulkStartDate, setBulkStartDate] = useState("");
+  const [bulkEndDate, setBulkEndDate] = useState("");
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [bulkCourse, setBulkCourse] = useState("");
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkAirline, setBulkAirline] = useState("");
+  const [bulkSeat, setBulkSeat] = useState("180");
+  const [bulkStatus, setBulkStatus] = useState("예약가능");
+
+  const weekDays = [
+    { label: "월", value: 1 },
+    { label: "화", value: 2 },
+    { label: "수", value: 3 },
+    { label: "목", value: 4 },
+    { label: "금", value: 5 },
+    { label: "토", value: 6 },
+    { label: "일", value: 7 },
+  ];
+
   async function loadProducts() {
     const { data, error } = await supabase
       .from("products")
@@ -128,6 +148,7 @@ export default function DepartureAdminPage() {
   const [departureReservations, setDepartureReservations] = useState<any[]>([]);
   const [totalPassengers, setTotalPassengers] = useState(0);
   const [hasReservation, setHasReservation] = useState(false);
+
   async function addDeparture(data: {
     departure_date: string;
     course: string;
@@ -239,6 +260,49 @@ export default function DepartureAdminPage() {
 
     setTotalPassengers(total);
   }
+
+  async function generateBulkDepartures() {
+    console.log("생성 클릭");
+    if (!bulkStartDate || !bulkEndDate) {
+      alert("시작일과 종료일을 선택해주세요.");
+      return;
+    }
+
+    const current = new Date(bulkStartDate);
+    const end = new Date(bulkEndDate);
+
+    while (current <= end) {
+      const day = current.getDay();
+      const weekDay = day === 0 ? 7 : day;
+
+      if (selectedDays.includes(weekDay)) {
+        const newDeparture = {
+          product_id: selectedProductId,
+          departure_date: current.toISOString().slice(0, 10),
+          course: bulkCourse,
+          price: Number(bulkPrice),
+          airline: bulkAirline,
+          seat: Number(bulkSeat),
+          status: "예약가능",
+        };
+
+        console.log(newDeparture);
+        const { error } = await supabase
+          .from("departures")
+          .insert(newDeparture);
+
+        if (error) {
+          console.error(error);
+        }
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+    await loadDepartures();
+    setIsBulkOpen(false);
+    alert("출발일이 생성되었습니다.");
+  }
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold">출발일 관리</h1>
@@ -260,8 +324,13 @@ export default function DepartureAdminPage() {
           </button>
         ))}
       </div>
-      <div className="mb-6 flex justify-between items-center">
-        <p className="text-sm text-gray-500">총 {departures.length}건</p>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setIsBulkOpen(true)}
+          className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+        >
+          ⚡ 일괄 생성
+        </button>
 
         <button
           onClick={() => {
@@ -304,6 +373,131 @@ export default function DepartureAdminPage() {
         departure={editingDeparture}
         hasReservation={hasReservation}
       />
+      {isBulkOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-md rounded-xl bg-white p-6">
+            <h2 className="text-xl font-bold">⚡ 출발일 일괄 생성</h2>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  시작일
+                </label>
+
+                <input
+                  type="date"
+                  value={bulkStartDate}
+                  onChange={(e) => setBulkStartDate(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  종료일
+                </label>
+
+                <input
+                  type="date"
+                  value={bulkEndDate}
+                  onChange={(e) => setBulkEndDate(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="mb-2 block text-sm font-semibold">
+                생성 요일
+              </label>
+
+              <div className="flex flex-wrap gap-2">
+                {weekDays.map((day) => {
+                  const selected = selectedDays.includes(day.value);
+
+                  return (
+                    <button
+                      key={day.value}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDays((prev) =>
+                          prev.includes(day.value)
+                            ? prev.filter((d) => d !== day.value)
+                            : [...prev, day.value],
+                        );
+                      }}
+                      className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                        selected
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-gray-300 bg-white hover:bg-gray-100"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium">일정</label>
+
+                <input
+                  value={bulkCourse}
+                  onChange={(e) => setBulkCourse(e.target.value)}
+                  placeholder="예) 4박5일"
+                  className="w-full rounded border p-2"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">가격</label>
+
+                <input
+                  value={bulkPrice}
+                  onChange={(e) => setBulkPrice(e.target.value)}
+                  placeholder="예) 1330000"
+                  className="w-full rounded border p-2"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">항공사</label>
+
+                <input
+                  value={bulkAirline}
+                  onChange={(e) => setBulkAirline(e.target.value)}
+                  className="w-full rounded border p-2"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">총좌석</label>
+
+                <input
+                  value={bulkSeat}
+                  onChange={(e) => setBulkSeat(e.target.value)}
+                  className="w-full rounded border p-2"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setIsBulkOpen(false)}
+                className="rounded-lg border px-4 py-2 hover:bg-gray-100"
+              >
+                닫기
+              </button>
+              <button
+                type="button"
+                onClick={generateBulkDepartures}
+                className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+              >
+                생성
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showReservationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-3xl rounded-xl bg-white p-6">
