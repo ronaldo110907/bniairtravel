@@ -32,7 +32,7 @@ export default function DepartureTable({
             <th className="px-4 py-3 text-center font-semibold">상태</th>
             <th className="px-4 py-3 text-center font-semibold">관리</th>
             <th className="px-4 py-3 text-center font-semibold">예약자</th>
-            <th className="px-4 py-3 text-center font-semibold">출발관리</th>
+            <th className="px-4 py-3 text-center font-semibold">객실&정산</th>
           </tr>
         </thead>
 

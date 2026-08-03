@@ -1,5 +1,9 @@
 "use client";
-import { includes, excludes, IncludedItem } from "@/data/zhangjiajie";
+
+type IncludedItem = {
+  id: number;
+  text: string;
+};
 
 function Card({
   title,
@@ -18,9 +22,7 @@ function Card({
         </div>
 
         <div>
-          <p className="text-sm tracking-[0.3em] text-[#b88a44]">
-            INFORMATION
-          </p>
+          <p className="text-sm tracking-[0.3em] text-[#b88a44]">INFORMATION</p>
           <h3 className="mt-1 text-3xl font-bold">{title}</h3>
         </div>
       </div>
@@ -32,9 +34,7 @@ function Card({
             className="flex items-center gap-4 rounded-2xl border border-[#f1ece4] p-4"
           >
             <div className="h-2.5 w-2.5 rounded-full bg-[#b88a44]" />
-            <span className="text-[15px] text-gray-700">
-              {item.text}
-            </span>
+            <span className="text-[15px] text-gray-700">{item.text}</span>
           </div>
         ))}
       </div>
@@ -42,16 +42,20 @@ function Card({
   );
 }
 
-export default function IncludedCard() {
+type Props = {
+  includes: IncludedItem[];
+  excludes: IncludedItem[];
+};
+
+export default function IncludedCard({ includes, excludes }: Props) {
   return (
     <section className="mx-auto max-w-6xl px-6 py-24">
       <div className="mb-12">
         <p className="mb-3 text-sm tracking-[0.35em] text-[#b88a44]">
           TRAVEL INFORMATION
         </p>
-        <h2 className="text-4xl font-bold md:text-5xl">
-          포함 / 불포함 사항
-        </h2>
+
+        <h2 className="text-4xl font-bold md:text-5xl">포함 / 불포함 사항</h2>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">

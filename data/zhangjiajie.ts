@@ -56,119 +56,6 @@ export interface Hotel {
   desc: string;
 }
 
-
-
-export const zhangjiajieDepartures: Departure[] = [
-  {
-    id: 1,
-    date: "2026-09-02",
-    course: "4박5일",
-    airline: "이스타항공",
-    price: 1430000,
-    seats: 12,
-    status: "available",
-  },
-  {
-    id: 2,
-    date: "2026-09-04",
-    course: "3박4일",
-    airline: "이스타항공",
-    price: 1330000,
-    seats: 8,
-    status: "available",
-  },
-  {
-    id: 3,
-    date: "2026-09-06",
-    course: "3박4일",
-    airline: "이스타항공",
-    price: 1330000,
-    seats: 4,
-    status: "hot",
-  },
-  {
-    id: 4,
-    date: "2026-09-07",
-    course: "4박5일",
-    airline: "이스타항공",
-    price: 1430000,
-    seats: 10,
-    status: "available",
-  },
-  {
-    id: 5,
-    date: "2026-09-09",
-    course: "4박5일",
-    airline: "이스타항공",
-    price: 1430000,
-    seats: 6,
-    status: "available",
-  },
-  {
-    id: 6,
-    date: "2026-09-11",
-    course: "3박4일",
-    airline: "이스타항공",
-    price: 1330000,
-    seats: 0,
-    status: "closed",
-  },
-  {
-    id: 7,
-    date: "2026-09-13",
-    course: "3박4일",
-    airline: "이스타항공",
-    price: 1330000,
-    seats: 7,
-    status: "available",
-  },
-  {
-    id: 8,
-    date: "2026-09-14",
-    course: "4박5일",
-    airline: "이스타항공",
-    price: 1430000,
-    seats: 9,
-    status: "available",
-  },
-  {
-    id: 9,
-    date: "2026-09-16",
-    course: "4박5일",
-    airline: "이스타항공",
-    price: 1430000,
-    seats: 5,
-    status: "available",
-  },
-  {
-    id: 10,
-    date: "2026-09-18",
-    course: "3박4일",
-    airline: "이스타항공",
-    price: 1330000,
-    seats: 3,
-    status: "hot",
-  },
-  {
-    id: 11,
-    date: "2026-09-20",
-    course: "3박4일",
-    airline: "이스타항공",
-    price: 1330000,
-    seats: 11,
-    status: "available",
-  },
-  {
-    id: 12,
-    date: "2026-09-21",
-    course: "4박5일",
-    airline: "이스타항공",
-    price: 1430000,
-    seats: 8,
-    status: "available",
-  },
-];
-
 export const shopping: Shopping[] = [
   {
     id: 1,
@@ -289,41 +176,27 @@ export const excludes: IncludedItem[] = [
   { id: 2, text: "일정 외 선택 관광" },
 ];  
 
-export const galleryImages: GalleryImage[] = [
-  {
-    id: 1,
-    src: "/images/zhangjiajie/detail-1.jpg",
-    title: "공중정원",
-    desc: "장가계 절경 속 새로운 공간",
-  },
-  {
-    id: 2,
-    src: "/images/zhangjiajie/detail-2.jpg",
-    title: "천문산",
-    desc: "장가계 관광의 하이라이트",
-  },
-  {
-    id: 3,
-    src: "/images/zhangjiajie/detail-3.jpg",
-    title: "대협곡",
-    desc: "깎아지른 절벽과 유리다리",
-  },  
-];
-
 export const hotels: Hotel[] = [
   {
     id: 1,
-    name: "화천호텔",
+    name: "장가계 화천호텔",
     grade: "★★★★★",
-    image: "/images/hotel/hotel1.jpg",
-    desc: "시내 중심에 위치한 5성급 호텔로 편안한 객실과 다양한 부대시설을 제공합니다.",
+    image: "hotel1.jpg",
+    desc: "장가계 시내에 위치한 대표 5성급 호텔입니다.",
   },
   {
     id: 2,
-    name: "블루베이호텔",
+    name: "블루베이 호텔",
     grade: "★★★★★",
-    image: "/images/hotel/bluebay.jpg",
-    desc: "관광지 접근성이 뛰어나며 쾌적한 객실과 조식을 제공합니다.",
+    image: "bluebay.jpg",
+    desc: "쾌적한 객실과 다양한 부대시설을 갖춘 프리미엄 호텔입니다.",
+  },
+  {
+    id: 3,
+    name: "피닉스 호텔",
+    grade: "★★★★★",
+    image: "phinex.jpg",
+    desc: "관광 접근성이 뛰어난 5성급 호텔입니다.",
   },
 ];
 

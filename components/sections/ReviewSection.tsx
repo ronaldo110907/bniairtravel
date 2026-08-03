@@ -2,9 +2,23 @@
 
 import { useEffect, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
-import { reviews } from "@/data/zhangjiajie";
+type Review = {
+  id: number;
+  name: string;
+  date: string;
+  image: string;
+  rating: number;
+  text: string;
+};
 
-export default function ReviewSection() {
+type Props = {
+  reviews?: Review[];
+};
+
+export default function ReviewSection({ reviews }: Props) {
+  if (!reviews || reviews.length === 0) {
+    return null;
+  }
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -13,7 +27,7 @@ export default function ReviewSection() {
       setIndex((v) => (v + 1) % reviews.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [reviews.length]);
 
   const prev = () => setIndex((v) => (v - 1 + reviews.length) % reviews.length);
   const next = () => setIndex((v) => (v + 1) % reviews.length);
@@ -21,7 +35,9 @@ export default function ReviewSection() {
   return (
     <section className="mx-auto max-w-7xl py-24">
       <div className="text-center">
-        <p className="tracking-[0.35em] text-[#B88A44] text-sm">CUSTOMER REVIEW</p>
+        <p className="tracking-[0.35em] text-[#B88A44] text-sm">
+          CUSTOMER REVIEW
+        </p>
         <h2 className="mt-3 text-4xl font-bold">고객 후기</h2>
         <div className="mt-6 flex justify-center gap-10">
           <div>
@@ -36,18 +52,31 @@ export default function ReviewSection() {
       </div>
 
       <div className="relative mt-12">
-        <button onClick={prev} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow">‹</button>
-        <button onClick={next} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow">›</button>
+        <button
+          onClick={prev}
+          className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow"
+        >
+          ‹
+        </button>
+        <button
+          onClick={next}
+          className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow"
+        >
+          ›
+        </button>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {[0,1,2].map((offset)=>{
-            const item=reviews[(index+offset)%reviews.length];
-            return(
-              <div key={item.name+item.date} className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+          {[0, 1, 2].map((offset) => {
+            const item = reviews[(index + offset) % reviews.length];
+            return (
+              <div
+                key={item.name + item.date}
+                className="overflow-hidden rounded-3xl border bg-white shadow-sm"
+              >
                 <img
                   src={item.image}
                   alt={item.name}
-                  onClick={()=>setSelected(item.image)}
+                  onClick={() => setSelected(item.image)}
                   className="h-64 w-full cursor-pointer object-cover transition hover:scale-105"
                 />
                 <div className="p-6">
@@ -65,10 +94,10 @@ export default function ReviewSection() {
       </div>
 
       <ImageLightbox
-        open={selected!==null}
+        open={selected !== null}
         image={selected ?? ""}
         title="고객 후기"
-        onClose={()=>setSelected(null)}
+        onClose={() => setSelected(null)}
       />
     </section>
   );

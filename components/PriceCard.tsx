@@ -1,8 +1,11 @@
 "use client";
 
 type Product = {
-  price_4d5n?: number | null;
-  price_3d4n?: number | null;
+  price_from?: number | null;
+  feature1?: string | null;
+  feature2?: string | null;
+  feature3?: string | null;
+  feature4?: string | null;
 };
 
 export default function PriceCard({ product }: { product: Product }) {
@@ -13,51 +16,28 @@ export default function PriceCard({ product }: { product: Product }) {
           <p className="mb-3 text-sm tracking-[0.35em] text-[#b88a44]">
             PRICE GUIDE
           </p>
-          <h2 className="text-4xl font-bold md:text-5xl">
-            상품 요금 안내
-          </h2>
+          <h2 className="text-4xl font-bold md:text-5xl">상품 요금 안내</h2>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="mx-auto max-w-3xl">
           <div className="rounded-[36px] border border-[#ece7df] bg-white p-10 shadow-lg">
-            <p className="text-sm font-semibold text-[#b88a44]">
-              PREMIUM COURSE
-            </p>
+            <p className="text-sm font-semibold text-[#b88a44]">1인 상품가</p>
 
-            <h3 className="mt-2 text-3xl font-bold">
-              4박 5일
-            </h3>
+            <h3>최저가</h3>
 
             <p className="mt-8 text-5xl font-bold text-[#b88a44]">
-              ₩{(product?.price_4d5n ?? 1430000).toLocaleString()}~
+              {product?.price_from
+                ? `₩${product.price_from.toLocaleString()}~`
+                : "가격 문의"}
             </p>
 
             <div className="mt-8 space-y-3 text-gray-600">
-              <p>✔ 청주공항 출발</p>
-              <p>✔ 노팁+노옵션</p>
-              <p>✔ 이스타항공 전세기</p>
-              <p>✔ 프리미엄 핵심코스</p>
-            </div>
-          </div>
-
-          <div className="rounded-[36px] bg-[#1f1f1f] p-10 text-white shadow-lg">
-            <p className="text-sm font-semibold text-[#c8a15a]">
-              PREMIUM COURSE
-            </p>
-
-            <h3 className="mt-2 text-3xl font-bold">
-              3박 4일
-            </h3>
-
-            <p className="mt-8 text-5xl font-bold text-[#c8a15a]">
-              ₩{(product?.price_3d4n ?? 1330000).toLocaleString()}~
-            </p>
-
-            <div className="mt-8 space-y-3 text-white/70">
-              <p>✔ 청주공항 출발</p>
-              <p>✔ 노팁+노옵션</p>
-              <p>✔ 이스타항공 전세기</p>
-              <p>✔ 핵심 관광 포함</p>
+              <div className="mt-8 space-y-3 text-gray-600">
+                {product?.feature1 && <p>✔ {product.feature1}</p>}
+                {product?.feature2 && <p>✔ {product.feature2}</p>}
+                {product?.feature3 && <p>✔ {product.feature3}</p>}
+                {product?.feature4 && <p>✔ {product.feature4}</p>}
+              </div>
             </div>
           </div>
         </div>

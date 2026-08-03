@@ -1,0 +1,107 @@
+
+> bni-air-travel@0.1.0 build
+> next build
+
+   ??Next.js 15.5.22
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ??Compiled successfully in 3.4s
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/24) ...
+   Generating static pages (6/24) 
+hotels = [
+  {
+    id: 1,
+    name: '湲덉닔?숉샇??,
+    grade: '?끸쁾?끸쁾??,
+    image: 'jinshuha.JPG',
+    desc: '?⑥쿇 ?쒖꽕??媛뽰텣 諛깅몢??????꾨━誘몄뾼 ?명뀛?낅땲??'
+  },
+  {
+    id: 2,
+    name: '?곌만 援?젣?명뀛',
+    grade: '?끸쁾?끸쁾??,
+    image: 'guoji.jpg',
+    desc: '?곌만 ?쒕궡 以묒떖???꾩튂??苡뚯쟻???밴툒 ?명뀛?낅땲??'
+  }
+]
+SHOPPING SECTION NEW
+   Generating static pages (12/24) 
+hotels = [
+  {
+    id: 1,
+    name: '?κ?怨??붿쿇?명뀛',
+    grade: '?끸쁾?끸쁾??,
+    image: 'hotel1.jpg',
+    desc: '?κ?怨??쒕궡???꾩튂?????5?깃툒 ?명뀛?낅땲??'
+  },
+  {
+    id: 2,
+    name: '釉붾（踰좎씠 ?명뀛',
+    grade: '?끸쁾?끸쁾??,
+    image: 'bluebay.jpg',
+    desc: '苡뚯쟻??媛앹떎怨??ㅼ뼇??遺??쒖꽕??媛뽰텣 ?꾨━誘몄뾼 ?명뀛?낅땲??'
+  },
+  {
+    id: 3,
+    name: '?쇰땳???명뀛',
+    grade: '?끸쁾?끸쁾??,
+    image: 'phinex.jpg',
+    desc: '愿愿??묎렐?깆씠 ?곗뼱??5?깃툒 ?명뀛?낅땲??'
+  }
+]
+   Generating static pages (18/24) 
+ ??Generating static pages (24/24)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                           Size  First Load JS
+????/                                                45 kB         217 kB
+????/_not-found                                      998 B         104 kB
+????/admin                                           165 B         106 kB
+????/admin/calendar                                1.97 kB         166 kB
+????/admin/departures                              4.03 kB         168 kB
+??? /admin/departures/[id]                         3.12 kB         167 kB
+????/admin/gallery                                 1.55 kB         170 kB
+????/admin/inquiries                               1.03 kB         165 kB
+????/admin/login                                   1.03 kB         165 kB
+????/admin/notices                                 1.45 kB         165 kB
+????/admin/products                                2.61 kB         170 kB
+??? /admin/products/[id]                           3.06 kB         167 kB
+??? /admin/products/[id]/cancellation              2.75 kB         166 kB
+??? /admin/products/[id]/departures                1.43 kB         165 kB
+??? /admin/products/[id]/departures/[departureID]  1.42 kB         165 kB
+??? /admin/products/[id]/departures/new            1.19 kB         165 kB
+??? /admin/products/[id]/faqs                        861 B         164 kB
+??? /admin/products/[id]/gallery                     916 B         164 kB
+??? /admin/products/[id]/hotels                      928 B         164 kB
+??? /admin/products/[id]/info                        868 B         164 kB
+??? /admin/products/[id]/itinerary                 3.14 kB         167 kB
+??? /admin/products/[id]/preparations              2.75 kB         166 kB
+??? /admin/products/[id]/reviews                   2.75 kB         166 kB
+??? /admin/products/[id]/shopping                    995 B         165 kB
+????/admin/products/new                            2.46 kB         166 kB
+????/admin/reservations                             327 kB         490 kB
+????/admin/reviews                                 1.13 kB         165 kB
+????/admin/settings                                1.19 kB         165 kB
+????/admin/special                                 2.29 kB         169 kB
+??? /api/passport-ocr                                127 B         103 kB
+????/baekdu                                        3.27 kB         182 kB
+????/lijiang                                       1.35 kB         107 kB
+????/reservation                                   1.37 kB         165 kB
+????/shanghai                                      1.35 kB         107 kB
+????/zhangjiajie                                    2.8 kB         181 kB
++ First Load JS shared by all                       103 kB
+  ??chunks/1255-31f47ebe9b12c7e5.js                46.3 kB
+  ??chunks/4bd1b696-f785427dddbba9fb.js            54.2 kB
+  ??other shared chunks (total)                       2 kB
+
+
+? Middleware                                       34.2 kB
+
+?? (Static)   prerendered as static content
+?  (Dynamic)  server-rendered on demand
+

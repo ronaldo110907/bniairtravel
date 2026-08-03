@@ -1,73 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-
-type FAQ = {
-  id: string;
-  question: string;
-  answer: string;
-};
+import { useState } from "react";
+import { faqs } from "@/data/zhangjiajie";
 
 export default function FAQSection() {
-  const [open, setOpen] = useState<number | null>(0);
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-
-  useEffect(() => {
-    loadFaqs();
-  }, []);
-
-  async function loadFaqs() {
-    const { data } = await supabase
-      .from("faqs")
-      .select("*")
-      .order("sort");
-
-    setFaqs(data || []);
-  }
+  const [openId, setOpenId] = useState<number | null>(1);
 
   return (
-    <section className="mx-auto max-w-5xl py-24">
-      <div className="mb-12 text-center">
-        <p className="text-sm tracking-[0.35em] text-[#B88A44]">FAQ</p>
-        <h2 className="mt-3 text-4xl font-bold">자주 묻는 질문</h2>
-        <p className="mt-4 text-gray-500">
-          예약 전 가장 많이 문의하시는 내용을 모았습니다.
-        </p>
-      </div>
+    <section className="bg-[#f7f3eb] py-24">
+      <div className="mx-auto max-w-4xl px-6">
+        <div className="mb-14 text-center">
+          <p className="mb-3 tracking-[0.35em] text-[#c8a15a]">FAQ</p>
 
-      <div className="space-y-4">
-        {faqs.map((f, i) => (
-          <div
-            key={f.id}
-            className="overflow-hidden rounded-2xl border border-[#ECE7DF] bg-white shadow-sm"
-          >
-            <button
-              onClick={() => setOpen(open === i ? null : i)}
-              className="flex w-full items-center justify-between p-6 text-left"
-            >
-              <span className="font-semibold">{f.question}</span>
-              <ChevronDown
-                className={`transition ${
-                  open === i ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+          <h2 className="text-5xl font-bold text-gray-900">자주 묻는 질문</h2>
 
-            <div
-              className={`grid transition-all duration-300 ${
-                open === i ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-              }`}
-            >
-              <div className="overflow-hidden">
-                <p className="border-t bg-[#FCFAF7] p-6 leading-7 text-gray-600">
-                  {f.answer}
-                </p>
+          <p className="mt-5 text-gray-500">
+            예약 전 가장 많이 문의하시는 내용을 모았습니다.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq) => {
+            const open = openId === faq.id;
+
+            return (
+              <div
+                key={faq.id}
+                className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+              >
+                <button
+                  onClick={() => setOpenId(open ? null : faq.id)}
+                  className="flex w-full items-center justify-between px-7 py-6 text-left transition hover:bg-gray-50"
+                >
+                  <span className="text-lg font-semibold text-gray-900">
+                    {faq.question}
+                  </span>
+
+                  <span
+                    className={`text-2xl text-[#c8a15a] transition-transform duration-300 ${
+                      open ? "rotate-180" : ""
+                    }`}
+                  >
+                    ▼
+                  </span>
+                </button>
+
+                {open && (
+                  <div className="border-t bg-[#faf8f4] px-7 py-6 leading-8 text-gray-600">
+                    {faq.answer}
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </section>
   );

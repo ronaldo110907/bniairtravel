@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ReservationList from "./components/ReservationList";
 import RoomAssignment from "./components/RoomAssignment";
+import Settlement from "./components/Settlement";
 
 export default function DepartureDetailPage() {
   const params = useParams();
@@ -64,7 +65,7 @@ export default function DepartureDetailPage() {
   const remainSeat = (departure?.seat || 0) - reservedCount;
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">출발일 관리</h1>
+      <h1 className="text-3xl text-center font-bold">출발일 관리</h1>
 
       {departure && (
         <div className="mx-auto mt-6 max-w-2xl">
@@ -105,7 +106,7 @@ export default function DepartureDetailPage() {
 
       <RoomAssignment departureId={String(params.id)} />
 
-      <div className="rounded-xl border p-6">정산</div>
+      <Settlement />
     </div>
   );
 }

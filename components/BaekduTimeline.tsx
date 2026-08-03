@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
 
-import { itinerary4N5D, itinerary3N4D } from "@/data/zhangjiajie";
+import { itinerary4N5D, itinerary3N4D } from "@/data/baekdu";
 
 const mealBaseUrl =
-  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/meals/zhangjiajie/";
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/meals/baekdu/";
 
 const mealImages: Record<string, string> = {
   호텔식: "breakfast.jpg",
@@ -57,7 +57,7 @@ export default function Timeline({ defaultCourse = "4N5D" }: Props) {
         <h2 className="mt-4 text-4xl font-bold md:text-5xl">여행 일정</h2>
 
         <p className="mt-5 text-gray-500">
-          장가계 핵심 관광지를 여유롭게 둘러보는 프리미엄 일정
+          민족의 영산 백두산 천지를 가장 가까운 하늘길로 만나보는 프리미엄 일정
         </p>
       </div>
 

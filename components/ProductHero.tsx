@@ -5,10 +5,13 @@ import Link from "next/link";
 type Product = {
   title: string;
   subtitle?: string | null;
-  hero_path?: string | null;
+  hero_image?: string | null;
   departure_airport?: string | null;
   airline?: string | null;
   duration?: string | null;
+  hero_badge?: string | null;
+  hero_heading?: string | null;
+  hero_description?: string | null;
 };
 
 export default function ProductHero({ product }: { product: Product }) {
@@ -20,7 +23,7 @@ export default function ProductHero({ product }: { product: Product }) {
         muted
         loop
         playsInline
-        poster={product?.hero_path || "/images/zhangjiajie/cover.jpg"}
+        poster={product?.hero_image ?? undefined}
       >
         <source src="/video/hero.mp4" type="video/mp4" />
       </video>
@@ -31,17 +34,18 @@ export default function ProductHero({ product }: { product: Product }) {
       <div className="relative z-10 mx-auto flex min-h-[680px] max-w-6xl items-center px-6 py-24">
         <div className="max-w-3xl text-white">
           <p className="mb-5 text-sm font-medium tracking-[0.38em] text-white/70">
-            PREMIUM CHINA TRAVEL
+            {product?.hero_badge || "PREMIUM CHINA TRAVEL"}
           </p>
 
           <h1 className="text-5xl font-bold leading-[1.08] md:text-7xl">
             {product?.title || "장가계"}
             <br />
-            하늘과 맞닿은 비경
+            {product?.hero_heading || "하늘과 맞닿은 비경"}
           </h1>
 
           <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
-            {product?.subtitle ||
+            {product?.hero_description ||
+              product?.subtitle ||
               "청주공항에서 직항으로 떠나는 장가계 여행. 웅장한 자연과 핵심 관광지를 여유로운 일정으로 만나보세요."}
           </p>
 
@@ -66,10 +70,7 @@ export default function ProductHero({ product }: { product: Product }) {
               label="출발"
               value={product?.departure_airport || "청주공항 직항"}
             />
-            <HeroInfo
-              label="항공"
-              value={product?.airline || "이스타항공"}
-            />
+            <HeroInfo label="항공" value={product?.airline || "이스타항공"} />
             <HeroInfo
               label="일정"
               value={product?.duration || "3박4일 / 4박5일"}
