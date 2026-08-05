@@ -18,6 +18,9 @@ export default function Hero() {
   const [heroSubTitle, setHeroSubTitle] = useState("감동을 만나다.");
   const [heroText, setHeroText] = useState("당신의 특별한 여행이 시작됩니다.");
 
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [installable, setInstallable] = useState(false);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length);
@@ -27,6 +30,35 @@ export default function Hero() {
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+
+      setDeferredPrompt(e);
+      setInstallable(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+    };
+  }, []);
+  async function installApp() {
+    if (!deferredPrompt) return;
+
+    await deferredPrompt.prompt();
+
+    const choice = await deferredPrompt.userChoice;
+
+    if (choice.outcome === "accepted") {
+      console.log("앱 설치 완료");
+    }
+
+    setDeferredPrompt(null);
+    setInstallable(false);
+  }
 
   async function loadSettings() {
     const { data } = await supabase
@@ -124,6 +156,35 @@ export default function Hero() {
           >
             {heroText}
           </motion.p>
+          {installable && (
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 1.2,
+                duration: 0.8,
+              }}
+              onClick={installApp}
+              className="
+      mt-8
+      rounded-full
+      border
+      border-white/40
+      bg-white/10
+      px-8
+      py-4
+      text-lg
+      font-semibold
+      text-white
+      backdrop-blur-md
+      transition
+      hover:bg-white
+      hover:text-black
+    "
+            >
+              📱 앱 설치
+            </motion.button>
+          )}
         </div>
       </div>
     </section>
