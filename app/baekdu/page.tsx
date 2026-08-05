@@ -3,13 +3,22 @@ import DepartureCalendar from "@/components/DepartureCalendar";
 import GallerySlider from "@/components/GallerySlider";
 import HotelCard from "@/components/HotelCard";
 import IncludedCard from "@/components/IncludedCard";
-import { includes, excludes, hotels, shopping, faqs } from "@/data/baekdu";
+import {
+  includes,
+  excludes,
+  hotels,
+  shopping,
+  faqs,
+  flightInfo,
+  itinerary4N5D,
+  itinerary3N4D,
+} from "@/data/baekdu";
 import MobileBookingButton from "@/components/MobileBookingButton";
 import PriceCard from "@/components/PriceCard";
 import ProductHero from "@/components/ProductHero";
 import SectionReveal from "@/components/SectionReveal";
 import StickyBookingBar from "@/components/StickyBookingBar";
-import Timeline from "@/components/BaekduTimeline";
+import Timeline from "@/components/Timeline";
 import ReviewSection from "@/components/sections/ReviewSection";
 import ShoppingSection from "@/components/sections/ShoppingSection";
 import FAQSection from "@/components/sections/FAQSection";
@@ -67,11 +76,11 @@ export default async function BaekduPage() {
         <PriceCard product={product} />
       </SectionReveal>
 
-      <section className="bg-[#faf8f4] px-6">
-        <SectionReveal>
-          <Timeline />
-        </SectionReveal>
-      </section>
+      <Timeline
+        itinerary4N5D={itinerary4N5D}
+        itinerary3N4D={itinerary3N4D}
+        flightInfo={flightInfo}
+      />
 
       <SectionReveal>
         <GallerySlider product={product} />

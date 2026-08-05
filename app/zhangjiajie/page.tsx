@@ -10,6 +10,9 @@ import {
   reviews,
   shopping,
   faqs,
+  itinerary4N5D,
+  itinerary3N4D,
+  flightInfo,
 } from "@/data/zhangjiajie";
 import MobileBookingButton from "@/components/MobileBookingButton";
 import PriceCard from "@/components/PriceCard";
@@ -71,11 +74,13 @@ export default async function ZhangjiajiePage() {
         <PriceCard product={product} />
       </SectionReveal>
 
-      <section className="bg-[#faf8f4] px-6">
-        <SectionReveal>
-          <Timeline />
-        </SectionReveal>
-      </section>
+      <SectionReveal>
+        <Timeline
+          itinerary4N5D={itinerary4N5D}
+          itinerary3N4D={itinerary3N4D}
+          flightInfo={flightInfo}
+        />
+      </SectionReveal>
 
       <SectionReveal>
         <GallerySlider product={product} />

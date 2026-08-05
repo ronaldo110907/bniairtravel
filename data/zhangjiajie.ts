@@ -56,6 +56,26 @@ export interface Hotel {
   desc: string;
 }
 
+export const flightInfo = {
+  outbound: {
+    airline: "이스타항공",
+    flight: "ZE751",
+    from: "청주",
+    to: "장가계",
+    departure: "11:00",
+    arrival: "13:30",
+  },
+
+  inbound: {
+    airline: "이스타항공",
+    flight: "ZE752",
+    from: "장가계",
+    to: "청주",
+    departure: "14:30",
+    arrival: "18:30",
+  },
+};
+
 export const shopping: Shopping[] = [
   {
     id: 1,

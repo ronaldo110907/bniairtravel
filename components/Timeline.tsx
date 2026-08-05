@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
 
-import { itinerary4N5D, itinerary3N4D } from "@/data/zhangjiajie";
-
 const mealBaseUrl =
   "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/meals/zhangjiajie/";
 
@@ -22,9 +20,21 @@ const mealImages: Record<string, string> = {
 
 type Props = {
   defaultCourse?: "4N5D" | "3N4D";
+  itinerary4N5D: any[];
+  itinerary3N4D: any[];
+  mealBaseUrl?: string;
+  mealImages?: Record<string, string>;
+  flightInfo: any;
 };
 
-export default function Timeline({ defaultCourse = "4N5D" }: Props) {
+export default function Timeline({
+  defaultCourse = "4N5D",
+  itinerary4N5D,
+  itinerary3N4D,
+  mealBaseUrl,
+  mealImages,
+  flightInfo,
+}: Props) {
   const [activeCourse, setActiveCourse] = useState<"4N5D" | "3N4D">(
     defaultCourse,
   );
@@ -43,6 +53,7 @@ export default function Timeline({ defaultCourse = "4N5D" }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const itinerary = activeCourse === "4N5D" ? itinerary4N5D : itinerary3N4D;
+  const { outbound, inbound } = flightInfo;
 
   return (
     <section
@@ -91,6 +102,39 @@ export default function Timeline({ defaultCourse = "4N5D" }: Props) {
         </div>
       </div>
 
+      <div className="mb-10 grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border bg-[#FCFAF7] p-5">
+          <p className="mb-3 text-sm font-bold text-[#B88A44]">
+            ✈️ 출국 항공편
+          </p>
+
+          <p className="font-semibold">
+            {outbound.airline} {outbound.flight}
+          </p>
+
+          <p className="text-gray-600">
+            {outbound.from} {outbound.departure}
+            {" → "}
+            {outbound.to} {outbound.arrival}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-[#FCFAF7] p-5">
+          <p className="mb-3 text-sm font-bold text-[#B88A44]">
+            🛬 귀국 항공편
+          </p>
+
+          <p className="font-semibold">
+            {inbound.airline} {inbound.flight}
+          </p>
+
+          <p className="text-gray-600">
+            {inbound.from} {inbound.departure}
+            {" → "}
+            {inbound.to} {inbound.arrival}
+          </p>
+        </div>
+      </div>
       <div className="space-y-8">
         {itinerary.map((item) => (
           <article
@@ -139,7 +183,7 @@ export default function Timeline({ defaultCourse = "4N5D" }: Props) {
                 </p>
 
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {item.places.map((place) => (
+                  {item.places.map((place: string) => (
                     <span
                       key={place}
                       className="rounded-full bg-[#FAF7F1] px-3 py-2 text-xs font-medium text-[#765A2B]"

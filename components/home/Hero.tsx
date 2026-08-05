@@ -1,14 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { motion } from "framer-motion";
 
 const images = [
   "/images/hero/hero1.jpg",
   "/images/hero/hero2.jpg",
   "/images/hero/hero3.jpg",
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/phuquoc/phuquoc1.jpg",
 ];
 
 export default function Hero() {
@@ -63,20 +64,49 @@ export default function Hero() {
       <div className="relative z-10 flex h-full items-center justify-center px-6">
         <div className="max-w-5xl text-center text-white">
           <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            initial={{ opacity: 0, y: 40, scale: 1 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: [1, 1.02, 1],
+            }}
+            transition={{
+              opacity: { duration: 1 },
+              y: { duration: 1 },
+              scale: {
+                delay: 1,
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+            }}
             className="text-6xl font-black leading-tight md:text-8xl"
           >
             {heroTitle}
           </motion.h1>
 
           <motion.h2
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 30, scale: 1 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: [1, 1.02, 1],
+            }}
             transition={{
-              delay: 1,
-              duration: 1,
+              opacity: {
+                delay: 0.3,
+                duration: 1,
+              },
+              y: {
+                delay: 0.3,
+                duration: 1,
+              },
+              scale: {
+                delay: 1.3,
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
             }}
             className="mt-3 text-6xl font-black md:text-8xl"
           >
@@ -84,10 +114,10 @@ export default function Hero() {
           </motion.h2>
 
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{
-              delay: 2,
+              delay: 0.8,
               duration: 1,
             }}
             className="mt-10 text-xl text-gray-200"
