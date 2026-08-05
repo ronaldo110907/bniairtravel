@@ -3,7 +3,6 @@ import Hero from "@/components/home/Hero";
 import BrandMessage from "@/components/home/BrandMessage";
 import Discover from "@/components/home/Discover";
 import SpecialOffer from "@/components/home/SpecialOffer";
-import Schedule from "@/components/home/Schedule";
 import Gallery from "@/components/home/Gallery";
 import Review from "@/components/home/Review";
 import NoticePopup from "@/components/NoticePopup";
@@ -17,7 +16,7 @@ export default function Home() {
       <SpecialOffer />
       <Discover />
       <BrandMessage />
-      <Schedule />
+      {/* <Schedule /> */}
       <Review />
     </>
   );

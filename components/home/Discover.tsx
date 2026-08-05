@@ -19,6 +19,15 @@ const destinations = [
     href: "/baekdu",
   },
   {
+    title: "푸꾸옥",
+    subtitle: "DISCOVER VIETNAM",
+    description:
+      "에메랄드빛 바다와 아름다운 석양을 품은 선셋 타운까지. 낭만이 가득한 곳으로 당신을 초대합니다.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/phuquoc/phuquoc1.jpg",
+    href: "/phuquoc",
+  },
+  {
     title: "상해",
     subtitle: "DISCOVER CHINA",
     description: "과거와 미래가 공존하는 도시.",
