@@ -55,6 +55,9 @@ export default async function BaekduPage() {
         <StickyBookingBar
           product={product?.title}
           departure={product?.departure_airport}
+          price="출발일 확인"
+          pdfFile="/files/baekdu.pdf"
+          hwpFile="/files/baekdu.hwp"
         />
       </div>
 

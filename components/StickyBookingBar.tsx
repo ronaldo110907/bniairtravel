@@ -23,12 +23,16 @@ type Props = {
   product?: string;
   departure?: string;
   price?: string;
+  pdfFile?: string;
+  hwpFile?: string;
 };
 
 export default function StickyBookingBar({
   product = "상품",
   departure = "출발지",
   price = "출발일 확인",
+  pdfFile,
+  hwpFile,
 }: Props) {
   return (
     <div className="sticky top-0 z-40 border-y border-black/5 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
@@ -73,6 +77,25 @@ export default function StickyBookingBar({
             </div>
           )}
             */}
+          {pdfFile && (
+            <a
+              href={pdfFile}
+              download
+              className="inline-flex rounded-full border border-[#b88a44] px-5 py-3 text-sm font-bold text-[#b88a44] transition hover:bg-[#b88a44] hover:text-white"
+            >
+              📄 PDF일정표
+            </a>
+          )}
+
+          {hwpFile && (
+            <a
+              href={hwpFile}
+              download
+              className="inline-flex rounded-full border border-[#b88a44] px-5 py-3 text-sm font-bold text-[#b88a44] transition hover:bg-[#b88a44] hover:text-white"
+            >
+              📝 HWP일정표
+            </a>
+          )}
           <Link
             href={`/reservation?product=${encodeURIComponent(product)}`}
             className="inline-flex rounded-full bg-[#b88a44] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#9f7435]"

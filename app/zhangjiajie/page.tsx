@@ -53,6 +53,9 @@ export default async function ZhangjiajiePage() {
         <StickyBookingBar
           product={product?.title}
           departure={product?.departure_airport}
+          price="출발일 확인"
+          pdfFile="/files/zhangjiajie.pdf"
+          hwpFile="/files/zhangjiajie.hwp"
         />
       </div>
 
@@ -76,7 +79,7 @@ export default async function ZhangjiajiePage() {
 
       <SectionReveal>
         <img
-          src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/zhangjiajie/zhangjiajiemap.jpg"
+          src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/zhangjiajie/zhangjiajiemap.JPG"
           alt="장가계"
           className="mx-auto my-20 w-full max-w-6xl rounded-[36px] shadow-xl"
         />
