@@ -189,7 +189,7 @@ export default function DepartureCalendar({ productId }: Props) {
           </button>
         </div>
 
-        <div className="px-3 py-5 sm:px-5 md:px-8 md:py-8">
+        <div className="px-2 py-5 sm:px-3 md:px-4 md:py-8">
           <div className="mb-3 grid grid-cols-7 text-center text-[11px] font-bold tracking-[0.08em] text-black/40 sm:text-xs">
             {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map(
               (weekday, index) => (
@@ -209,13 +209,13 @@ export default function DepartureCalendar({ productId }: Props) {
             )}
           </div>
 
-          <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5 md:gap-3">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-2">
             {calendarCells.map((cell, index) => {
               if (cell.day === null) {
                 return (
                   <div
                     key={`empty-${index}`}
-                    className="min-h-[74px] rounded-2xl sm:min-h-[96px] md:min-h-[118px]"
+                    className="min-h-[80px] rounded-2xl sm:min-h-[108px] md:min-h-[132px]"
                   />
                 );
               }
@@ -229,7 +229,7 @@ export default function DepartureCalendar({ productId }: Props) {
                 return (
                   <div
                     key={`day-${cell.day}`}
-                    className="min-h-[74px] rounded-2xl border border-transparent bg-[#FAF8F4] p-2 text-black/25 sm:min-h-[96px] md:min-h-[118px] md:p-3"
+                    className="min-h-[80px] rounded-2xl border border-transparent bg-[#FAF8F4] p-2 text-black/25 sm:min-h-[108px] md:min-h-[132px] md:p-3"
                   >
                     <span className="text-sm font-semibold md:text-base">
                       {cell.day}
@@ -245,7 +245,7 @@ export default function DepartureCalendar({ productId }: Props) {
                   onClick={() => !isClosed && setSelected(departure)}
                   disabled={isClosed}
                   className={[
-                    "relative min-h-[74px] overflow-hidden rounded-2xl border p-2 text-left transition-all duration-300 sm:min-h-[96px] md:min-h-[118px] md:p-3",
+                    "relative min-h-[80px] overflow-hidden rounded-2xl border p-2 text-left transition-all duration-300 sm:min-h-[108px] md:min-h-[132px] md:p-3",
                     isSelected
                       ? "border-[#C8A15A] bg-[#FFF8ED] shadow-lg ring-2 ring-[#C8A15A]/20"
                       : "border-[#E9E1D6] bg-white hover:-translate-y-1 hover:border-[#C8A15A] hover:shadow-md",

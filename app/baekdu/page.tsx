@@ -63,7 +63,7 @@ export default async function BaekduPage() {
 
       <section
         id="departure-calendar"
-        className="mx-auto max-w-6xl scroll-mt-28 px-6 py-24"
+        className="mx-auto max-w-7xl scroll-mt-28 px-4 py-24"
       >
         <SectionReveal>
           <SectionTitle
