@@ -157,14 +157,14 @@ export default async function AdminPage() {
           <div className="rounded-xl border bg-white p-5 shadow-sm">
             <div className="mb-2 flex items-center gap-2 text-gray-500">
               👥
-              <span className="text-sm font-medium">예약건수</span>
+              <span className="text-sm font-medium">예약인원</span>
             </div>
 
             <div className="text-3xl font-bold text-gray-900">
               {totalPassengerCount}
             </div>
 
-            <div className="mt-2 text-xs text-gray-400">전체 예약 건수</div>
+            <div className="mt-2 text-xs text-gray-400">전체 예약 인원</div>
           </div>
 
           <div className="rounded-xl border bg-white p-5 shadow-sm">
