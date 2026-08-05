@@ -75,6 +75,14 @@ export default async function ZhangjiajiePage() {
       </SectionReveal>
 
       <SectionReveal>
+        <img
+          src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/zhangjiajie/zhangjiajiemap.jpg"
+          alt="장가계"
+          className="mx-auto my-20 w-full max-w-6xl rounded-[36px] shadow-xl"
+        />
+      </SectionReveal>
+
+      <SectionReveal>
         <Timeline
           itinerary4N5D={itinerary4N5D}
           itinerary3N4D={itinerary3N4D}

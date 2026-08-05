@@ -76,6 +76,14 @@ export default async function BaekduPage() {
         <PriceCard product={product} />
       </SectionReveal>
 
+      <SectionReveal>
+        <img
+          src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/baekdu/baekdumap.PNG"
+          alt="백두산"
+          className="mx-auto my-20 w-full max-w-6xl rounded-[36px] shadow-xl"
+        />
+      </SectionReveal>
+
       <Timeline
         itinerary4N5D={itinerary4N5D}
         itinerary3N4D={itinerary3N4D}
