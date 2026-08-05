@@ -49,20 +49,19 @@ export default async function AdminPage() {
     .lte("departure_date", weekEnd)
     .order("departure_date");
 
-  const { count: reservationCount } = await supabase
-    .from("reservations")
-    .select("*", {
-      count: "exact",
-      head: true,
-    });
-
   const { data: products } = await supabase.from("products").select("*");
 
   const { data: departures } = await supabase.from("departures").select("*");
 
-  const { data: reservations } = await supabase
-    .from("reservations")
-    .select("departure_id");
+  const { data: reservations } = await supabase.from("reservations").select(`
+    departure_id,
+    reservation_people(id)
+  `);
+
+  const totalPassengerCount = (reservations ?? []).reduce(
+    (sum, reservation) => sum + (reservation.reservation_people?.length ?? 1),
+    0,
+  );
 
   const seatSummary = (products ?? []).map((product) => {
     const productDepartures = (departures ?? []).filter(
@@ -74,9 +73,15 @@ export default async function AdminPage() {
       0,
     );
 
-    const reservationCount = (reservations ?? []).filter((r) =>
-      productDepartures.some((d) => d.id === r.departure_id),
-    ).length;
+    const reservationCount = (reservations ?? []).reduce((sum, reservation) => {
+      const isTargetDeparture = productDepartures.some(
+        (d) => d.id === reservation.departure_id,
+      );
+
+      if (!isTargetDeparture) return sum;
+
+      return sum + (reservation.reservation_people?.length ?? 1);
+    }, 0);
 
     return {
       title: product.title,
@@ -156,7 +161,7 @@ export default async function AdminPage() {
             </div>
 
             <div className="text-3xl font-bold text-gray-900">
-              {reservationCount ?? 0}
+              {totalPassengerCount}
             </div>
 
             <div className="mt-2 text-xs text-gray-400">전체 예약 건수</div>
