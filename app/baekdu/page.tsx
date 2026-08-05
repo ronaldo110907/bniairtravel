@@ -20,11 +20,14 @@ import ReservationCTASection from "@/components/sections/ReservationCTASection";
 import { supabase } from "@/lib/supabase";
 
 export default async function BaekduPage() {
+  console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 20));
   const { data: product } = await supabase
     .from("products")
     .select("*")
     .eq("slug", "baekdu")
     .single();
+  console.log("baekdu", product?.price_from, product);
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f7f3ec] pb-24 text-[#1f1f1f] lg:pb-0">
       <ProductHero product={product} />
