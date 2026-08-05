@@ -175,6 +175,11 @@ export const faqs: FAQ[] = [
     question: "쇼핑센터 방문이 포함되어 있나요?",
     answer: "네. 일정에 포함되어 있으며 구매는 고객님의 자율적인 선택입니다.",
   },
+  {
+    id: 6,
+    question: "여행지 날씨는 어디에서 확인할 수 있나요?",
+    answer: "출발 전 최신 날씨는 아래 사이트에서 확인하실 수 있습니다.\nhttps://www.weather.go.kr/weather/main.jsp",
+  },
 ];
 
 export const includes: IncludedItem[] = [
