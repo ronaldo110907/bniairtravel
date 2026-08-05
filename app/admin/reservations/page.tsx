@@ -203,7 +203,7 @@ function ReservationsContent() {
     if (reservation) {
       void openDetail(reservation);
     }
-  }, [reservationId, list]);
+  }, [reservationId]);
 
   async function uploadPersonPassport(person: ReservationPeople, file: File) {
     if (!selected) return;

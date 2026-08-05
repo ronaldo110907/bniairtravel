@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Map } from "lucide-react";
 
+{
+  /*}
 const moveToItinerary = (course: "3N4D" | "4N5D") => {
   window.dispatchEvent(
     new CustomEvent("change-itinerary", {
@@ -15,19 +16,19 @@ const moveToItinerary = (course: "3N4D" | "4N5D") => {
     block: "start",
   });
 };
+*/
+}
 
 type Props = {
   product?: string;
   departure?: string;
   price?: string;
-  showItineraryButtons?: boolean;
 };
 
 export default function StickyBookingBar({
-  product = "장가계",
-  departure = "청주공항 출발",
+  product = "상품",
+  departure = "출발지",
   price = "출발일 확인",
-  showItineraryButtons = true,
 }: Props) {
   return (
     <div className="sticky top-0 z-40 border-y border-black/5 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
@@ -49,6 +50,7 @@ export default function StickyBookingBar({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          {/*}
           {showItineraryButtons && (
             <div className="hidden items-center gap-2 sm:flex">
               <button
@@ -57,7 +59,7 @@ export default function StickyBookingBar({
                 className="inline-flex items-center gap-2 rounded-full border border-black/10 px-5 py-3 text-sm font-semibold transition hover:border-[#b88a44] hover:text-[#b88a44]"
               >
                 <Map size={16} />
-                3박4일 일정
+                {course1}
               </button>
 
               <button
@@ -66,12 +68,13 @@ export default function StickyBookingBar({
                 className="inline-flex items-center gap-2 rounded-full border border-black/10 px-5 py-3 text-sm font-semibold transition hover:border-[#b88a44] hover:text-[#b88a44]"
               >
                 <Map size={16} />
-                4박5일 일정
+                {course2}
               </button>
             </div>
           )}
+            */}
           <Link
-            href={`/reservation?product=${product}`}
+            href={`/reservation?product=${encodeURIComponent(product)}`}
             className="inline-flex rounded-full bg-[#b88a44] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#9f7435]"
           >
             예약 문의

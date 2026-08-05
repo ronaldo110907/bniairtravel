@@ -17,6 +17,21 @@ export default function DepartureTable({
   onView,
   onManage,
 }: Props) {
+  const groupedDepartures = departures.reduce(
+    (acc: Record<string, any[]>, departure) => {
+      const product = departure.product?.title ?? "기타";
+
+      if (!acc[product]) {
+        acc[product] = [];
+      }
+
+      acc[product].push(departure);
+
+      return acc;
+    },
+    {},
+  );
+
   return (
     <div className="overflow-hidden rounded-xl border bg-white">
       <table className="min-w-full text-sm">
@@ -64,9 +79,14 @@ export default function DepartureTable({
               </td>
 
               <td className="px-4 py-3 text-center">
-                {departure.seat - (passengerCounts[departure.id] ?? 0) <= 0 ? (
+                {departure.status === "마감" ||
+                departure.seat - (passengerCounts[departure.id] ?? 0) <= 0 ? (
                   <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
                     마감
+                  </span>
+                ) : departure.status === "마감임박" ? (
+                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-700">
+                    마감임박
                   </span>
                 ) : (
                   <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">

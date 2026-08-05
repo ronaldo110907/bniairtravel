@@ -14,9 +14,10 @@ export default function Schedule() {
   }, []);
 
   async function loadSchedules() {
-   const { data, error } = await supabase
-    .from("products")
-    .select(`
+    const { data, error } = await supabase
+      .from("products")
+      .select(
+        `
       *,
       departures (
         departure_date,
@@ -25,17 +26,18 @@ export default function Schedule() {
         price,
         seat
       )
-    `)
-    .eq("is_visible", true)
-    .order("sort");
+    `,
+      )
+      .eq("is_visible", true)
+      .order("sort");
 
-   if (error) {
-    console.error(error);
-    return;
-   }
+    if (error) {
+      console.error(error);
+      return;
+    }
 
-   setSchedules(data || []);
-   }
+    setSchedules(data || []);
+  }
   return (
     <section className="bg-white py-32">
       <div className="mx-auto max-w-7xl px-6">
@@ -50,9 +52,7 @@ export default function Schedule() {
             Flight Schedule
           </p>
 
-          <h2 className="mt-5 text-5xl font-black">
-            청주공항 직항 스케줄
-          </h2>
+          <h2 className="mt-5 text-5xl font-black">청주공항 직항 스케줄</h2>
 
           <p className="mt-6 text-lg text-gray-500">
             가장 편안한 직항 노선으로
@@ -82,79 +82,66 @@ export default function Schedule() {
                   <h3 className="text-4xl font-black leading-tight">
                     {item.title}
                   </h3>
-
-                  <div className="mt-2 flex items-center gap-2">
-                    <Image
-                      src={item.logo || "/images/kogo.png"}
-                      alt={item.title}
-                      width={100}
-                      height={40}
-                      className="h-auto w-28 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.src = "/images/kogo.png";
-                      }}
-                    />
-                  </div>
                 </div>
               </div>
               <div className="space-y-4">
                 {item.departures?.map((departure: any, index: number) => (
-                 <div
-                  key={departure.id ?? index}
-                  className={`grid items-center gap-8 md:grid-cols-[1.2fr_1fr_1fr_1fr_auto] ${
-                   index !== item.departures.length - 1
-                    ? "border-b border-gray-200 pb-6"
-                    : ""
-                  }`}
-              >
-              <div>
-               <p className="text-xs uppercase tracking-[4px] text-gray-400">
-                Departure
-               </p>
-               <p className="mt-2 text-2xl font-bold">
-                {departure.departure_date}
-               </p>
-              </div>
+                  <div
+                    key={departure.id ?? index}
+                    className={`grid items-center gap-8 md:grid-cols-[1.2fr_1fr_1fr_1fr_auto] ${
+                      index !== item.departures.length - 1
+                        ? "border-b border-gray-200 pb-6"
+                        : ""
+                    }`}
+                  >
+                    <div>
+                      <p className="text-xs uppercase tracking-[4px] text-gray-400">
+                        Departure
+                      </p>
+                      <p className="mt-2 text-2xl font-bold">
+                        {departure.departure_date}
+                      </p>
+                    </div>
 
-              <div>
-                <p className="text-xs uppercase tracking-[4px] text-gray-400">
-                 Airline
-                </p>
-                <p className="mt-2 text-xl font-bold">
-                 {departure.airline}
-                </p>
-              </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[4px] text-gray-400">
+                        Airline
+                      </p>
+                      <p className="mt-2 text-xl font-bold">
+                        {departure.airline}
+                      </p>
+                    </div>
 
-              <div>
-                <p className="text-xs uppercase tracking-[4px] text-gray-400">
-                 Price
-                </p>
-                <p className="mt-2 text-xl font-bold">
-                 ₩{departure.price?.toLocaleString()}
-                </p>
-              </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[4px] text-gray-400">
+                        Price
+                      </p>
+                      <p className="mt-2 text-xl font-bold">
+                        ₩{departure.price?.toLocaleString()}
+                      </p>
+                    </div>
 
-              <div>
-                <p className="text-xs uppercase tracking-[4px] text-gray-400">
-                 Seat
-                </p>
-                <p className="mt-2 text-xl font-bold">
-                 {departure.seat}석
-                </p>
-              </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[4px] text-gray-400">
+                        Seat
+                      </p>
+                      <p className="mt-2 text-xl font-bold">
+                        {departure.seat}석
+                      </p>
+                    </div>
 
-              <div className="text-right">
-               <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
-                {departure.status}
-               </span>
+                    <div className="text-right">
+                      <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+                        {departure.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-          </div>
-       ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </motion.div>
-  ))}
-</div>
-</div>
-</section>
-);
+    </section>
+  );
 }

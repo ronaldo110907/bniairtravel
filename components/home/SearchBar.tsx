@@ -1,14 +1,11 @@
 "use client";
 
 import { Search, MapPin, CalendarDays, Users } from "lucide-react";
-
 export default function SearchBar() {
   return (
     <section className="relative z-30 -mt-20 px-6">
       <div className="mx-auto max-w-7xl rounded-3xl bg-white/90 backdrop-blur-xl shadow-2xl p-6">
-
         <div className="grid gap-6 md:grid-cols-4">
-
           <div>
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-500">
               <MapPin size={18} />
@@ -53,9 +50,7 @@ export default function SearchBar() {
             <Search size={24} />
             여행 검색
           </button>
-
         </div>
-
       </div>
     </section>
   );

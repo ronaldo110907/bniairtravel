@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase";
 import DepartureCard from "@/components/DepartureCard";
 import DepartureTable from "./components/DepartureTable";
 import AddDepartureModal from "./components/AddDepartureModal";
+import { loadProducts as fetchProducts } from "./lib/loadProducts";
+import * as XLSX from "xlsx-js-style";
 
 type Departure = {
   id: string;
@@ -42,6 +44,38 @@ export default function DepartureAdminPage() {
   const [bulkAirline, setBulkAirline] = useState("");
   const [bulkSeat, setBulkSeat] = useState("180");
   const [bulkStatus, setBulkStatus] = useState("예약가능");
+  const [courseFilter, setCourseFilter] = useState("전체");
+  const filteredDepartures =
+    courseFilter === "전체"
+      ? departures
+      : departures.filter((departure) => departure.course === courseFilter);
+
+  console.log("selectedProductId =", selectedProductId);
+  console.log("filtered =", filteredDepartures.length);
+
+  function downloadExcel() {
+    const rows = filteredDepartures.map((departure) => {
+      const reserved = passengerCounts[departure.id] ?? 0;
+
+      return {
+        출발일: departure.departure_date,
+        일정: departure.course,
+        가격: departure.price,
+        항공사: departure.airline,
+        총좌석: departure.seat,
+        모객: reserved,
+        잔여: departure.seat - reserved,
+        상태: departure.status,
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "출발일");
+
+    XLSX.writeFile(workbook, "출발일관리.xlsx");
+  }
 
   const weekDays = [
     { label: "월", value: 1 },
@@ -54,15 +88,7 @@ export default function DepartureAdminPage() {
   ];
 
   async function loadProducts() {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, title")
-      .order("title");
-
-    if (error) {
-      console.log(error);
-      return;
-    }
+    const data = await fetchProducts();
 
     setProducts(data ?? []);
     const savedProductId = localStorage.getItem("selectedProductId");
@@ -88,6 +114,12 @@ export default function DepartureAdminPage() {
       return;
     }
 
+    console.table(
+      data?.map((item) => ({
+        product_id: item.product_id,
+        departure: item.departure_date,
+      })),
+    );
     setDepartures(data ?? []);
     /*기존예약건수계산
     const { data: reservations } = await supabase
@@ -171,6 +203,7 @@ export default function DepartureAdminPage() {
         data.course = editingDeparture.course;
       }
       console.log("예약존재:", hasReservation);
+      console.log("저장할 status =", data.status);
       const { error } = await supabase
         .from("departures")
         .update({
@@ -271,6 +304,9 @@ export default function DepartureAdminPage() {
     const current = new Date(bulkStartDate);
     const end = new Date(bulkEndDate);
 
+    let createdCount = 0;
+    let skippedCount = 0;
+
     while (current <= end) {
       const day = current.getDay();
       const weekDay = day === 0 ? 7 : day;
@@ -287,26 +323,58 @@ export default function DepartureAdminPage() {
         };
 
         console.log(newDeparture);
-        const { error } = await supabase
-          .from("departures")
-          .insert(newDeparture);
 
-        if (error) {
-          console.error(error);
+        // 먼저 중복 확인
+        const { data: exists } = await supabase
+          .from("departures")
+          .select("id")
+          .eq("product_id", selectedProductId)
+          .eq("departure_date", newDeparture.departure_date)
+          .maybeSingle();
+
+        if (exists) {
+          skippedCount++;
+        } else {
+          const { error } = await supabase
+            .from("departures")
+            .insert(newDeparture);
+
+          if (error) {
+            console.error(error);
+          } else {
+            createdCount++;
+          }
         }
       }
-
       current.setDate(current.getDate() + 1);
     }
     await loadDepartures();
     setIsBulkOpen(false);
-    alert("출발일이 생성되었습니다.");
+    alert(
+      `출발일 생성 완료!
+
+생성 : ${createdCount}건
+중복 제외 : ${skippedCount}건`,
+    );
   }
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold">출발일 관리</h1>
       <div className="mt-6 mb-6 flex flex-wrap gap-2">
+        <button
+          onClick={() => {
+            localStorage.removeItem("selectedProductId");
+            setSelectedProductId("");
+          }}
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            selectedProductId === ""
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+        >
+          전체
+        </button>
         {products.map((product) => (
           <button
             key={product.id}
@@ -341,14 +409,39 @@ export default function DepartureAdminPage() {
         >
           + 출발일 추가
         </button>
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex gap-2">
+            {["전체", "3박4일", "4박5일"].map((course) => (
+              <button
+                key={course}
+                onClick={() => setCourseFilter(course)}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  courseFilter === course
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {course}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={downloadExcel}
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+          >
+            📥 엑셀 다운
+          </button>
+        </div>
       </div>
       {/*}
       {departures.map((departure) => (
         <DepartureCard key={departure.id} departure={departure} />
       ))}
       */}
+
       <DepartureTable
-        departures={departures}
+        departures={filteredDepartures}
         passengerCounts={passengerCounts}
         onEdit={(departure) => {
           setEditingDeparture(departure);

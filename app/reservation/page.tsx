@@ -19,9 +19,12 @@ function ReservationForm() {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [departureDate, setDepartureDate] = useState("departure");
+  const [departureDate, setDepartureDate] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  console.log("product :", product);
+  console.log("departureId :", departureId);
 
   async function submitReservation(e: React.FormEvent) {
     e.preventDefault();
@@ -52,6 +55,28 @@ function ReservationForm() {
       alert(error.message);
       return;
     }
+    await fetch("/api/discord", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `
+🔔 신규 예약 접수
+
+🧳 상품 : ${product}
+
+👤 예약자 : ${name}
+
+📞 연락처 : ${phone}
+
+📅 출발일 : ${departureDate}
+
+📝 문의사항 :
+${message || "없음"}
+`,
+      }),
+    });
 
     alert("예약 문의가 접수되었습니다.");
     router.push("/");
@@ -71,7 +96,6 @@ function ReservationForm() {
               className="w-full rounded-xl border bg-gray-100 p-4"
             />
           </div>
-
           <input
             placeholder="예약자명"
             value={name}
@@ -79,7 +103,6 @@ function ReservationForm() {
             className="w-full rounded-xl border p-4"
             required
           />
-
           <input
             placeholder="연락처"
             value={phone}
@@ -87,21 +110,18 @@ function ReservationForm() {
             className="w-full rounded-xl border p-4"
             required
           />
-
           <input
             type="date"
             value={departureDate}
             onChange={(e) => setDepartureDate(e.target.value)}
             className="w-full rounded-xl border p-4"
           />
-
           <textarea
             placeholder="문의사항"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className="h-32 w-full rounded-xl border p-4"
           />
-
           <button
             disabled={loading}
             className="w-full rounded-xl bg-black py-4 font-semibold text-white"

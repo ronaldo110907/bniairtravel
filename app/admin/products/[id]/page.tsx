@@ -20,6 +20,7 @@ type ProductForm = {
   hero_image: string;
   is_best: boolean;
   is_visible: boolean;
+  hero_visible: boolean;
   sort: string;
 };
 
@@ -46,6 +47,7 @@ export default function EditProductPage() {
     hero_image: "",
     is_best: false,
     is_visible: true,
+    hero_visible: false,
     sort: "0",
   });
 
@@ -81,6 +83,7 @@ export default function EditProductPage() {
         hero_image: data.hero_image ?? "",
         is_best: Boolean(data.is_best),
         is_visible: Boolean(data.is_visible),
+        hero_visible: Boolean(data.hero_visible),
         sort: String(data.sort ?? 0),
       });
 
@@ -126,10 +129,8 @@ export default function EditProductPage() {
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from("gallery")
-        .getPublicUrl(filePath);
-        console.log("PUBLIC URL =", data.publicUrl);
+      const { data } = supabase.storage.from("gallery").getPublicUrl(filePath);
+      console.log("PUBLIC URL =", data.publicUrl);
 
       setForm((prev) => ({
         ...prev,
@@ -199,6 +200,7 @@ export default function EditProductPage() {
         hero_image: form.hero_image || null,
         is_best: form.is_best,
         is_visible: form.is_visible,
+        hero_visible: form.hero_visible,
         sort: form.sort ? Number(form.sort) : 0,
         updated_at: new Date().toISOString(),
       })
@@ -270,7 +272,7 @@ export default function EditProductPage() {
                 name="title"
                 value={form.title}
                 onChange={handleChange}
-                placeholder="장가계"
+                placeholder="상품명을 입력하세요"
                 className="w-full rounded-lg border px-4 py-3"
                 required
               />
@@ -321,7 +323,9 @@ export default function EditProductPage() {
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
             <div>
-              <label className="mb-2 block text-sm font-semibold">숙박일수</label>
+              <label className="mb-2 block text-sm font-semibold">
+                숙박일수
+              </label>
               <input
                 type="number"
                 min="0"
@@ -333,7 +337,9 @@ export default function EditProductPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold">여행일수</label>
+              <label className="mb-2 block text-sm font-semibold">
+                여행일수
+              </label>
               <input
                 type="number"
                 min="1"
@@ -357,7 +363,9 @@ export default function EditProductPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold">정렬순서</label>
+              <label className="mb-2 block text-sm font-semibold">
+                정렬순서
+              </label>
               <input
                 type="number"
                 name="sort"
@@ -458,6 +466,18 @@ export default function EditProductPage() {
               />
               홈페이지 노출
             </label>
+            <input
+              type="checkbox"
+              checked={form.hero_visible}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  hero_visible: e.target.checked,
+                })
+              }
+            />
+
+            <label className="text-sm font-semibold">메인 Hero 대표상품</label>
           </div>
 
           <div className="flex gap-3">

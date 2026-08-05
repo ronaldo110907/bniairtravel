@@ -25,7 +25,7 @@ export default function ShanghaiPage() {
           <h2 className="text-4xl font-bold">현재 상품을 준비 중입니다.</h2>
 
           <p className="mt-6 text-lg text-gray-600">
-            리장 여행은 곧 예약이 가능합니다.
+            상하이 여행은 곧 예약이 가능합니다.
             <br />
             조금만 기다려 주세요.
           </p>

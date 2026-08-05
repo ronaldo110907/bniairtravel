@@ -75,13 +75,19 @@ export default function CalendarPage() {
   }
 
   function getReservedPeopleCount(departureId: string) {
-    return people.filter((person) =>
+    const result = people.filter((person) =>
       reservations.some(
         (reservation) =>
           reservation.id === person.reservation_id &&
-          reservation.departure_id === departureId,
+          reservation.departure_id === departureId &&
+          reservation.status === "확정",
       ),
-    ).length;
+    );
+
+    console.log("departure", departureId);
+    console.log("reserved people", result);
+
+    return result.length;
   }
 
   const groupedDepartures = selectedDepartures.reduce(

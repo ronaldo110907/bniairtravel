@@ -23,6 +23,8 @@ type Props = {
 
 export default function DepartureCalendar({ productId }: Props) {
   const [departures, setDepartures] = useState<Departure[]>([]);
+  const [reservations, setReservations] = useState<any[]>([]);
+  const [people, setPeople] = useState<any[]>([]);
   const months = useMemo(() => {
     const list = [
       ...new Set(departures.map((d) => Number(d.date.split("-")[1]))),
@@ -34,35 +36,65 @@ export default function DepartureCalendar({ productId }: Props) {
 
   useEffect(() => {
     async function loadDepartures() {
-      const { data, error } = await supabase
+      // 출발일 조회
+      const { data: departuresData, error: departuresError } = await supabase
         .from("departures")
         .select("*")
         .eq("product_id", productId);
 
-      console.log("productId =", productId);
-      console.log("error =", error);
-      console.log("data =", data);
-
-      if (error) {
-        console.error(error);
+      if (departuresError) {
+        console.error(departuresError);
         return;
       }
-      const converted: Departure[] = (data ?? []).map((item: any) => ({
-        id: item.id,
-        date: item.departure_date,
-        airline: item.airline,
-        price: item.price,
-        seats: item.seat,
-        course: item.course,
-        status:
-          item.status === "예약마감"
-            ? "closed"
-            : item.status === "마감임박"
-              ? "hot"
-              : "available",
-      }));
-      console.log(data);
-      console.log(converted);
+
+      // 예약 조회
+      const { data: reservationsData, error: reservationsError } =
+        await supabase.from("reservations").select("*");
+
+      if (reservationsError) {
+        console.error(reservationsError);
+        return;
+      }
+
+      // 예약 인원 조회
+      const { data: peopleData, error: peopleError } = await supabase
+        .from("reservation_people")
+        .select("*");
+
+      if (peopleError) {
+        console.error(peopleError);
+        return;
+      }
+
+      const converted: Departure[] = (departuresData ?? []).map((item: any) => {
+        console.log(item.departure_date, item.status);
+        const reserved = (peopleData ?? []).filter((person: any) =>
+          (reservationsData ?? []).some(
+            (reservation: any) =>
+              reservation.id === person.reservation_id &&
+              reservation.departure_id === item.id &&
+              reservation.status === "확정",
+          ),
+        ).length;
+
+        const remain = item.seat - reserved;
+
+        return {
+          id: item.id,
+          date: item.departure_date,
+          airline: item.airline,
+          price: item.price,
+          seats: remain,
+          course: item.course,
+          status:
+            item.status === "마감" || item.status === "예약마감" || remain <= 0
+              ? "closed"
+              : item.status === "마감임박" || item.status === "긴급특가"
+                ? "hot"
+                : "available",
+        };
+      });
+
       setDepartures(converted);
     }
 

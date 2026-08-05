@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -8,7 +7,7 @@ const destinations = [
   {
     title: "장가계",
     subtitle: "DISCOVER CHINA",
-    description: "자연이 선물한 가장 아름다운 절경 속으로 당신을 초대합니다.",           
+    description: "자연이 선물한 가장 아름다운 절경 속으로 당신을 초대합니다.",
     image: "/images/zhangjiajie/cover.jpg",
     href: "/zhangjiajie",
   },
@@ -26,13 +25,6 @@ const destinations = [
     image: "/images/shanghai/cover.jpg",
     href: "/shanghai",
   },
-  {
-    title: "항주",
-    subtitle: "DISCOVER CHINA",
-    description: "한 폭의 수묵화 속으로.",
-    image: "/images/hangzhou/cover.jpg",
-    href: "/hangzhou",
-  },
 ];
 
 export default function Discover() {
@@ -44,12 +36,12 @@ export default function Discover() {
             Discover China
           </p>
           <h2 className="mt-5 text-5xl font-black">
-            당신이 꿈꾸던 중국을 만나다.
+            여행은 항상 우리를 설레게 합니다.
           </h2>
           <p className="mt-6 text-lg text-gray-500">
-            장가계부터 백두산, 상해와 항주까지
+            청주공항 출발로 만나는 새로운 여행!!
             <br />
-            가장 아름다운 중국을 만나보세요.
+            장가계, 백두산, 상해, 푸꾸옥등 다양한 여행지를 만나보세요.
           </p>
         </div>
 

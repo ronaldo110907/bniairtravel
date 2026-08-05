@@ -44,7 +44,6 @@ export default function Hero() {
 
   return (
     <section className="relative h-screen overflow-hidden">
-
       {images.map((image, index) => (
         <Image
           key={image}
@@ -54,9 +53,7 @@ export default function Hero() {
           priority
           className={`absolute inset-0 object-cover transition-all duration-[3000ms]
           ${
-            current === index
-              ? "opacity-100 scale-105"
-              : "opacity-0 scale-100"
+            current === index ? "opacity-100 scale-105" : "opacity-0 scale-100"
           }`}
         />
       ))}
@@ -64,9 +61,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-black/45" />
 
       <div className="relative z-10 flex h-full items-center justify-center px-6">
-
         <div className="max-w-5xl text-center text-white">
-
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -99,23 +94,8 @@ export default function Hero() {
           >
             {heroText}
           </motion.p>
-
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 3,
-              duration: 1,
-            }}
-            className="mt-14 rounded-full bg-yellow-500 px-8 py-4 text-lg font-bold text-white transition hover:bg-yellow-400"
-          >
-            여행상품 보기 →
-          </motion.button>
-
         </div>
-
       </div>
-
     </section>
   );
 }
