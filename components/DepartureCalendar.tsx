@@ -281,7 +281,7 @@ export default function DepartureCalendar({ productId }: Props) {
                       <div className="mt-1.5 flex items-center gap-2">
                         <span
                           className={[
-                            "rounded-full px-1.5 py-0.5 text-[9px] font-bold md:px-2 md:text-[10px]",
+                            "whitespace-nowrap rounded-full px-1.5 py-0.5 text-[9px] font-bold md:px-2 md:text-[10px]",
                             isClosed
                               ? "bg-black/10 text-black/45"
                               : "bg-emerald-50 text-emerald-700",
