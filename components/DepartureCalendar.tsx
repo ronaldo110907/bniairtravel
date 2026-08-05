@@ -10,7 +10,8 @@ type Departure = {
   airline: string;
   price: number;
   seats: number;
-  status: "available" | "hot" | "closed";
+  status: "available" | "closed";
+  is_special: boolean;
 };
 
 const YEAR = 2026;
@@ -86,12 +87,11 @@ export default function DepartureCalendar({ productId }: Props) {
           price: item.price,
           seats: remain,
           course: item.course,
+          is_special: item.is_special,
           status:
             item.status === "마감" || item.status === "예약마감" || remain <= 0
               ? "closed"
-              : item.status === "마감임박" || item.status === "긴급특가"
-                ? "hot"
-                : "available",
+              : "available",
         };
       });
 
@@ -222,7 +222,7 @@ export default function DepartureCalendar({ productId }: Props) {
 
               const departure = cell.departure;
               const isClosed = departure?.status === "closed";
-              const isHot = departure?.status === "hot";
+              const isHot = departure?.is_special;
               const isSelected = departure && selected?.date === departure.date;
 
               if (!departure) {

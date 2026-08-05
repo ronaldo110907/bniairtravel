@@ -12,6 +12,7 @@ type Props = {
     airline: string;
     seat: number;
     status: string;
+    is_special: boolean;
   }) => void | Promise<void>;
   departure?: any;
   hasReservation?: boolean;
@@ -30,6 +31,7 @@ export default function AddDepartureModal({
   const [airline, setAirline] = useState("");
   const [seat, setSeat] = useState("");
   const [status, setStatus] = useState("예약가능");
+  const [isSpecial, setIsSpecial] = useState(false);
 
   useEffect(() => {
     if (!departure) return;
@@ -40,6 +42,7 @@ export default function AddDepartureModal({
     setAirline(departure.airline ?? "");
     setSeat(String(departure.seat ?? ""));
     setStatus(departure.status ?? "예약가능");
+    setIsSpecial(departure.is_special ?? false);
   }, [departure]);
 
   if (!open) return null;
@@ -116,6 +119,16 @@ export default function AddDepartureModal({
               <option>취소</option>
             </select>
           </div>
+          <div className="col-span-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={isSpecial}
+                onChange={(e) => setIsSpecial(e.target.checked)}
+              />
+              🔥 특가
+            </label>
+          </div>
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button
@@ -134,6 +147,7 @@ export default function AddDepartureModal({
                 airline,
                 seat: Number(seat),
                 status,
+                is_special: isSpecial,
               })
             }
             className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"

@@ -93,6 +93,13 @@ export default function DepartureTable({
                     예약가능
                   </span>
                 )}
+                {departure.is_special && (
+                  <div className="mt-2">
+                    <span className="rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
+                      🔥 특가
+                    </span>
+                  </div>
+                )}
               </td>
 
               <td className="px-4 py-3 text-center">

@@ -188,6 +188,7 @@ export default function DepartureAdminPage() {
     airline: string;
     seat: number;
     status: string;
+    is_special: boolean;
   }) {
     if (editingDeparture) {
       console.log("수정모드", editingDeparture);
@@ -213,6 +214,7 @@ export default function DepartureAdminPage() {
           airline: data.airline,
           seat: data.seat,
           status: data.status,
+          is_special: data.is_special,
         })
         .eq("id", editingDeparture.id);
 
@@ -235,6 +237,7 @@ export default function DepartureAdminPage() {
       airline: data.airline,
       seat: data.seat,
       status: data.status,
+      is_special: data.is_special,
     });
     if (error) {
       alert("출발일 저장 실패");
