@@ -9,6 +9,7 @@ import {
   hotels,
   reviews,
   shopping,
+  faqs,
 } from "@/data/zhangjiajie";
 import MobileBookingButton from "@/components/MobileBookingButton";
 import PriceCard from "@/components/PriceCard";
@@ -104,7 +105,7 @@ export default async function ZhangjiajiePage() {
       </SectionReveal>
 
       <SectionReveal>
-        <FAQSection />
+        <FAQSection faqs={faqs} />
       </SectionReveal>
 
       <SectionReveal>

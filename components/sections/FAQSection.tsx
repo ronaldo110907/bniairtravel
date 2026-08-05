@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { faqs } from "@/data/zhangjiajie";
 
-export default function FAQSection() {
+type FAQ = {
+  id: number;
+  question: string;
+  answer: string;
+};
+
+export default function FAQSection({ faqs }: { faqs: FAQ[] }) {
   const [openId, setOpenId] = useState<number | null>(1);
 
   return (

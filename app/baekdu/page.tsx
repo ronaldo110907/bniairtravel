@@ -3,7 +3,7 @@ import DepartureCalendar from "@/components/DepartureCalendar";
 import GallerySlider from "@/components/GallerySlider";
 import HotelCard from "@/components/HotelCard";
 import IncludedCard from "@/components/IncludedCard";
-import { includes, excludes, hotels, shopping } from "@/data/baekdu";
+import { includes, excludes, hotels, shopping, faqs } from "@/data/baekdu";
 import MobileBookingButton from "@/components/MobileBookingButton";
 import PriceCard from "@/components/PriceCard";
 import ProductHero from "@/components/ProductHero";
@@ -99,7 +99,7 @@ export default async function BaekduPage() {
       </SectionReveal>
 
       <SectionReveal>
-        <FAQSection />
+        <FAQSection faqs={faqs} />
       </SectionReveal>
 
       <SectionReveal>
