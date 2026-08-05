@@ -278,7 +278,7 @@ export default function DepartureCalendar({ productId }: Props) {
                         {departure.price.toLocaleString()}원
                       </p>
 
-                      <div className="mt-1.5 flex items-center justify-between gap-1">
+                      <div className="mt-1.5 flex items-center gap-2">
                         <span
                           className={[
                             "rounded-full px-1.5 py-0.5 text-[9px] font-bold md:px-2 md:text-[10px]",
@@ -293,7 +293,7 @@ export default function DepartureCalendar({ productId }: Props) {
                         {!isClosed && (
                           <span
                             className={[
-                              "text-[11px] font-semibold text-right",
+                              "whitespace-nowrap text-[10px] font-semibold text-black/50",
                               departure.seats <= 5
                                 ? "text-red-500"
                                 : "text-black/40",
