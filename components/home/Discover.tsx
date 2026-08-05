@@ -7,6 +7,7 @@ const destinations = [
   {
     title: "장가계",
     subtitle: "DISCOVER CHINA",
+    period: "2026.09.02 ~ 2026.11.27",
     description: "자연이 선물한 가장 아름다운 절경 속으로 당신을 초대합니다.",
     image: "/images/zhangjiajie/cover.jpg",
     href: "/zhangjiajie",
@@ -14,6 +15,7 @@ const destinations = [
   {
     title: "백두산",
     subtitle: "DISCOVER CHINA",
+    period: "2026.06.02 ~ 2026.10.24",
     description: "천지를 마주하는 평생의 감동.",
     image: "/images/baekdu/cover.jpg",
     href: "/baekdu",
@@ -21,6 +23,7 @@ const destinations = [
   {
     title: "푸꾸옥",
     subtitle: "DISCOVER VIETNAM",
+    period: "2026.12.24 ~ 2027.02.18",
     description:
       "에메랄드빛 바다와 아름다운 석양을 품은 선셋 타운까지. 낭만이 가득한 곳으로 당신을 초대합니다.",
     image:
@@ -30,6 +33,7 @@ const destinations = [
   {
     title: "상해",
     subtitle: "DISCOVER CHINA",
+    period: "2026.08.09 ~ 2026.10.20",
     description: "과거와 미래가 공존하는 도시.",
     image: "/images/shanghai/cover.jpg",
     href: "/shanghai",
@@ -42,7 +46,7 @@ export default function Discover() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-24 text-center">
           <p className="tracking-[8px] uppercase text-yellow-600">
-            Discover China
+            Discover World
           </p>
           <h2 className="mt-5 text-5xl font-black">
             여행은 항상 우리를 설레게 합니다.
@@ -91,6 +95,10 @@ export default function Discover() {
 
               <p className="mt-8 text-xl leading-9 text-gray-600">
                 {item.description}
+              </p>
+
+              <p className="mt-3 text-lg font-semibold text-yellow-600">
+                {item.period} 운항
               </p>
 
               <a

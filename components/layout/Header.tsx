@@ -10,6 +10,7 @@ const menus = [
   { name: "상해·항주·주가각", href: "/shanghai" },
   { name: "여행갤러리", href: "/gallery" },
   { name: "예약문의", href: "/contact" },
+  { name: "관리자", href: "/admin" },
 ];
 
 export default function Header() {
