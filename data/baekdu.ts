@@ -178,7 +178,7 @@ export const faqs: FAQ[] = [
   {
     id: 6,
     question: "여행지 날씨는 어디에서 확인할 수 있나요?",
-    answer: "출발 전 최신 날씨는 아래 사이트에서 확인하실 수 있습니다.\nhttps://www.weather.go.kr/weather/main.jsp",
+    answer: "출발 전 최신 날씨는 아래 사이트에서 확인하실 수 있습니다.\nhttps://www.windy.com/42.905/129.504?42.404,129.504,8",
   },
 ];
 
