@@ -6,6 +6,7 @@ type FAQ = {
   id: number;
   question: string;
   answer: string;
+  link?: string;
 };
 
 export default function FAQSection({ faqs }: { faqs: FAQ[] }) {
@@ -52,7 +53,18 @@ export default function FAQSection({ faqs }: { faqs: FAQ[] }) {
 
                 {open && (
                   <div className="border-t bg-[#faf8f4] px-7 py-6 leading-8 text-gray-600">
-                    {faq.answer}
+                    <div>{faq.answer}</div>
+
+                    {faq.link && (
+                      <a
+                        href={faq.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex rounded-full bg-[#b88a44] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#9f7435]"
+                      >
+                        🌤 날씨 확인하기
+                      </a>
+                    )}
                   </div>
                 )}
               </div>

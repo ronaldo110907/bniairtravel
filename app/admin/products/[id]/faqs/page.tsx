@@ -8,6 +8,7 @@ type FAQ = {
   id: string;
   question: string;
   answer: string;
+  link?: string;
 };
 
 export default function FAQsAdminPage() {
@@ -33,28 +34,17 @@ export default function FAQsAdminPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="mx-auto max-w-6xl">
-        <h1 className="mb-8 text-3xl font-bold">
-          FAQ 관리
-        </h1>
+        <h1 className="mb-8 text-3xl font-bold">FAQ 관리</h1>
 
         <div className="rounded-2xl bg-white p-8 shadow">
           {faqs.length === 0 ? (
-            <p className="text-gray-500">
-              등록된 FAQ가 없습니다.
-            </p>
+            <p className="text-gray-500">등록된 FAQ가 없습니다.</p>
           ) : (
             <div className="space-y-4">
               {faqs.map((faq) => (
-                <div
-                  key={faq.id}
-                  className="rounded-xl border p-5"
-                >
-                  <h3 className="font-bold">
-                    {faq.question}
-                  </h3>
-                  <p className="mt-3 text-gray-600">
-                    {faq.answer}
-                  </p>
+                <div key={faq.id} className="rounded-xl border p-5">
+                  <h3 className="font-bold">{faq.question}</h3>
+                  <p className="mt-3 text-gray-600">{faq.answer}</p>
                 </div>
               ))}
             </div>

@@ -19,7 +19,6 @@ export interface Shopping {
 }
 
 
-
 export interface Review {
   id: number;
   name: string;
@@ -34,6 +33,7 @@ export interface FAQ {
   id: number;
   question: string;
   answer: string;
+  link?: string;
 }
 
 export interface IncludedItem {
@@ -181,7 +181,8 @@ export const faqs: FAQ[] = [
   {
     id: 6,
     question: "여행지 날씨는 어디에서 확인할 수 있나요?",
-    answer: "출발 전 최신 날씨는 아래 사이트에서 확인하실 수 있습니다.\nhttps://www.windy.com/29.118/110.474?28.521,110.474,8",
+    answer: "출발 전 최신 날씨는 아래 사이트에서 확인하실 수 있습니다.",
+    link: "https://www.windy.com/29.118/110.474?28.521,110.474,8"
   },
 ];
 
