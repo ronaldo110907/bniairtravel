@@ -1,34 +1,21 @@
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-gray-100 p-6 animate-pulse">
-      <div className="mb-6 h-10 w-72 rounded bg-gray-300" />
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-6">
+      <div className="w-full max-w-md rounded-2xl bg-white p-10 text-center shadow-xl">
+        <div className="mb-4 text-5xl">✈️</div>
 
-      <div className="grid gap-6">
-        <div className="rounded-xl bg-white p-6 shadow">
-          <div className="mb-4 h-6 w-40 rounded bg-gray-300" />
-          <div className="space-y-3">
-            <div className="h-16 rounded bg-gray-200" />
-            <div className="h-16 rounded bg-gray-200" />
-          </div>
+        <h2 className="text-2xl font-bold">
+          관리자 페이지를 준비하고 있습니다.
+        </h2>
+
+        <p className="mt-4 text-gray-500">
+          최초 접속 시 서버 준비로 인해
+          <br />약 20~30초 정도 소요될 수 있습니다.
+        </p>
+
+        <div className="mt-8 flex justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
         </div>
-
-        <div className="rounded-xl bg-white p-6 shadow">
-          <div className="mb-4 h-6 w-40 rounded bg-gray-300" />
-          <div className="space-y-3">
-            <div className="h-16 rounded bg-gray-200" />
-            <div className="h-16 rounded bg-gray-200" />
-          </div>
-        </div>
-
-        <div className="grid gap-4 xl:grid-cols-[1fr_1fr_2fr]">
-          <div className="h-52 rounded-xl bg-white shadow" />
-          <div className="h-52 rounded-xl bg-white shadow" />
-          <div className="h-52 rounded-xl bg-white shadow" />
-        </div>
-
-        <div className="h-28 rounded-xl bg-white shadow" />
-
-        <div className="h-64 rounded-xl bg-white shadow" />
       </div>
     </div>
   );
