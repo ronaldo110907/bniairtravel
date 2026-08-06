@@ -7,6 +7,7 @@ import PersonCard from "@/components/PersonCard";
 import PersonForm from "@/components/PersonForm";
 import { Fragment } from "react";
 import { useSearchParams } from "next/navigation";
+import InvoiceModal from "@/components/InvoiceModal";
 
 type ReservationPeople = {
   id: string;
@@ -53,8 +54,8 @@ type Reservation = {
   passport_expiry: string | null;
   passport_country: string | null;
 
-  ocr_status: string | null;
-  ocr_raw_text: string | null;
+  departure_id: string;
+  departure_price?: number;
 
   people?: ReservationPeople[];
 };
@@ -176,6 +177,8 @@ function ReservationsContent() {
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [departures, setDepartures] = useState<Departure[]>([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
   const [personDraft, setPersonDraft] = useState({
     name: "",
 
@@ -651,6 +654,24 @@ function ReservationsContent() {
       };
     });
   }
+  async function loadDeparturePrice(departureId: string) {
+    const { data, error } = await supabase
+      .from("departures")
+      .select("price")
+      .eq("id", departureId)
+      .single();
+
+    if (error || !data) return;
+
+    setSelected((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        departure_price: data.price,
+      };
+    });
+  }
   async function loadProducts() {
     const { data, error } = await supabase
       .from("products")
@@ -732,7 +753,6 @@ function ReservationsContent() {
 
     try {
       const { data, error } = await supabase.from("reservations").select("*");
-
       if (error) {
         console.error("RESERVATIONS ERROR", error);
         alert(error.message);
@@ -881,6 +901,7 @@ function ReservationsContent() {
     setShowPersonForm(false);
     setMemoDraft(item.memo || "");
     await loadPeople(item.id);
+    await loadDeparturePrice(item.departure_id);
   }
 
   function resetFilters() {
@@ -1002,14 +1023,6 @@ function ReservationsContent() {
           ocr_status: "대기",
         })
         .eq("id", selected.id);
-
-      setSelected({
-        ...selected,
-
-        passport_image: data.publicUrl,
-
-        ocr_status: "대기",
-      });
 
       alert("여권 이미지 업로드 완료");
     } catch (error) {
@@ -1696,20 +1709,37 @@ function ReservationsContent() {
               <div className="mt-6 rounded-xl border p-5">
                 <h3 className="mb-4 font-bold">👥 예약자 명단 관리</h3>
 
-                <button
-                  type="button"
-                  onClick={() => setShowPersonForm(true)}
-                  className="
-    rounded-lg
-    bg-blue-600
-    px-4
-    py-2
-    text-white
-    font-bold
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPersonForm(true)}
+                    className="
+      rounded-lg
+      bg-blue-600
+      px-4
+      py-2
+      font-bold
+      text-white
     "
-                >
-                  + 예약자 추가
-                </button>
+                  >
+                    + 예약자 추가
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowInvoiceModal(true)}
+                    className="
+      rounded-lg
+      bg-blue-600
+      px-4
+      py-2
+      font-bold
+      text-white
+    "
+                  >
+                    📄 인보이스 생성
+                  </button>
+                </div>
                 {showPersonForm && (
                   <div className="mt-5 rounded-xl bg-gray-50 p-5">
                     <PersonForm
@@ -1814,6 +1844,30 @@ px-4 py-2
                     등록된 예약자가 없습니다.
                   </div>
                 )}
+              </div>
+              <div className="mt-6 rounded-xl border p-5">
+                <h3 className="mb-4 font-bold">📄 인보이스</h3>
+
+                <p className="mb-5 text-sm text-gray-500">
+                  예약 정보를 이용하여 여행사 인보이스를 생성합니다.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setShowInvoiceModal(true)}
+                  className="
+      w-full
+      rounded-xl
+      bg-indigo-600
+      py-3
+      font-bold
+      text-white
+      transition
+      hover:bg-indigo-700
+    "
+                >
+                  📄 인보이스 생성
+                </button>
               </div>
 
               {/* 문의내용 */}
@@ -1983,6 +2037,11 @@ focus:bg-white
           </div>
         </div>
       )}
+      <InvoiceModal
+        open={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        reservation={selected}
+      />
     </div>
   );
 }
