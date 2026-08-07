@@ -12,13 +12,15 @@ import {
   flightInfo,
   itinerary4N5D,
   itinerary3N4D,
+  mealBaseUrl,
+  mealImages,
 } from "@/data/baekdu";
 import MobileBookingButton from "@/components/MobileBookingButton";
 import PriceCard from "@/components/PriceCard";
 import ProductHero from "@/components/ProductHero";
 import SectionReveal from "@/components/SectionReveal";
 import StickyBookingBar from "@/components/StickyBookingBar";
-import Timeline from "@/components/BaekduTimeline";
+import Timeline from "@/components/Timeline";
 import ReviewSection from "@/components/sections/ReviewSection";
 import ShoppingSection from "@/components/sections/ShoppingSection";
 import FAQSection from "@/components/sections/FAQSection";
@@ -90,6 +92,8 @@ export default async function BaekduPage() {
       <Timeline
         itinerary4N5D={itinerary4N5D}
         itinerary3N4D={itinerary3N4D}
+        mealBaseUrl={mealBaseUrl}
+        mealImages={mealImages}
         flightInfo={flightInfo}
       />
 

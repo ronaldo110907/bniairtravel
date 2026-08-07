@@ -53,6 +53,26 @@ export interface Hotel {
   desc: string;
 }
 
+export const mealBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/meals/baekdu/";
+
+export const mealImages: Record<string, string> = {
+  호텔식: "breakfast.jpg",
+  "김밥+생수": "gibbap.jpg",
+  오리모듬: "duck.png",
+  산채비빔밥: "bibimbap.png",
+  "누룽지 닭백숙": "chikean.png",
+  "버섯 샤브샤브": "mushroom.png",
+  "삼겹살 무제한": "samgyeopsal.png",
+  보쌈정식: "bossam.png",
+  "소고기 특식": "beef.png",
+  현지식: "local.png",
+  "냉면+꿔바로우": "nangmeyon.png",
+  서파현지식: "seopalocal.png",
+  양꼬치무제한: "yangggoqi.png",
+  소불고기전골: "beefjungol.png",
+};
+
 export const flightInfo = {
   outbound: {
     airline: "이스타항공",
@@ -248,7 +268,7 @@ export const itinerary3N4D: ItineraryItem[] = [
     meals: {
       breakfast: "-----",
       lunch: "냉면+꿔바로우",
-      dinner: "소불고기 전골",
+      dinner: "소불고기전골",
     },
     hotel: "금수학호텔 또는 동급\n온천욕 가능:수영복 필수 지참(대여안됨)"
   },
@@ -315,7 +335,7 @@ export const itinerary4N5D: ItineraryItem[] = [
      meals: {
       breakfast: "-----",
       lunch: "냉면+꿔바로우",
-      dinner: "소불고기 전골",
+      dinner: "소불고기전골",
     },
     hotel: "금수학호텔 또는 동급\n온천욕 가능:수영복 필수 지참(대여안됨)"
     },

@@ -3,27 +3,12 @@
 import { useEffect, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
 
-const mealBaseUrl =
-  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/meals/zhangjiajie/";
-
-const mealImages: Record<string, string> = {
-  호텔식: "breakfast.jpg",
-  "김밥+생수": "gibbap.jpg",
-  오리모듬: "duck.png",
-  산채비빔밥: "bibimbap.png",
-  "누룽지 닭백숙": "chikean.png",
-  "버섯 샤브샤브": "mushroom.png",
-  "삼겹살 무제한": "samgyeopsal.png",
-  보쌈정식: "bossam.png",
-  "소고기 특식": "beef.png",
-};
-
 type Props = {
   defaultCourse?: "4N5D" | "3N4D";
   itinerary4N5D: any[];
   itinerary3N4D: any[];
-  mealBaseUrl?: string;
-  mealImages?: Record<string, string>;
+  mealBaseUrl: string;
+  mealImages: Record<string, string>;
   flightInfo: any;
 };
 
@@ -203,18 +188,24 @@ export default function Timeline({
                       <MealRow
                         label="조식"
                         mealName={item.meals.breakfast}
+                        mealBaseUrl={mealBaseUrl}
+                        mealImages={mealImages}
                         onImageClick={setSelectedImage}
                       />
 
                       <MealRow
                         label="중식"
                         mealName={item.meals.lunch}
+                        mealBaseUrl={mealBaseUrl}
+                        mealImages={mealImages}
                         onImageClick={setSelectedImage}
                       />
 
                       <MealRow
                         label="석식"
                         mealName={item.meals.dinner}
+                        mealBaseUrl={mealBaseUrl}
+                        mealImages={mealImages}
                         onImageClick={setSelectedImage}
                       />
                     </div>
@@ -254,10 +245,14 @@ export default function Timeline({
 function MealRow({
   label,
   mealName,
+  mealBaseUrl,
+  mealImages,
   onImageClick,
 }: {
   label: string;
   mealName: string;
+  mealBaseUrl: string;
+  mealImages: Record<string, string>;
   onImageClick: (image: string) => void;
 }) {
   const imageFile = mealImages[mealName];
