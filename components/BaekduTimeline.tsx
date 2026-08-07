@@ -222,6 +222,8 @@ function MealRow({
   onImageClick: (image: string) => void;
 }) {
   const imageFile = mealImages[mealName];
+  console.log("mealBaseUrl =", mealBaseUrl);
+  console.log(mealName, `${mealBaseUrl}${imageFile}`);
 
   return (
     <div className="flex min-h-12 items-center gap-3">
