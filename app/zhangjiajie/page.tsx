@@ -12,6 +12,7 @@ import {
   flightInfo,
   itinerary4N5D,
   itinerary3N4D,
+  reviews,
   mealBaseUrl,
   mealImages,
 } from "@/data/zhangjiajie";
