@@ -752,7 +752,10 @@ function ReservationsContent() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.from("reservations").select("*");
+      const { data, error } = await supabase
+        .from("reservations")
+        .select("*")
+        .order("departure_date", { ascending: true });
       if (error) {
         console.error("RESERVATIONS ERROR", error);
         alert(error.message);
