@@ -74,6 +74,9 @@ export default async function BaekduPage() {
             description="원하는 출발일을 선택하여 가격과 잔여석을 확인하세요."
           />
           <DepartureCalendar productId="ccbee4a2-7e39-40cc-97d7-38d9d99d5a5a" />
+          <p className="mt-3 text-center text-sm font-bold text-red-600">
+            ⚠️ 특가상품은 기본 일정과 차이가 있으니 꼭 확인해주세요!
+          </p>
         </SectionReveal>
       </section>
 
