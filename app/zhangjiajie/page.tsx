@@ -7,12 +7,13 @@ import {
   includes,
   excludes,
   hotels,
-  reviews,
   shopping,
   faqs,
+  flightInfo,
   itinerary4N5D,
   itinerary3N4D,
-  flightInfo,
+  mealBaseUrl,
+  mealImages,
 } from "@/data/zhangjiajie";
 import MobileBookingButton from "@/components/MobileBookingButton";
 import PriceCard from "@/components/PriceCard";
@@ -89,6 +90,8 @@ export default async function ZhangjiajiePage() {
         <Timeline
           itinerary4N5D={itinerary4N5D}
           itinerary3N4D={itinerary3N4D}
+          mealBaseUrl={mealBaseUrl}
+          mealImages={mealImages}
           flightInfo={flightInfo}
         />
       </SectionReveal>
