@@ -280,7 +280,7 @@ export const itinerary3N4D: ItineraryItem[] = [
     meals: {
       breakfast: "호텔식",
       lunch: "버섯 샤브샤브",
-      dinner: "삼겹살 무제한",
+      dinner: "양꼬치무제한",
     },
     hotel: "연길 국제호텔 또는 동급",
   },
@@ -330,7 +330,7 @@ export const itinerary4N5D: ItineraryItem[] = [
       duration: "전일 관광",
       meals: {
         breakfast: "호텔식",
-        lunch: "현지식",
+        lunch: "서파현지식",
         dinner: "삼겹살 무제한",
       },
       hotel: "금수학호텔 또는 동급\n온천욕 가능:수영복 필수 지참(대여안됨)",

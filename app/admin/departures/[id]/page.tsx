@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import ReservationList from "./components/ReservationList";
 import RoomAssignment from "./components/RoomAssignment";
 import Settlement from "./components/Settlement";
+import { Download } from "lucide-react";
 
 export default function DepartureDetailPage() {
   const params = useParams();
@@ -63,12 +64,58 @@ export default function DepartureDetailPage() {
   );
 
   const remainSeat = (departure?.seat || 0) - reservedCount;
+  async function downloadDispatch() {
+    try {
+      const res = await fetch(`/api/dispatch?id=${params.id}`);
+
+      if (!res.ok) {
+        alert("수배의뢰서 생성 실패");
+        return;
+      }
+
+      const blob = await res.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `수배의뢰서_${departure.products?.title}_${departure.departure_date}.xlsx`;
+
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("다운로드 실패");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl text-center font-bold">출발일 관리</h1>
 
       {departure && (
-        <div className="mx-auto mt-6 max-w-2xl">
+        <div className="mx-auto mt-6 max-w-3xl">
+          <div className="mb-5 flex justify-center">
+            <button
+              type="button"
+              onClick={downloadDispatch}
+              className="
+          flex items-center gap-2
+          rounded-xl
+          bg-emerald-600
+          px-6
+          py-3
+          font-bold
+          text-white
+          hover:bg-emerald-700
+        "
+            >
+              <Download size={18} />
+              수배의뢰서 다운로드
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 gap-x-16 gap-y-3 text-sm">
             <div>
               <span className="font-semibold text-gray-500">상품 : </span>

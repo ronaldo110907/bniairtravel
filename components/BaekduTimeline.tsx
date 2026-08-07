@@ -18,6 +18,11 @@ const mealImages: Record<string, string> = {
   "삼겹살 무제한": "samgyeopsal.png",
   보쌈정식: "bossam.png",
   "소고기 특식": "beef.png",
+  현지식: "local.png",
+  "냉면+꿔바로우": "nangmyeon.png",
+  서파현지식: "seopalocal.png",
+  양꼬치무제한: "yanggoqi.png",
+  소불고기전골: "veefjungol.png",
 };
 
 type Props = {
