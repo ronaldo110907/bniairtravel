@@ -18,7 +18,7 @@ import PriceCard from "@/components/PriceCard";
 import ProductHero from "@/components/ProductHero";
 import SectionReveal from "@/components/SectionReveal";
 import StickyBookingBar from "@/components/StickyBookingBar";
-import Timeline from "@/components/Timeline";
+import Timeline from "@/components/BaekduTimeline";
 import ReviewSection from "@/components/sections/ReviewSection";
 import ShoppingSection from "@/components/sections/ShoppingSection";
 import FAQSection from "@/components/sections/FAQSection";

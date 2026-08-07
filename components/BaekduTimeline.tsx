@@ -11,18 +11,14 @@ const mealBaseUrl =
 const mealImages: Record<string, string> = {
   호텔식: "breakfast.jpg",
   "김밥+생수": "gibbap.jpg",
-  오리모듬: "duck.png",
   산채비빔밥: "bibimbap.png",
-  "누룽지 닭백숙": "chikean.png",
   "버섯 샤브샤브": "mushroom.png",
   "삼겹살 무제한": "samgyeopsal.png",
-  보쌈정식: "bossam.png",
-  "소고기 특식": "beef.png",
   현지식: "local.png",
-  "냉면+꿔바로우": "nangmyeon.png",
+  "냉면+꿔바로우": "nangmeyon.png",
   서파현지식: "seopalocal.png",
-  양꼬치무제한: "yanggoqi.png",
-  소불고기전골: "veefjungol.png",
+  양꼬치무제한: "yangggoqi.png",
+  소불고기전골: "beefjungol.png",
 };
 
 type Props = {
