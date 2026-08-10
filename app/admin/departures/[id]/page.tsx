@@ -7,6 +7,7 @@ import ReservationList from "./components/ReservationList";
 import RoomAssignment from "./components/RoomAssignment";
 import Settlement from "./components/Settlement";
 import { Download } from "lucide-react";
+import DepartureSettlementSummary from "./components/DepartureSettlementSummary";
 
 export default function DepartureDetailPage() {
   const params = useParams();
@@ -153,7 +154,12 @@ export default function DepartureDetailPage() {
 
       <RoomAssignment departureId={String(params.id)} />
 
-      <Settlement />
+      <Settlement reservations={reservations} departure={departure} />
+
+      <DepartureSettlementSummary
+        reservations={reservations}
+        departure={departure}
+      />
     </div>
   );
 }
