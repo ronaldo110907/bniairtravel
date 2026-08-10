@@ -735,7 +735,7 @@ for (let row = approvalHeaderRow; row <= approvalBottomRow; row++) {
   paperSize: 9,
   orientation: "portrait",
   fitToWidth: 1,
-  fitToHeight: 1,
+  fitToHeight: 0,
 };
 
 ws["!margins"] = {
@@ -747,6 +747,10 @@ ws["!margins"] = {
   footer: 0.15,
 };
 
+// 인쇄 영역 - 무조건 A:D
+ws["!printArea"] =
+  `A1:D${approvalBottomRow + 1}`;
+  
 // 인쇄 영역 - 결재란까지 포함
 ws["!printArea"] =
   `A1:D${approvalBottomRow + 1}`;
