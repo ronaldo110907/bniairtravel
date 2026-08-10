@@ -109,6 +109,10 @@ export function downloadSettlementExcel({
 
     ["총 원가", "", "", totalCost],
     ["예약 수익", "", "", profit],
+
+     // 결재란
+    ["", "결재", "계", "대표님"],
+    ["", "", "", ""],
   );
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -146,6 +150,10 @@ export function downloadSettlementExcel({
 
   const profitRow =
     totalCostRow + 1;
+
+  const approvalHeaderRow = profitRow + 1;
+  const approvalBottomRow = approvalHeaderRow + 1;
+
 
   ws["!merges"] = [
     // 제목
@@ -195,6 +203,24 @@ export function downloadSettlementExcel({
       s: { r: profitRow, c: 0 },
       e: { r: profitRow, c: 2 },
     },
+
+    // 결재 - 세로 병합
+{
+  s: { r: approvalHeaderRow, c: 1 },
+  e: { r: approvalBottomRow, c: 1 },
+},
+
+// 계 - 서명칸 세로 병합
+{
+  s: { r: approvalHeaderRow + 1, c: 2 },
+  e: { r: approvalBottomRow, c: 2 },
+},
+
+// 대표님 - 서명칸 세로 병합
+{
+  s: { r: approvalHeaderRow + 1, c: 3 },
+  e: { r: approvalBottomRow, c: 3 },
+},
   ];
 
   // ==============================
@@ -224,8 +250,20 @@ export function downloadSettlementExcel({
     ) {
       return { hpt: 25 };
     }
+    
+    // 결재란 높이
+if (index === approvalHeaderRow) {
+  return { hpt: 22 };
+}
 
-    return { hpt: 21 };
+// 계 / 대표님 서명 공간 높이
+if (
+  index === approvalHeaderRow + 1 ||
+  index === approvalBottomRow
+) {
+  return { hpt: 60 };
+}
+return { hpt: 21 };
   });
 
   // ==============================
@@ -307,13 +345,82 @@ export function downloadSettlementExcel({
       vertical: "center",
     },
 
+   border: {
+  top: {
+    style: "medium",
+    color: { rgb: "000000" },
+  },
+  bottom: {
+    style: "medium",
+    color: { rgb: "000000" },
+  },
+  left: {
+    style: "medium",
+    color: { rgb: "000000" },
+  },
+  right: {
+    style: "medium",
+    color: { rgb: "000000" },
+  },
+},
+  };
+ // ==============================
+// 제목 외곽 테두리
+// ==============================
+
+// 제목 위/아래 굵은선
+["A1", "B1", "C1", "D1"].forEach((address) => {
+  if (!ws[address]) {
+    ws[address] = { t: "s", v: "" };
+  }
+
+  ws[address].s = {
+    ...ws[address].s,
     border: {
+      ...ws[address].s?.border,
+
+      top: {
+        style: "medium",
+        color: { rgb: "000000" },
+      },
+
       bottom: {
         style: "medium",
-        color: { rgb: "333333" },
+        color: { rgb: "000000" },
       },
     },
   };
+});
+
+// 제목 왼쪽 끝
+ws["A1"].s.border.left = {
+  style: "medium",
+  color: { rgb: "000000" },
+};
+
+// 제목 오른쪽 끝
+ws["D1"].s.border.right = {
+  style: "medium",
+  color: { rgb: "000000" },
+};
+
+// 제목 아래 굵은선 전체 A:D
+["A1", "B1", "C1", "D1"].forEach((address) => {
+  if (!ws[address]) {
+    ws[address] = { t: "s", v: "" };
+  }
+
+  ws[address].s = {
+    ...ws[address].s,
+    border: {
+      ...ws[address].s?.border,
+      bottom: {
+        style: "medium",
+        color: { rgb: "000000" },
+      },
+    },
+  };
+});
 
   // ==============================
   // 기본정보 라벨
@@ -550,28 +657,99 @@ export function downloadSettlementExcel({
   });
 
   // ==============================
+// 결재란 최종 스타일
+// ==============================
+
+for (let row = approvalHeaderRow; row <= approvalBottomRow; row++) {
+  for (let col = 1; col <= 3; col++) {
+    const address = XLSX.utils.encode_cell({
+      r: row,
+      c: col,
+    });
+
+    if (!ws[address]) {
+      ws[address] = {
+        t: "s",
+        v: "",
+      };
+    }
+
+    ws[address].s = {
+      ...ws[address].s,
+
+      font: {
+        name: "맑은 고딕",
+        sz: 10,
+        bold: true,
+      },
+
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+      },
+
+      border: {
+        top: {
+          style: "medium",
+          color: { rgb: "000000" },
+        },
+        bottom: {
+          style: "medium",
+          color: { rgb: "000000" },
+        },
+        left: {
+          style: "medium",
+          color: { rgb: "000000" },
+        },
+        right: {
+          style: "medium",
+          color: { rgb: "000000" },
+        },
+      },
+    };
+  }
+}
+// ==============================
+// 결재란 왼쪽 빈칸 테두리 제거
+// ==============================
+
+for (let row = approvalHeaderRow; row <= approvalBottomRow; row++) {
+  const address = XLSX.utils.encode_cell({
+    r: row,
+    c: 0, // A열
+  });
+
+  if (ws[address]) {
+    ws[address].s = {
+      ...ws[address].s,
+      border: {},
+    };
+  }
+}
+
+  // ==============================
   // A4 인쇄 설정
   // ==============================
 
   ws["!pageSetup"] = {
-    paperSize: 9,
-    orientation: "portrait",
-    fitToWidth: 1,
-    fitToHeight: 1,
-  };
+  paperSize: 9,
+  orientation: "portrait",
+  fitToWidth: 1,
+  fitToHeight: 1,
+};
 
-  ws["!margins"] = {
-    left: 0.25,
-    right: 0.25,
-    top: 0.35,
-    bottom: 0.35,
-    header: 0.15,
-    footer: 0.15,
-  };
+ws["!margins"] = {
+  left: 0.7,
+  right: 0.7,
+  top: 1.7,
+  bottom: 1.7,
+  header: 0.15,
+  footer: 0.15,
+};
 
-  // 인쇄 영역
-  ws["!printArea"] =
-    `A1:D${profitRow + 1}`;
+// 인쇄 영역 - 결재란까지 포함
+ws["!printArea"] =
+  `A1:D${approvalBottomRow + 1}`;
 
   // ==============================
   // 파일 생성
