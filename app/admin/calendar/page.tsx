@@ -90,6 +90,9 @@ export default function CalendarPage() {
     return result.length;
   }
 
+  console.log("선택 날짜:", selectedDate);
+  console.log("선택된 출발건:", selectedDepartures);
+
   const groupedDepartures = selectedDepartures.reduce(
     (acc: any, departure: any) => {
       const product = departure.products?.title || "상품명 없음";
@@ -131,27 +134,37 @@ export default function CalendarPage() {
                   {selectedDate.toLocaleDateString("ko-KR")}
                 </div>
 
-                <div className="space-y-2">
-                  {Object.entries(groupedDepartures).map(
-                    ([product, departures]: any) => (
+                <div className="space-y-4">
+                  {selectedDepartures.map((departure: any) => {
+                    const reserved = getReservedPeopleCount(departure.id);
+                    const remain = departure.seat - reserved;
+
+                    const departureReservations = reservations.filter(
+                      (reservation) =>
+                        reservation.departure_id === departure.id,
+                    );
+
+                    return (
                       <div
-                        key={product}
-                        className="mb-6 rounded-lg border bg-gray-50 p-4"
+                        key={departure.id}
+                        className="rounded-lg border bg-white p-3"
                       >
-                        <div className="mb-3 text-lg font-bold">
-                          🧳 {product}
+                        <div className="mb-3 flex items-center justify-between">
+                          <div className="font-bold text-gray-800">
+                            💰 {Number(departure.price || 0).toLocaleString()}원
+                          </div>
+
+                          <div className="text-sm text-gray-500">
+                            {departure.course}
+                          </div>
                         </div>
 
                         <div className="space-y-2">
-                          {reservations
-                            .filter(
-                              (reservation) =>
-                                reservation.departure_id === departures[0].id,
-                            )
-                            .map((reservation) => (
+                          {departureReservations.length > 0 ? (
+                            departureReservations.map((reservation) => (
                               <div
                                 key={reservation.id}
-                                className="flex items-center justify-between rounded border bg-white px-3 py-2"
+                                className="flex items-center justify-between rounded border bg-gray-50 px-3 py-2"
                               >
                                 <div>
                                   👤 {reservation.name}
@@ -166,27 +179,21 @@ export default function CalendarPage() {
                                   상세보기
                                 </a>
                               </div>
-                            ))}
+                            ))
+                          ) : (
+                            <div className="rounded bg-gray-50 px-3 py-2 text-sm text-gray-400">
+                              등록된 예약이 없습니다.
+                            </div>
+                          )}
                         </div>
 
                         <div className="mt-3 text-sm text-gray-500">
-                          {(() => {
-                            const reserved = getReservedPeopleCount(
-                              departures[0].id,
-                            );
-                            const remain = departures[0].seat - reserved;
-
-                            return (
-                              <>
-                                🪑 총 {departures[0].seat}석 | 예약 {reserved}석
-                                | {remain > 0 ? `잔여 ${remain}석` : "🔴 마감"}
-                              </>
-                            );
-                          })()}
+                          🪑 총 {departure.seat}석 | 예약 {reserved}석 |{" "}
+                          {remain > 0 ? `잔여 ${remain}석` : "🔴 마감"}
                         </div>
                       </div>
-                    ),
-                  )}
+                    );
+                  })}
                 </div>
               </>
             ) : (

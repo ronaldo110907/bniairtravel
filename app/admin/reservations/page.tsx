@@ -33,6 +33,7 @@ type Departure = {
   id: string;
   product_id: string;
   departure_date: string;
+  price: number | null;
 };
 
 type Reservation = {
@@ -690,7 +691,7 @@ function ReservationsContent() {
 
     const { data, error } = await supabase
       .from("departures")
-      .select("id, product_id, departure_date")
+      .select("id, product_id, departure_date,price")
       .eq("product_id", productId)
       .order("departure_date");
 
@@ -1533,17 +1534,16 @@ function ReservationsContent() {
                 </label>
 
                 <select
-                  value={newReservation.departure_date}
+                  value={newReservation.departure_id}
                   onChange={(e) => {
                     const selectedDeparture = departures.find(
-                      (departure) =>
-                        departure.departure_date === e.target.value,
+                      (departure) => String(departure.id) === e.target.value,
                     );
 
                     setNewReservation({
                       ...newReservation,
-                      departure_date: e.target.value,
-                      departure_id: selectedDeparture?.id ?? "",
+                      departure_id: e.target.value,
+                      departure_date: selectedDeparture?.departure_date ?? "",
                     });
                   }}
                   className="w-full rounded-xl border px-4 py-3"
@@ -1551,8 +1551,9 @@ function ReservationsContent() {
                   <option value="">출발일 선택</option>
 
                   {departures.map((departure) => (
-                    <option key={departure.id} value={departure.departure_date}>
-                      {departure.departure_date}
+                    <option key={departure.id} value={departure.id}>
+                      {departure.departure_date} ·{" "}
+                      {Number(departure.price || 0).toLocaleString()}원
                     </option>
                   ))}
                 </select>
