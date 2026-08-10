@@ -12,15 +12,20 @@ type Props = {
 function getArrivalDate(departureDate: string, course: string) {
   if (!departureDate) return "";
 
-  const date = new Date(`${departureDate}T00:00:00`);
+  const [year, month, day] = departureDate.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
 
-  if (course === "4N5D") {
+  if (course === "4N5D" || course === "4박5일") {
     date.setDate(date.getDate() + 4);
-  } else if (course === "3N4D") {
+  } else if (course === "3N4D" || course === "3박4일") {
     date.setDate(date.getDate() + 3);
   }
 
-  return date.toISOString().split("T")[0];
+  const resultYear = date.getFullYear();
+  const resultMonth = String(date.getMonth() + 1).padStart(2, "0");
+  const resultDay = String(date.getDate()).padStart(2, "0");
+
+  return `${resultYear}-${resultMonth}-${resultDay}`;
 }
 
 export default function Settlement({ reservations, departure }: Props) {
