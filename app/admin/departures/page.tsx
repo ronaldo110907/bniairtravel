@@ -180,7 +180,7 @@ export default function DepartureAdminPage() {
 
     const completedByDeparture: Record<string, boolean> = {};
 
-    departures.forEach((departure) => {
+    (data ?? []).forEach((departure) => {
       const departureReservationIds =
         reservations
           ?.filter((reservation) => reservation.departure_id === departure.id)
