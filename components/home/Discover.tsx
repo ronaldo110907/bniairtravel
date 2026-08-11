@@ -31,6 +31,16 @@ const destinations = [
     href: "/phuquoc",
   },
   {
+    title: "말레이시아 골프",
+    subtitle: "DISCOVER MALAYSIA",
+    period: "상시 문의",
+    description:
+      "품격 있는 라운딩과 여유로운 휴식을 함께 즐기는 말레이시아 VVIP 골프 여행.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/malaysia.jpg",
+    href: "/malaysia",
+  },
+  {
     title: "상해",
     subtitle: "DISCOVER CHINA",
     period: "2026.08.09 ~ 2026.10.20",
@@ -98,7 +108,7 @@ export default function Discover() {
               </p>
 
               <p className="mt-3 text-lg font-semibold text-yellow-600">
-                {item.period} 운항
+                {item.period}
               </p>
 
               <a

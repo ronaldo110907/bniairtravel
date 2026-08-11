@@ -7,6 +7,7 @@ const menus = [
   { name: "장가계", href: "/zhangjiajie" },
   { name: "백두산", href: "/baekdu" },
   { name: "푸꾸옥", href: "/phuquoc" },
+  { name: "말레이시아", href: "/malaysia" },
   { name: "상해·항주·주가각", href: "/shanghai" },
   { name: "여행갤러리", href: "/gallery" },
   { name: "예약문의", href: "/contact" },
