@@ -2,7 +2,14 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default async function AdminPage() {
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
 
   const { data: todayDepartures } = await supabase
     .from("departures")
@@ -26,16 +33,22 @@ export default async function AdminPage() {
     )
     .in("departure_id", departureIds);
 
-  const now = new Date();
-
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
 
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-  const weekStart = startOfWeek.toISOString().split("T")[0];
-  const weekEnd = endOfWeek.toISOString().split("T")[0];
+  const formatKoreanDate = (date: Date) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
+
+  const weekStart = formatKoreanDate(startOfWeek);
+  const weekEnd = formatKoreanDate(endOfWeek);
 
   const { data: weekDepartures } = await supabase
     .from("departures")
@@ -45,7 +58,7 @@ export default async function AdminPage() {
     products(title)
   `,
     )
-    .gte("departure_date", weekStart)
+    .gte("departure_date", today)
     .lte("departure_date", weekEnd)
     .order("departure_date");
 
