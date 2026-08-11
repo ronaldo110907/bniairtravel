@@ -59,6 +59,7 @@ type Reservation = {
   departure_price?: number;
 
   people?: ReservationPeople[];
+  itinerary_file?: string | null;
 };
 const STATUS_OPTIONS = ["대기", "확정", "취소"];
 const PAGE_SIZE = 20;
@@ -184,6 +185,8 @@ function ReservationsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [departures, setDepartures] = useState<Departure[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+  const [itineraryFile, setItineraryFile] = useState<File | null>(null);
 
   const [personDraft, setPersonDraft] = useState({
     name: "",
@@ -602,39 +605,44 @@ function ReservationsContent() {
       }
     });
 
+    // 상단 정보 제목
+    ["A1", "D1", "A2", "D2"].forEach((cell) => {
+      if (worksheet[cell]) {
+        worksheet[cell].s = {
+          ...worksheet[cell].s,
+          font: {
+            bold: true,
+            color: { rgb: "FFFFFF" },
+          },
+          fill: {
+            fgColor: { rgb: "4F81BD" },
+          },
+        };
+      }
+    });
+
+    // 상단 정보 내용
+    ["B1", "E1", "B2", "E2"].forEach((cell) => {
+      if (worksheet[cell]) {
+        worksheet[cell].s = {
+          ...worksheet[cell].s,
+          font: {
+            bold: true,
+          },
+          fill: {
+            fgColor: { rgb: "EAF2F8" },
+          },
+        };
+      }
+    });
+
+    // 예약자 명단 헤더 A4 ~ I4
     for (let i = 0; i < 9; i++) {
       const cell = XLSX.utils.encode_cell({
         r: 3,
         c: i,
       });
-      ["A1", "A2", "A3", "A4"].forEach((cell) => {
-        if (worksheet[cell]) {
-          worksheet[cell].s = {
-            ...worksheet[cell].s,
-            font: {
-              bold: true,
-              color: { rgb: "FFFFFF" },
-            },
-            fill: {
-              fgColor: { rgb: "4F81BD" },
-            },
-          };
-        }
-      });
 
-      ["B1", "B2", "B3", "B4"].forEach((cell) => {
-        if (worksheet[cell]) {
-          worksheet[cell].s = {
-            ...worksheet[cell].s,
-            font: {
-              bold: true,
-            },
-            fill: {
-              fgColor: { rgb: "EAF2F8" },
-            },
-          };
-        }
-      });
       if (worksheet[cell]) {
         worksheet[cell].s = {
           ...worksheet[cell].s,
@@ -832,6 +840,140 @@ function ReservationsContent() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function uploadItinerary(file?: File) {
+    if (!selected) return;
+
+    const uploadFile = file ?? itineraryFile;
+
+    if (!uploadFile) {
+      alert("일정표 파일을 선택해주세요.");
+      return;
+    }
+
+    try {
+      const fileExt = uploadFile.name.split(".").pop();
+      const filePath = `${selected.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("itineraries")
+        .upload(filePath, uploadFile);
+
+      if (uploadError) {
+        console.error("ITINERARY UPLOAD ERROR", uploadError);
+        alert(uploadError.message);
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from("reservations")
+        .update({
+          itinerary_file: filePath,
+        })
+        .eq("id", selected.id);
+
+      if (updateError) {
+        console.error("ITINERARY DB ERROR", updateError);
+        alert(updateError.message);
+        return;
+      }
+
+      setSelected((prev) =>
+        prev
+          ? {
+              ...prev,
+              itinerary_file: filePath,
+            }
+          : prev,
+      );
+
+      alert("일정표가 업로드되었습니다.");
+
+      setItineraryFile(null);
+
+      await loadReservations();
+    } catch (error) {
+      console.error("ITINERARY ERROR", error);
+      alert("일정표 업로드 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function deleteItinerary() {
+    if (!selected?.itinerary_file) {
+      alert("삭제할 일정표가 없습니다.");
+      return;
+    }
+
+    const confirmed = window.confirm("등록된 일정표를 삭제하시겠습니까?");
+
+    if (!confirmed) return;
+
+    try {
+      const filePath = selected.itinerary_file;
+
+      // 1. Storage 파일 삭제
+      const { error: storageError } = await supabase.storage
+        .from("itineraries")
+        .remove([filePath]);
+
+      if (storageError) {
+        console.error("ITINERARY DELETE ERROR", storageError);
+        alert(storageError.message);
+        return;
+      }
+
+      // 2. DB 일정표 경로 삭제
+      const { error: updateError } = await supabase
+        .from("reservations")
+        .update({
+          itinerary_file: null,
+        })
+        .eq("id", selected.id);
+
+      if (updateError) {
+        console.error("ITINERARY DB DELETE ERROR", updateError);
+        alert(updateError.message);
+        return;
+      }
+
+      // 3. 현재 열려 있는 예약 상세도 바로 갱신
+      setSelected((prev) =>
+        prev
+          ? {
+              ...prev,
+              itinerary_file: null,
+            }
+          : prev,
+      );
+
+      setItineraryFile(null);
+
+      await loadReservations();
+
+      alert("일정표가 삭제되었습니다.");
+    } catch (error) {
+      console.error("ITINERARY DELETE ERROR", error);
+      alert("일정표 삭제 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function viewItinerary() {
+    if (!selected?.itinerary_file) {
+      alert("등록된 일정표가 없습니다.");
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("itineraries")
+      .getPublicUrl(selected.itinerary_file);
+
+    if (!data?.publicUrl) {
+      alert("일정표를 불러오지 못했습니다.");
+      return;
+    }
+
+    window.open(data.publicUrl, "_blank");
   }
 
   function patchReservation(id: string, patch: Partial<Reservation>) {
@@ -2107,14 +2249,13 @@ px-4 py-2
               </div>
 
               {/* 메모 */}
-
               <div>
                 <label
                   className="
-                  mb-3 block
-                  font-black
-                  text-gray-900
-                  "
+      mb-3 block
+      font-black
+      text-gray-900
+    "
                 >
                   📌 상담 메모
                 </label>
@@ -2131,87 +2272,205 @@ px-4 py-2
 - 고객 요청사항 입력`}
                   rows={8}
                   className="
-w-full
-resize-y
-rounded-2xl
-border
-border-gray-200
-bg-gray-50
-p-5
-text-sm
-leading-7
-outline-none
-transition
-focus:border-gray-900
-focus:bg-white
-"
+      w-full
+      resize-y
+      rounded-2xl
+      border
+      border-gray-200
+      bg-gray-50
+      p-5
+      text-sm
+      leading-7
+      outline-none
+      transition
+      focus:border-gray-900
+      focus:bg-white
+    "
                 />
-              </div>
 
-              <div
-                className="
-                flex justify-end gap-3
-                "
-              >
-                <button
-                  type="button"
-                  onClick={() => void savePassportInfo()}
-                  className="
-  rounded-xl
-  bg-blue-600
-  px-6 py-3
-  text-white
-  "
-                >
-                  여권 정보 저장
-                </button>
+                {/* 버튼 영역 */}
+                <div className="mt-4 space-y-3">
+                  {/* 첫 번째 줄 */}
+                  <div className="flex flex-wrap justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void savePassportInfo()}
+                      className="
+          whitespace-nowrap
+          rounded-xl
+          bg-blue-600
+          w-[145px]
+h-[50px]
+          font-bold
+          text-white
+        "
+                    >
+                      여권 정보 저장
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => void saveMemo()}
-                  disabled={savingId === selected.id}
-                  className="
-                  rounded-xl
-                  bg-gray-900
-                  px-6 py-3
-                  text-white
-                  font-bold
-                  "
-                >
-                  {savingId === selected.id ? "저장중..." : "메모 저장"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void downloadExcel()}
-                  className="
+                    <button
+                      type="button"
+                      onClick={() => void saveMemo()}
+                      disabled={savingId === selected.id}
+                      className="
+          whitespace-nowrap
+          rounded-xl
+          bg-gray-900
+          w-[145px]
+h-[50px]
+          font-bold
+          text-white
+        "
+                    >
+                      {savingId === selected.id ? "저장중..." : "메모 저장"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => void downloadExcel()}
+                      className="
+          whitespace-nowrap
+          rounded-xl
+          bg-emerald-600
+          w-[145px]
+h-[50px]
+          text-sm
+          font-bold
+          text-white
+          hover:bg-emerald-700
+        "
+                    >
+                      📥 엑셀 다운로드
+                    </button>
+                  </div>
+
+                  <input
+                    id="itinerary-file-input"
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null;
+                      setItineraryFile(file);
+
+                      if (file && selected?.itinerary_file) {
+                        void uploadItinerary(file);
+                      }
+                    }}
+                  />
+
+                  {/* 두 번째 줄 */}
+                  <div className="flex flex-wrap justify-end gap-3">
+                    {selected.itinerary_file ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => void viewItinerary()}
+                          className="
+              whitespace-nowrap
+              rounded-xl
+              bg-amber-500
+              w-[145px]
+h-[50px]
+              text-sm
+              font-bold
+              text-white
+              hover:bg-amber-600
+            "
+                        >
+                          📄 일정표 보기
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            document
+                              .getElementById("itinerary-file-input")
+                              ?.click()
+                          }
+                          className="
+              whitespace-nowrap
+              rounded-xl
+              border
+              border-amber-500
+              w-[145px]
+h-[50px]
+              text-sm
+              font-bold
+              text-amber-700
+              hover:bg-amber-50
+            "
+                        >
+                          🔄 일정표교체
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deleteItinerary()}
+                          className="
+    h-[50px]
+    w-[145px]
+    whitespace-nowrap
     rounded-xl
-    bg-emerald-600
-    px-5
-    py-3
+    border
+    border-red-300
     text-sm
     font-bold
-    text-white
-    hover:bg-emerald-700
+    text-red-600
+    hover:bg-red-50
   "
-                >
-                  📥 엑셀 다운로드
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditPerson(null);
-                    setSelected(null);
-                    setShowPersonForm(false);
-                  }}
-                  className="
-                  rounded-xl
-                  border
-                  px-6 py-3
-                  font-bold
-                  "
-                >
-                  닫기
-                </button>
+                        >
+                          🗑 일정표 삭제
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (itineraryFile) {
+                            void uploadItinerary();
+                          } else {
+                            document
+                              .getElementById("itinerary-file-input")
+                              ?.click();
+                          }
+                        }}
+                        className="
+            whitespace-nowrap
+            rounded-xl
+            bg-amber-500
+            w-[145px]
+h-[50px]
+            text-sm
+            font-bold
+            text-white
+            hover:bg-amber-600
+          "
+                      >
+                        {itineraryFile
+                          ? `📤 ${itineraryFile.name} 업로드`
+                          : "📎 일정표 선택"}
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditPerson(null);
+                        setSelected(null);
+                        setShowPersonForm(false);
+                      }}
+                      className="
+          whitespace-nowrap
+          rounded-xl
+          border
+          w-[145px]
+h-[50px]
+          font-bold
+        "
+                    >
+                      닫기
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
