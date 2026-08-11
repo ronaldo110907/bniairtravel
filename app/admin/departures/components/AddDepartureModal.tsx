@@ -58,7 +58,17 @@ export default function AddDepartureModal({
             <input
               type="date"
               value={departureDate}
-              onChange={(e) => setDepartureDate(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                const year = value.split("-")[0];
+
+                if (year.length > 4) return;
+
+                setDepartureDate(value);
+              }}
+              min="1900-01-01"
+              max="9999-12-31"
               className="w-full rounded-lg border p-2"
               disabled={hasReservation}
             />

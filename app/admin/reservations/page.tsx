@@ -164,6 +164,8 @@ function ReservationsContent() {
   const [ocrRunning, setOcrRunning] = useState(false);
   const [memoDraft, setMemoDraft] = useState("");
   const [showPersonForm, setShowPersonForm] = useState(false);
+  const [showBulkPersonForm, setShowBulkPersonForm] = useState(false);
+  const [bulkPersonCount, setBulkPersonCount] = useState("");
   const [editPerson, setEditPerson] = useState<ReservationPeople | null>(null);
   const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -299,6 +301,57 @@ function ReservationsContent() {
       passport_sex: "",
       passport_nationality: "",
     });
+  }
+  async function saveBulkPeople() {
+    if (!selected) return;
+
+    const targetCount = Number(bulkPersonCount);
+    const currentCount = selected.people?.length ?? 0;
+
+    if (!targetCount || targetCount < 1) {
+      alert("총 예약인원을 입력해주세요.");
+      return;
+    }
+
+    if (targetCount <= currentCount) {
+      alert(`현재 이미 ${currentCount}명이 등록되어 있습니다.`);
+      return;
+    }
+
+    const addCount = targetCount - currentCount;
+
+    const newPeople = Array.from({ length: addCount }, (_, index) => ({
+      reservation_id: selected.id,
+      name: `예약자 ${currentCount + index + 1}`,
+      sort_order: currentCount + index,
+
+      passport_name: null,
+      passport_number: null,
+      passport_birth: null,
+      passport_issue: null,
+      passport_expiry: null,
+      passport_sex: null,
+      passport_nationality: null,
+    }));
+
+    const { error } = await supabase
+      .from("reservation_people")
+      .insert(newPeople);
+
+    if (error) {
+      console.error("BULK PERSON ERROR", error);
+      alert(error.message);
+      return;
+    }
+
+    await loadPeople(selected.id);
+
+    setShowBulkPersonForm(false);
+    setBulkPersonCount("");
+
+    alert(
+      `총 ${targetCount}명으로 맞췄습니다.\n${addCount}명이 추가되었습니다.`,
+    );
   }
   async function deletePerson(personId: string) {
     const ok = confirm("예약자를 삭제하시겠습니까?");
@@ -1728,7 +1781,23 @@ function ReservationsContent() {
                   >
                     + 예약자 추가
                   </button>
-
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBulkPersonCount("");
+                      setShowBulkPersonForm(true);
+                    }}
+                    className="
+    rounded-lg
+    bg-emerald-600
+    px-4
+    py-2
+    font-bold
+    text-white
+  "
+                  >
+                    👥 인원 일괄 추가
+                  </button>
                   <button
                     type="button"
                     onClick={() => setShowInvoiceModal(true)}
@@ -1744,6 +1813,49 @@ function ReservationsContent() {
                     📄 인보이스 생성
                   </button>
                 </div>
+                {showBulkPersonForm && (
+                  <div className="mt-4 rounded-xl border bg-gray-50 p-4">
+                    <div className="flex items-end gap-3">
+                      <div>
+                        <label className="mb-1 block text-sm font-bold">
+                          총 예약인원
+                        </label>
+
+                        <input
+                          type="number"
+                          min="1"
+                          value={bulkPersonCount}
+                          onChange={(e) => setBulkPersonCount(e.target.value)}
+                          placeholder="예) 20"
+                          className="w-32 rounded-lg border bg-white px-3 py-2"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={saveBulkPeople}
+                        className="rounded-lg bg-emerald-600 px-4 py-2 font-bold text-white"
+                      >
+                        인원 맞추기
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowBulkPersonForm(false);
+                          setBulkPersonCount("");
+                        }}
+                        className="rounded-lg border bg-white px-4 py-2"
+                      >
+                        취소
+                      </button>
+                    </div>
+
+                    <div className="mt-2 text-sm text-gray-500">
+                      현재 {selected?.people?.length ?? 0}명
+                    </div>
+                  </div>
+                )}
                 {showPersonForm && (
                   <div className="mt-5 rounded-xl bg-gray-50 p-5">
                     <PersonForm
