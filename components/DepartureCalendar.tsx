@@ -269,7 +269,7 @@ export default function DepartureCalendar({ productId }: Props) {
                       {cell.day}
                     </span>
 
-                    <div className="mt-auto">
+                    <div className="mt-auto text-center">
                       <p className="hidden text-[10px] font-bold text-[#B88A44] sm:block md:text-xs">
                         {departure.course}
                       </p>
@@ -278,7 +278,7 @@ export default function DepartureCalendar({ productId }: Props) {
                         {departure.price.toLocaleString()}원
                       </p>
 
-                      <div className="mt-1.5 flex items-center gap-2">
+                      <div className="mt-1.5 flex flex-col items-center justify-center gap-1">
                         <span
                           className={[
                             "whitespace-nowrap rounded-full px-1.5 py-0.5 text-[9px] font-bold md:px-2 md:text-[10px]",
@@ -287,16 +287,16 @@ export default function DepartureCalendar({ productId }: Props) {
                               : "bg-emerald-50 text-emerald-700",
                           ].join(" ")}
                         >
-                          {isClosed ? "예약마감" : "예약가능"}
+                          {isClosed ? "예약마감" : "잔여석"}
                         </span>
 
                         {!isClosed && (
                           <span
                             className={[
-                              "whitespace-nowrap text-[10px] font-semibold text-black/50",
+                              "whitespace-nowrap text-sm font-extrabold md:text-lg",
                               departure.seats <= 5
                                 ? "text-red-500"
-                                : "text-black/40",
+                                : "text-emerald-700",
                             ].join(" ")}
                           >
                             {departure.seats}석
