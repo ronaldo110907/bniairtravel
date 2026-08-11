@@ -7,11 +7,13 @@ type Props = {
   onView: (departure: any) => void;
   onManage: (departure: any) => void;
   passengerCounts: Record<string, number>;
+  settlementCompleted: Record<string, boolean>;
 };
 
 export default function DepartureTable({
   departures,
   passengerCounts,
+  settlementCompleted,
   onEdit,
   onDelete,
   onView,
@@ -132,12 +134,20 @@ export default function DepartureTable({
                 </button>
               </td>
               <td className="px-4 py-3 text-center">
-                <button
-                  onClick={() => onManage(departure)}
-                  className="text-purple-600 hover:underline"
-                >
-                  관리
-                </button>
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={() => onManage(departure)}
+                    className="text-purple-600 hover:underline"
+                  >
+                    관리
+                  </button>
+
+                  {settlementCompleted[departure.id] && (
+                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
+                      정산완료
+                    </span>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

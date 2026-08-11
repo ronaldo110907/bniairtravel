@@ -34,6 +34,9 @@ export default function DepartureAdminPage() {
   const [passengerCounts, setPassengerCounts] = useState<
     Record<string, number>
   >({});
+  const [settlementCompleted, setSettlementCompleted] = useState<
+    Record<string, boolean>
+  >({});
 
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [bulkStartDate, setBulkStartDate] = useState("");
@@ -164,6 +167,36 @@ export default function DepartureAdminPage() {
     });
 
     setPassengerCounts(counts);
+
+    const { data: settlements } = await supabase
+      .from("reservation_settlements")
+      .select("reservation_id, is_completed");
+
+    const settlementMap = new Map<string, boolean>();
+
+    settlements?.forEach((settlement) => {
+      settlementMap.set(settlement.reservation_id, settlement.is_completed);
+    });
+
+    const completedByDeparture: Record<string, boolean> = {};
+
+    departures.forEach((departure) => {
+      const departureReservationIds =
+        reservations
+          ?.filter((reservation) => reservation.departure_id === departure.id)
+          .map((reservation) => reservation.id) ?? [];
+
+      if (departureReservationIds.length === 0) {
+        completedByDeparture[departure.id] = false;
+        return;
+      }
+
+      completedByDeparture[departure.id] = departureReservationIds.every(
+        (reservationId) => settlementMap.get(reservationId) === true,
+      );
+    });
+
+    setSettlementCompleted(completedByDeparture);
   }
   useEffect(() => {
     loadProducts();
@@ -449,6 +482,7 @@ export default function DepartureAdminPage() {
       <DepartureTable
         departures={filteredDepartures}
         passengerCounts={passengerCounts}
+        settlementCompleted={settlementCompleted}
         onEdit={(departure) => {
           setEditingDeparture(departure);
           const hasReservation = (passengerCounts[departure.id] ?? 0) > 0;
