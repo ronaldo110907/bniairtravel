@@ -216,7 +216,7 @@ export default async function AdminPage() {
             <img
               src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/banners/banner-cheer.png"
               alt="오늘도 웃으며 시작하는 즐거운 하루!"
-              className="w-full h-auto rounded-xl"
+              className="w-full h-full object-cover"
             />
           </div>
         </div>
