@@ -642,7 +642,7 @@ export default function DepartureAdminPage() {
               💺 잔여좌석 :{" "}
               {Number(selectedDeparture?.seat ?? 0) - totalPassengers}석
             </p>
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 max-h-[55vh] space-y-3 overflow-y-auto pr-2">
               {departureReservations.map((reservation) => (
                 <div key={reservation.id} className="rounded-lg border p-4">
                   <div className="font-bold">{reservation.name}</div>
