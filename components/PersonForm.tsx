@@ -45,7 +45,7 @@ export default function PersonForm({ person, setPerson }: PersonFormProps) {
           onChange={(e) =>
             setPerson({
               ...person,
-              passport_name: e.target.value,
+              passport_name: e.target.value.toUpperCase(),
             })
           }
         />
@@ -127,7 +127,7 @@ py-2
           onChange={(e) =>
             setPerson({
               ...person,
-              passport_number: e.target.value,
+              passport_number: e.target.value.toUpperCase(),
             })
           }
         />
@@ -150,7 +150,7 @@ py-2
           onChange={(e) =>
             setPerson({
               ...person,
-              passport_nationality: e.target.value,
+              passport_nationality: e.target.value.toUpperCase(),
             })
           }
         />
