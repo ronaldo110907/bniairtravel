@@ -178,6 +178,9 @@ function ReservationsContent() {
     status: "대기",
     message: "",
   });
+  const [isCustomProduct, setIsCustomProduct] = useState(false);
+  const [customProductName, setCustomProductName] = useState("");
+
   const [products, setProducts] = useState<Product[]>([]);
   const [departures, setDepartures] = useState<Departure[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -773,7 +776,9 @@ function ReservationsContent() {
       name: newReservation.name,
       phone: newReservation.phone,
       product: newReservation.product,
-      departure_id: newReservation.departure_id, // 추가
+      departure_id: isCustomProduct
+        ? null
+        : newReservation.departure_id || null,
       departure_date: newReservation.departure_date,
       status: newReservation.status,
       message: newReservation.message,
@@ -799,6 +804,9 @@ function ReservationsContent() {
     });
 
     setDepartures([]);
+
+    setIsCustomProduct(false);
+    setCustomProductName("");
 
     await loadReservations();
   }
@@ -1568,9 +1576,27 @@ function ReservationsContent() {
 
                 <select
                   className="w-full rounded-xl border px-4 py-3"
-                  value={newReservation.product}
+                  value={isCustomProduct ? "기타" : newReservation.product}
                   onChange={(e) => {
                     const productTitle = e.target.value;
+
+                    if (productTitle === "기타") {
+                      setIsCustomProduct(true);
+                      setCustomProductName("");
+
+                      setNewReservation({
+                        ...newReservation,
+                        product: "",
+                        departure_id: "",
+                        departure_date: "",
+                      });
+
+                      setDepartures([]);
+                      return;
+                    }
+
+                    setIsCustomProduct(false);
+                    setCustomProductName("");
 
                     const product = products.find(
                       (p) => p.title === productTitle,
@@ -1579,6 +1605,7 @@ function ReservationsContent() {
                     setNewReservation({
                       ...newReservation,
                       product: productTitle,
+                      departure_id: "",
                       departure_date: "",
                     });
 
@@ -1596,7 +1623,22 @@ function ReservationsContent() {
                       {product.title}
                     </option>
                   ))}
+
+                  <option value="기타">기타 (직접입력)</option>
                 </select>
+                {newReservation.product === "기타" && (
+                  <input
+                    type="text"
+                    placeholder="상품명을 직접 입력하세요."
+                    className="mt-3 w-full rounded-xl border px-4 py-3"
+                    onChange={(e) =>
+                      setNewReservation({
+                        ...newReservation,
+                        product: e.target.value,
+                      })
+                    }
+                  />
+                )}
               </div>
 
               <div>
@@ -1604,30 +1646,70 @@ function ReservationsContent() {
                   출발일
                 </label>
 
-                <select
-                  value={newReservation.departure_id}
-                  onChange={(e) => {
-                    const selectedDeparture = departures.find(
-                      (departure) => String(departure.id) === e.target.value,
-                    );
+                {isCustomProduct ? (
+                  <input
+                    type="date"
+                    min="1900-01-01"
+                    max="9999-12-31"
+                    value={newReservation.departure_date}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const year = value.split("-")[0];
 
-                    setNewReservation({
-                      ...newReservation,
-                      departure_id: e.target.value,
-                      departure_date: selectedDeparture?.departure_date ?? "",
-                    });
-                  }}
-                  className="w-full rounded-xl border px-4 py-3"
-                >
-                  <option value="">출발일 선택</option>
+                      if (year.length > 4) return;
 
-                  {departures.map((departure) => (
-                    <option key={departure.id} value={departure.id}>
-                      {departure.departure_date} ·{" "}
-                      {Number(departure.price || 0).toLocaleString()}원
-                    </option>
-                  ))}
-                </select>
+                      setNewReservation({
+                        ...newReservation,
+                        departure_id: "",
+                        departure_date: value,
+                      });
+                    }}
+                    className="w-full rounded-xl border px-4 py-3"
+                  />
+                ) : (
+                  <select
+                    value={newReservation.departure_id}
+                    onChange={(e) => {
+                      const selectedDeparture = departures.find(
+                        (departure) => String(departure.id) === e.target.value,
+                      );
+
+                      setNewReservation({
+                        ...newReservation,
+                        departure_id: e.target.value,
+                        departure_date: selectedDeparture?.departure_date ?? "",
+                      });
+                    }}
+                    className="w-full rounded-xl border px-4 py-3"
+                  >
+                    <option value="">출발일 선택</option>
+
+                    {departures.map((departure) => (
+                      <option key={departure.id} value={departure.id}>
+                        {departure.departure_date} ·{" "}
+                        {Number(departure.price || 0).toLocaleString()}원
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {isCustomProduct && (
+                  <input
+                    type="text"
+                    value={customProductName}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setCustomProductName(value);
+
+                      setNewReservation({
+                        ...newReservation,
+                        product: value,
+                      });
+                    }}
+                    className="mt-3 w-full rounded-xl border px-4 py-3"
+                    placeholder="상품명을 직접 입력하세요."
+                  />
+                )}
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold">상태</label>
