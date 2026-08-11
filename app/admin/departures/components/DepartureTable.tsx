@@ -63,7 +63,9 @@ export default function DepartureTable({
               </td>
 
               <td className="px-4 py-3 text-center">
-                {departure.price.toLocaleString()}원
+                {departure.price_note
+                  ? departure.price_note
+                  : `${departure.price.toLocaleString()}원`}
               </td>
 
               <td className="px-4 py-3 text-center">{departure.airline}</td>

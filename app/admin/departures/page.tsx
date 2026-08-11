@@ -185,6 +185,7 @@ export default function DepartureAdminPage() {
     departure_date: string;
     course: string;
     price: number;
+    price_note: string | null;
     airline: string;
     seat: number;
     status: string;
@@ -211,6 +212,7 @@ export default function DepartureAdminPage() {
           departure_date: data.departure_date,
           course: data.course,
           price: data.price,
+          price_note: data.price_note,
           airline: data.airline,
           seat: data.seat,
           status: data.status,
@@ -234,6 +236,7 @@ export default function DepartureAdminPage() {
       departure_date: data.departure_date,
       course: data.course,
       price: data.price,
+      price_note: data.price_note,
       airline: data.airline,
       seat: data.seat,
       status: data.status,

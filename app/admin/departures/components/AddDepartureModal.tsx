@@ -9,6 +9,7 @@ type Props = {
     departure_date: string;
     course: string;
     price: number;
+    price_note: string | null;
     airline: string;
     seat: number;
     status: string;
@@ -28,6 +29,7 @@ export default function AddDepartureModal({
   const [departureDate, setDepartureDate] = useState("");
   const [course, setCourse] = useState("");
   const [price, setPrice] = useState("");
+  const [priceNote, setPriceNote] = useState("");
   const [airline, setAirline] = useState("");
   const [seat, setSeat] = useState("");
   const [status, setStatus] = useState("예약가능");
@@ -39,6 +41,7 @@ export default function AddDepartureModal({
     setDepartureDate(departure.departure_date ?? "");
     setCourse(departure.course ?? "");
     setPrice(String(departure.price ?? ""));
+    setPriceNote(departure.price_note ?? "");
     setAirline(departure.airline ?? "");
     setSeat(String(departure.seat ?? ""));
     setStatus(departure.status ?? "예약가능");
@@ -88,12 +91,31 @@ export default function AddDepartureModal({
 
           <div>
             <label className="mb-1 block text-sm font-medium">가격</label>
+
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="w-full rounded-lg border p-2"
+              disabled={priceNote === "문의요망"}
+              className="w-full rounded-lg border p-2 disabled:bg-gray-100"
             />
+
+            <label className="mt-2 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={priceNote === "문의요망"}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setPriceNote("문의요망");
+                    setPrice("0");
+                  } else {
+                    setPriceNote("");
+                    setPrice("");
+                  }
+                }}
+              />
+              문의요망
+            </label>
           </div>
 
           <div>
@@ -154,6 +176,7 @@ export default function AddDepartureModal({
                 departure_date: departureDate,
                 course,
                 price: Number(price),
+                price_note: priceNote || null,
                 airline,
                 seat: Number(seat),
                 status,
