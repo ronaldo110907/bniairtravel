@@ -1239,13 +1239,22 @@ function ReservationsContent() {
               <input
                 type="date"
                 value={departureFrom}
-                onChange={(event) => setDepartureFrom(event.target.value)}
+                min="1900-01-01"
+                max="9999-12-31"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const year = value.split("-")[0];
+
+                  if (year.length > 4) return;
+
+                  setDepartureFrom(value);
+                }}
                 className="
-           w-full rounded-xl
-           border border-gray-200
-           bg-gray-50
-           px-4 py-3
-           "
+    w-full rounded-xl
+    border border-gray-200
+    bg-gray-50
+    px-4 py-3
+  "
               />
             </label>
 
@@ -1257,13 +1266,22 @@ function ReservationsContent() {
               <input
                 type="date"
                 value={departureTo}
-                onChange={(event) => setDepartureTo(event.target.value)}
+                min="1900-01-01"
+                max="9999-12-31"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const year = value.split("-")[0];
+
+                  if (year.length > 4) return;
+
+                  setDepartureTo(value);
+                }}
                 className="
-           w-full rounded-xl
-           border border-gray-200
-           bg-gray-50
-           px-4 py-3
-           "
+    w-full rounded-xl
+    border border-gray-200
+    bg-gray-50
+    px-4 py-3
+  "
               />
             </label>
           </div>

@@ -45,7 +45,9 @@ export default function EditDeparturePage() {
     setLoading(false);
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -101,7 +103,16 @@ export default function EditDeparturePage() {
             type="date"
             name="departure_date"
             value={form.departure_date}
-            onChange={handleChange}
+            min="1900-01-01"
+            max="9999-12-31"
+            onChange={(e) => {
+              const value = e.target.value;
+              const year = value.split("-")[0];
+
+              if (year.length > 4) return;
+
+              handleChange(e);
+            }}
             className="w-full rounded-lg border px-4 py-3"
           />
 

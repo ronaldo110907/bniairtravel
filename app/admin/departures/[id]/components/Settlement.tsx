@@ -395,12 +395,19 @@ export default function Settlement({ reservations, departure }: Props) {
                             type="date"
                             className="w-full rounded-lg border px-3 py-2"
                             value={paymentDates[reservation.id] || ""}
-                            onChange={(e) =>
+                            min="1900-01-01"
+                            max="9999-12-31"
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const year = value.split("-")[0];
+
+                              if (year.length > 4) return;
+
                               setPaymentDates((prev) => ({
                                 ...prev,
-                                [reservation.id]: e.target.value,
-                              }))
-                            }
+                                [reservation.id]: value,
+                              }));
+                            }}
                           />
                         </div>
 

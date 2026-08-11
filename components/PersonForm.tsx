@@ -86,20 +86,27 @@ py-2
 
         <input
           type="date"
+          min="1900-01-01"
+          max="9999-12-31"
           className="
     w-full
     rounded-lg
     border
     px-3
     py-2
-    "
+  "
           value={person.passport_birth || ""}
-          onChange={(e) =>
+          onChange={(e) => {
+            const value = e.target.value;
+            const year = value.split("-")[0];
+
+            if (year.length > 4) return;
+
             setPerson({
               ...person,
-              passport_birth: e.target.value,
-            })
-          }
+              passport_birth: value,
+            });
+          }}
         />
       </div>
 
@@ -156,20 +163,27 @@ py-2
 
         <input
           type="date"
+          min="1900-01-01"
+          max="9999-12-31"
           className="
     w-full
     rounded-lg
     border
     px-3
     py-2
-    "
+  "
           value={person.passport_issue || ""}
-          onChange={(e) =>
+          onChange={(e) => {
+            const value = e.target.value;
+            const year = value.split("-")[0];
+
+            if (year.length > 4) return;
+
             setPerson({
               ...person,
-              passport_issue: e.target.value,
-            })
-          }
+              passport_issue: value,
+            });
+          }}
         />
       </div>
 
@@ -180,20 +194,27 @@ py-2
 
         <input
           type="date"
+          min="1900-01-01"
+          max="9999-12-31"
           className="
     w-full
     rounded-lg
     border
     px-3
     py-2
-    "
+  "
           value={person.passport_expiry || ""}
-          onChange={(e) =>
+          onChange={(e) => {
+            const value = e.target.value;
+            const year = value.split("-")[0];
+
+            if (year.length > 4) return;
+
             setPerson({
               ...person,
-              passport_expiry: e.target.value,
-            })
-          }
+              passport_expiry: value,
+            });
+          }}
         />
       </div>
     </div>

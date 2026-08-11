@@ -113,7 +113,16 @@ ${message || "없음"}
           <input
             type="date"
             value={departureDate}
-            onChange={(e) => setDepartureDate(e.target.value)}
+            min="1900-01-01"
+            max="9999-12-31"
+            onChange={(e) => {
+              const value = e.target.value;
+              const year = value.split("-")[0];
+
+              if (year.length > 4) return;
+
+              setDepartureDate(value);
+            }}
             className="w-full rounded-xl border p-4"
           />
           <textarea

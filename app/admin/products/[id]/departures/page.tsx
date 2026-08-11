@@ -101,9 +101,16 @@ export default function DeparturesPage() {
             <input
               type="date"
               value={form.departure_date}
-              onChange={(e) =>
-                setForm({ ...form, departure_date: e.target.value })
-              }
+              min="1900-01-01"
+              max="9999-12-31"
+              onChange={(e) => {
+                const value = e.target.value;
+                const year = value.split("-")[0];
+
+                if (year.length > 4) return;
+
+                setForm({ ...form, departure_date: value });
+              }}
               className="rounded border p-3"
               required
             />
@@ -129,9 +136,7 @@ export default function DeparturesPage() {
               className="rounded border p-3"
             />
 
-            <button className="rounded bg-black text-white">
-              추가
-            </button>
+            <button className="rounded bg-black text-white">추가</button>
           </form>
 
           {loading ? (

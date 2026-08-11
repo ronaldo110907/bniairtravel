@@ -483,7 +483,16 @@ export default function DepartureAdminPage() {
                 <input
                   type="date"
                   value={bulkStartDate}
-                  onChange={(e) => setBulkStartDate(e.target.value)}
+                  min="1900-01-01"
+                  max="9999-12-31"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const year = value.split("-")[0];
+
+                    if (year.length > 4) return;
+
+                    setBulkStartDate(value);
+                  }}
                   className="w-full rounded-lg border px-3 py-2"
                 />
               </div>
@@ -496,7 +505,16 @@ export default function DepartureAdminPage() {
                 <input
                   type="date"
                   value={bulkEndDate}
-                  onChange={(e) => setBulkEndDate(e.target.value)}
+                  min="1900-01-01"
+                  max="9999-12-31"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const year = value.split("-")[0];
+
+                    if (year.length > 4) return;
+
+                    setBulkEndDate(value);
+                  }}
                   className="w-full rounded-lg border px-3 py-2"
                 />
               </div>

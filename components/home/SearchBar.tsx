@@ -28,6 +28,8 @@ export default function SearchBar() {
 
             <input
               type="date"
+              min="1900-01-01"
+              max="9999-12-31"
               className="mt-3 w-full bg-transparent text-lg outline-none"
             />
           </div>
