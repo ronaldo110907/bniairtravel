@@ -8,6 +8,7 @@ import PersonForm from "@/components/PersonForm";
 import { Fragment } from "react";
 import { useSearchParams } from "next/navigation";
 import InvoiceModal from "@/components/InvoiceModal";
+import TravelContractModal from "@/components/contract/TravelContractModal";
 
 type ReservationPeople = {
   id: string;
@@ -187,6 +188,8 @@ function ReservationsContent() {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   const [itineraryFile, setItineraryFile] = useState<File | null>(null);
+
+  const [showContractModal, setShowContractModal] = useState(false);
 
   const [personDraft, setPersonDraft] = useState({
     name: "",
@@ -2228,6 +2231,34 @@ px-4 py-2
                 </button>
               </div>
 
+              {/* 기타상품 여행계약서 */}
+              {!selected.departure_id && (
+                <div className="mt-6 rounded-xl border p-5">
+                  <h3 className="mb-4 font-bold">📑 여행계약서</h3>
+
+                  <p className="mb-5 text-sm text-gray-500">
+                    기타 상품 예약에 대한 국외여행 계약서를 생성합니다.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowContractModal(true)}
+                    className="
+        w-full
+        rounded-xl
+        bg-slate-700
+        py-3
+        font-bold
+        text-white
+        transition
+        hover:bg-slate-800
+      "
+                  >
+                    📑 여행계약서 생성
+                  </button>
+                </div>
+              )}
+
               {/* 문의내용 */}
 
               <div>
@@ -2515,6 +2546,11 @@ h-[50px]
       <InvoiceModal
         open={showInvoiceModal}
         onClose={() => setShowInvoiceModal(false)}
+        reservation={selected}
+      />
+      <TravelContractModal
+        open={showContractModal}
+        onClose={() => setShowContractModal(false)}
         reservation={selected}
       />
     </div>
