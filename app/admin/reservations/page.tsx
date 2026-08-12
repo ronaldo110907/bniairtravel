@@ -1236,8 +1236,14 @@ function ReservationsContent() {
     startOfWeek.setDate(startOfWeek.getDate() + diff);
     startOfWeek.setHours(0, 0, 0, 0);
 
+    const startOfMonth = new Date(now);
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
     return {
-      total: list.length,
+      total: list.filter(
+        (item) => new Date(item.created_at).getTime() >= startOfMonth.getTime(),
+      ).length,
       today: list.filter((item) => toDateInputValue(item.created_at) === today)
         .length,
       week: list.filter(
@@ -1358,7 +1364,7 @@ function ReservationsContent() {
         </div>
 
         <div className="mb-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="전체 예약" value={stats.total} />
+          <StatCard label="이번 달 접수" value={stats.total} />
 
           <StatCard label="오늘 신규 접수" value={stats.today} />
 
