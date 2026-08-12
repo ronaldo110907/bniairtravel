@@ -221,7 +221,7 @@ export default function Hero() {
                 <div className="mt-2 text-sm leading-6 text-white/90">
                   카카오톡에서는 앱 설치가 지원되지 않습니다.
                   <br />
-                  우측 상단 ⋮ 메뉴에서
+                  우측 하단 ⋮ 메뉴에서
                   <br />
                   <strong>Chrome(크롬)으로 열기</strong>를 선택해주세요.
                 </div>

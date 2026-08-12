@@ -163,6 +163,22 @@ function getDefaultDepartureRange() {
   };
 }
 
+function formatPhoneNumber(phone?: string | null) {
+  if (!phone) return "-";
+
+  const numbers = phone.replace(/\D/g, "");
+
+  if (numbers.length === 11) {
+    return numbers.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+  }
+
+  if (numbers.length === 10) {
+    return numbers.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+  }
+
+  return phone;
+}
+
 function ReservationsContent() {
   const [list, setList] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1529,7 +1545,7 @@ function ReservationsContent() {
                         href={`tel:${item.phone}`}
                         className="text-blue-600 hover:underline"
                       >
-                        {item.phone || "-"}
+                        {formatPhoneNumber(item.phone)}
                       </a>
                     </td>
 
