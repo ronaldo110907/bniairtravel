@@ -121,7 +121,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
       overflow: visible !important;
       box-shadow: none !important;
       border-radius: 0 !important;
-      zoom: 0.78;
+      zoom: 0.75;
     }
 
     .invoice-box,
