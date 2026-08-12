@@ -301,6 +301,13 @@ export default async function AdminPage() {
             </div>
           </div>
         </div>
+        <div className="overflow-hidden rounded-xl border bg-white shadow">
+          <img
+            src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/ai3.png"
+            alt="민우 & 지원 개발팀"
+            className="h-auto w-full object-cover"
+          />
+        </div>
       </div>
     </div>
   );
