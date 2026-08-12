@@ -20,6 +20,7 @@ export default function Hero() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [installable, setInstallable] = useState(false);
+  const [isKakaoBrowser, setIsKakaoBrowser] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -45,6 +46,14 @@ export default function Hero() {
       window.removeEventListener("beforeinstallprompt", handler);
     };
   }, []);
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+
+    if (userAgent.includes("kakaotalk")) {
+      setIsKakaoBrowser(true);
+    }
+  }, []);
+
   async function installApp() {
     if (!deferredPrompt) return;
 
@@ -184,6 +193,40 @@ export default function Hero() {
             >
               📱 앱 설치
             </motion.button>
+          )}
+          {isKakaoBrowser && !installable && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 1.2,
+                duration: 0.8,
+              }}
+              className="mt-8 text-center"
+            >
+              <div
+                className="
+        rounded-2xl
+        border
+        border-white/40
+        bg-black/30
+        px-6
+        py-4
+        text-white
+        backdrop-blur-md
+      "
+              >
+                <div className="text-lg font-bold">📱 BNI항공여행 앱 설치</div>
+
+                <div className="mt-2 text-sm leading-6 text-white/90">
+                  카카오톡에서는 앱 설치가 지원되지 않습니다.
+                  <br />
+                  우측 상단 ⋮ 메뉴에서
+                  <br />
+                  <strong>다른 브라우저로 열기</strong>를 선택해주세요.
+                </div>
+              </div>
+            </motion.div>
           )}
         </div>
       </div>
