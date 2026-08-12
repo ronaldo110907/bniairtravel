@@ -293,11 +293,11 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               <table className="w-full text-sm">
                 <tbody>
                   <tr className="border-b">
-                    <td className="w-40 bg-gray-50 px-4 py-3 font-semibold">
+                    <td className="w-40 bg-gray-50 px-4 py-2 font-semibold">
                       여행경비
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2">
                       <div className="flex items-center justify-end gap-2">
                         <input
                           value={totalPrice}
@@ -316,7 +316,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
                       계약금
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2">
                       <div className="flex items-center justify-end gap-2">
                         <input
                           value={deposit}
@@ -334,7 +334,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
                       커미션
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2">
                       <div className="flex items-center justify-end gap-2">
                         <input
                           value={commission}
