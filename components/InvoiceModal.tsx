@@ -63,6 +63,8 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
   const [receiver, setReceiver] = useState("");
   const [totalPrice, setTotalPrice] = useState("");
   const [deposit, setDeposit] = useState("");
+  const [commission, setCommission] = useState("");
+
   const [invoiceType, setInvoiceType] = useState<"deposit" | "balance">(
     "deposit",
   );
@@ -72,7 +74,13 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
   const totalAmount = (reservation?.departure_price ?? 0) * peopleCount;
   const enteredTotalPrice = parseMoney(totalPrice);
   const enteredDeposit = parseMoney(deposit);
-  const balance = Math.max(enteredTotalPrice - enteredDeposit, 0);
+  const enteredCommission = parseMoney(commission);
+
+  const balance = Math.max(
+    enteredTotalPrice - enteredDeposit - enteredCommission,
+    0,
+  );
+
   const amountToPay = invoiceType === "deposit" ? enteredDeposit : balance;
 
   const today = new Date().toISOString().split("T")[0];
@@ -82,6 +90,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
   useEffect(() => {
     setTotalPrice(totalAmount.toLocaleString());
     setDeposit("");
+    setCommission("");
   }, [totalAmount, reservation?.departure_id]);
 
   const handlePrint = useReactToPrint({
@@ -320,7 +329,24 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
                       </div>
                     </td>
                   </tr>
+                  <tr className="border-b">
+                    <td className="bg-gray-50 px-4 py-3 font-semibold">
+                      커미션
+                    </td>
 
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <input
+                          value={commission}
+                          onChange={(event) =>
+                            setCommission(formatMoney(event.target.value))
+                          }
+                          className="w-56 rounded-md border border-gray-300 px-3 py-2 text-right outline-none"
+                        />
+                        <span className="font-medium">원</span>
+                      </div>
+                    </td>
+                  </tr>
                   <tr>
                     <td className="bg-yellow-50 px-4 py-4 text-lg font-bold">
                       {invoiceType === "deposit" ? "잔금" : "최종결제"}
