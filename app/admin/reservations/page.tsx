@@ -143,6 +143,26 @@ function toDateInputValue(value?: string | null) {
   return `${year}-${month}-${day}`;
 }
 
+function getDefaultDepartureRange() {
+  const today = new Date();
+
+  const sixMonthsLater = new Date(today);
+  sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+
+  const format = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  return {
+    from: format(today),
+    to: format(sixMonthsLater),
+  };
+}
+
 function ReservationsContent() {
   const [list, setList] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,8 +171,12 @@ function ReservationsContent() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("전체");
-  const [departureFrom, setDepartureFrom] = useState("");
-  const [departureTo, setDepartureTo] = useState("");
+  const defaultDepartureRange = getDefaultDepartureRange();
+
+  const [departureFrom, setDepartureFrom] = useState(
+    defaultDepartureRange.from,
+  );
+  const [departureTo, setDepartureTo] = useState(defaultDepartureRange.to);
   const [createdFrom, setCreatedFrom] = useState("");
   const [createdTo, setCreatedTo] = useState("");
   const [page, setPage] = useState(1);
@@ -1117,8 +1141,11 @@ function ReservationsContent() {
   function resetFilters() {
     setSearch("");
     setStatusFilter("전체");
-    setDepartureFrom("");
-    setDepartureTo("");
+    const defaultRange = getDefaultDepartureRange();
+
+    setDepartureFrom(defaultRange.from);
+    setDepartureTo(defaultRange.to);
+
     setCreatedFrom("");
     setCreatedTo("");
     setPage(1);
