@@ -245,6 +245,10 @@ function ReservationsContent() {
     passport_nationality: "",
   });
 
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+  const [editCustomerName, setEditCustomerName] = useState("");
+  const [editCustomerPhone, setEditCustomerPhone] = useState("");
+
   useEffect(() => {
     void loadReservations();
     void loadProducts();
@@ -2013,13 +2017,111 @@ function ReservationsContent() {
                 p-6
                 "
               >
-                <h3 className="mb-5 font-black text-gray-900">👤 고객 정보</h3>
+                <div className="mb-5 flex items-center justify-between">
+                  <h3 className="font-black text-gray-900">👤 고객 정보</h3>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditCustomerName(selected.name ?? "");
+                      setEditCustomerPhone(selected.phone ?? "");
+                      setIsEditingCustomer(true);
+                    }}
+                    className="text-sm font-bold text-blue-600 hover:underline"
+                  >
+                    수정
+                  </button>
+                </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Detail label="예약자" value={selected.name} />
+                  {isEditingCustomer ? (
+                    <>
+                      <div>
+                        <div className="mb-1 text-xs text-gray-500">예약자</div>
+                        <input
+                          type="text"
+                          value={editCustomerName}
+                          onChange={(e) => setEditCustomerName(e.target.value)}
+                          className="w-full rounded-lg border bg-white px-3 py-2 font-semibold"
+                        />
+                      </div>
 
-                  <Detail label="연락처" value={selected.phone} />
+                      <div>
+                        <div className="mb-1 text-xs text-gray-500">연락처</div>
+                        <input
+                          type="text"
+                          value={editCustomerPhone}
+                          onChange={(e) => setEditCustomerPhone(e.target.value)}
+                          className="w-full rounded-lg border bg-white px-3 py-2 font-semibold"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Detail label="예약자" value={selected.name} />
+                      <Detail label="연락처" value={selected.phone} />
+                    </>
+                  )}
                 </div>
+
+                {isEditingCustomer && (
+                  <div className="mt-5 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from("reservations")
+                          .update({
+                            name: editCustomerName.trim(),
+                            phone: editCustomerPhone.trim(),
+                          })
+                          .eq("id", selected.id);
+
+                        if (error) {
+                          console.error(error);
+                          alert("고객 정보 수정에 실패했습니다.");
+                          return;
+                        }
+
+                        setSelected({
+                          ...selected,
+                          name: editCustomerName.trim(),
+                          phone: editCustomerPhone.trim(),
+                        });
+
+                        setList((prev) =>
+                          prev.map((item) =>
+                            item.id === selected.id
+                              ? {
+                                  ...item,
+                                  name: editCustomerName.trim(),
+                                  phone: editCustomerPhone.trim(),
+                                }
+                              : item,
+                          ),
+                        );
+
+                        setIsEditingCustomer(false);
+                        alert("고객 정보가 수정되었습니다.");
+                      }}
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white"
+                    >
+                      저장
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingCustomer(false);
+                        setEditCustomerName("");
+                        setEditCustomerPhone("");
+                      }}
+                      className="rounded-lg border bg-white px-4 py-2 text-sm font-bold text-gray-600"
+                    >
+                      취소
+                    </button>
+                  </div>
+                )}
 
                 <div className="mt-5 flex gap-3">
                   <a
@@ -2034,20 +2136,6 @@ function ReservationsContent() {
                     "
                   >
                     📞 전화하기
-                  </a>
-
-                  <a
-                    href="#"
-                    className="
-                    rounded-xl
-                    bg-yellow-400
-                    px-5 py-3
-                    text-sm
-                    font-bold
-                    text-black
-                    "
-                  >
-                    💬 카카오 상담
                   </a>
                 </div>
               </div>

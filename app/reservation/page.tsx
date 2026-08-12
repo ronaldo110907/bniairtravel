@@ -137,6 +137,26 @@ ${message || "없음"}
           >
             {loading ? "접수중..." : "예약 문의하기"}
           </button>
+          <a
+            href="http://pf.kakao.com/_cfaRX/chat/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+    flex
+    w-full
+    items-center
+    justify-center
+    rounded-xl
+    bg-[#FEE500]
+    py-4
+    font-semibold
+    text-[#191919]
+    transition
+    hover:bg-[#F5DC00]
+  "
+          >
+            💬 카카오톡으로 상담하기
+          </a>
         </form>
       </div>
     </main>
