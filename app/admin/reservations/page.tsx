@@ -1126,6 +1126,15 @@ function ReservationsContent() {
       alert(peopleError.message);
       return;
     }
+    const confirmed = window.confirm(
+      "정말 이 예약을 삭제하시겠습니까?\n삭제된 예약은 복구할 수 없습니다.",
+    );
+
+    if (!confirmed) {
+      setDeletingId(null);
+      return;
+    }
+
     //예약삭제//
     const { data, error } = await supabase
       .from("reservations")
