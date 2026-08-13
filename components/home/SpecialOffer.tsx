@@ -37,6 +37,7 @@ export default function SpecialOffer() {
 
     loadOffers();
   }, []);
+
   if (loading) {
     return null;
   }

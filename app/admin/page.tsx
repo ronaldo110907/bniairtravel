@@ -260,6 +260,12 @@ export default async function AdminPage() {
             >
               📆 출발 달력
             </Link>
+            <Link
+              href="/admin/special"
+              className="col-span-2 rounded-lg bg-red-600 p-4 text-center font-bold text-white"
+            >
+              🔥 긴급특가 관리
+            </Link>
           </div>
         </div>
         {/* 홈페이지 개발 원칙 */}
