@@ -3,10 +3,24 @@
 import { useEffect, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
 
+type CustomTab = {
+  key: string;
+  label: string;
+  itinerary: any[];
+};
+
 type Props = {
   defaultCourse?: "4N5D" | "3N4D";
-  itinerary4N5D: any[];
-  itinerary3N4D: any[];
+
+  itinerary4N5D?: any[];
+  itinerary3N4D?: any[];
+
+  customTabs?: CustomTab[];
+  activeCustomTab?: string;
+  onCustomTabChange?: (key: string) => void;
+
+  description?: string;
+
   mealBaseUrl: string;
   mealImages: Record<string, string>;
   flightInfo: any;
@@ -14,8 +28,12 @@ type Props = {
 
 export default function Timeline({
   defaultCourse = "4N5D",
-  itinerary4N5D,
-  itinerary3N4D,
+  itinerary4N5D = [],
+  itinerary3N4D = [],
+  customTabs,
+  activeCustomTab: controlledCustomTab,
+  onCustomTabChange,
+  description = "장가계 핵심 관광지를 여유롭게 둘러보는 프리미엄 일정",
   mealBaseUrl,
   mealImages,
   flightInfo,
@@ -23,6 +41,19 @@ export default function Timeline({
   const [activeCourse, setActiveCourse] = useState<"4N5D" | "3N4D">(
     defaultCourse,
   );
+  const [internalCustomTab, setInternalCustomTab] = useState(
+    customTabs?.[0]?.key ?? "",
+  );
+
+  const activeCustomTab = controlledCustomTab ?? internalCustomTab;
+
+  const changeCustomTab = (key: string) => {
+    if (controlledCustomTab === undefined) {
+      setInternalCustomTab(key);
+    }
+
+    onCustomTabChange?.(key);
+  };
   useEffect(() => {
     const handler = (event: Event) => {
       const customEvent = event as CustomEvent<"4N5D" | "3N4D">;
@@ -37,7 +68,16 @@ export default function Timeline({
   }, []);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const itinerary = activeCourse === "4N5D" ? itinerary4N5D : itinerary3N4D;
+  const activeCustomItinerary = customTabs?.find(
+    (tab) => tab.key === activeCustomTab,
+  )?.itinerary;
+
+  const itinerary =
+    customTabs && customTabs.length > 0
+      ? (activeCustomItinerary ?? customTabs[0].itinerary)
+      : activeCourse === "4N5D"
+        ? itinerary4N5D
+        : itinerary3N4D;
   const { outbound, inbound } = flightInfo;
 
   return (
@@ -52,39 +92,59 @@ export default function Timeline({
 
         <h2 className="mt-4 text-4xl font-bold md:text-5xl">여행 일정</h2>
 
-        <p className="mt-5 text-gray-500">
-          장가계 핵심 관광지를 여유롭게 둘러보는 프리미엄 일정
-        </p>
+        <p className="mt-5 text-gray-500">{description}</p>
       </div>
 
       <div className="mb-14 flex justify-center">
-        <div className="inline-flex rounded-full border border-[#E8DCC4] bg-white p-1.5 shadow-sm">
-          <button
-            type="button"
-            onClick={() => setActiveCourse("4N5D")}
-            className={[
-              "rounded-full px-6 py-3 text-sm font-bold transition-all duration-300 md:px-8",
-              activeCourse === "4N5D"
-                ? "bg-[#C8A15A] text-white shadow-md"
-                : "text-gray-500 hover:text-[#B88A44]",
-            ].join(" ")}
-          >
-            4박5일 일정
-          </button>
+        {customTabs && customTabs.length > 0 ? (
+          // 푸꾸옥 등 상품별 커스텀 탭
+          <div className="inline-flex flex-wrap justify-center rounded-full border border-[#E8DCC4] bg-white p-1.5 shadow-sm">
+            {customTabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => changeCustomTab(tab.key)}
+                className={[
+                  "rounded-full px-6 py-3 text-sm font-bold transition-all duration-300 md:px-8",
+                  activeCustomTab === tab.key
+                    ? "bg-[#C8A15A] text-white shadow-md"
+                    : "text-gray-500 hover:text-[#B88A44]",
+                ].join(" ")}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          // 장가계 / 백두산 기존 일정 탭
+          <div className="inline-flex rounded-full border border-[#E8DCC4] bg-white p-1.5 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setActiveCourse("4N5D")}
+              className={[
+                "rounded-full px-6 py-3 text-sm font-bold transition-all duration-300 md:px-8",
+                activeCourse === "4N5D"
+                  ? "bg-[#C8A15A] text-white shadow-md"
+                  : "text-gray-500 hover:text-[#B88A44]",
+              ].join(" ")}
+            >
+              4박5일 일정
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveCourse("3N4D")}
-            className={[
-              "rounded-full px-6 py-3 text-sm font-bold transition-all duration-300 md:px-8",
-              activeCourse === "3N4D"
-                ? "bg-[#C8A15A] text-white shadow-md"
-                : "text-gray-500 hover:text-[#B88A44]",
-            ].join(" ")}
-          >
-            3박4일 일정
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setActiveCourse("3N4D")}
+              className={[
+                "rounded-full px-6 py-3 text-sm font-bold transition-all duration-300 md:px-8",
+                activeCourse === "3N4D"
+                  ? "bg-[#C8A15A] text-white shadow-md"
+                  : "text-gray-500 hover:text-[#B88A44]",
+              ].join(" ")}
+            >
+              3박4일 일정
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mb-10 grid gap-4 md:grid-cols-2">
@@ -127,11 +187,11 @@ export default function Timeline({
             className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
             <div className="grid lg:grid-cols-[360px_1fr]">
-              <div className="relative min-h-[280px] overflow-hidden">
+              <div className="relative min-h-[280px] bg-[#F7F3EC]">
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="absolute inset-0 h-full w-full object-cover transition duration-700 hover:scale-105"
+                  className="absolute inset-0 h-full w-full object-contain p-3 transition duration-700 hover:scale-[1.02]"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
@@ -178,6 +238,36 @@ export default function Timeline({
                   ))}
                 </div>
 
+                {/* 관광지 세부 사진 */}
+                {item.spotImages && item.spotImages.length > 0 && (
+                  <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+                    {item.spotImages.map(
+                      (
+                        spot: { name: string; image: string },
+                        index: number,
+                      ) => (
+                        <button
+                          key={`${spot.name}-${index}`}
+                          type="button"
+                          onClick={() => setSelectedImage(spot.image)}
+                          className="group overflow-hidden rounded-2xl border border-[#ECE7DF] bg-white text-left"
+                        >
+                          <div className="aspect-[4/3] overflow-hidden bg-[#F7F3EC]">
+                            <img
+                              src={spot.image}
+                              alt={spot.name}
+                              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            />
+                          </div>
+
+                          <p className="px-3 py-3 text-sm font-semibold text-gray-700">
+                            {spot.name}
+                          </p>
+                        </button>
+                      ),
+                    )}
+                  </div>
+                )}
                 <div className="mt-7 grid gap-4 md:grid-cols-2">
                   <div className="rounded-2xl border border-[#F0EAE1] bg-[#FCFAF7] p-5">
                     <p className="mb-3 text-sm font-bold text-[#B88A44]">

@@ -9,9 +9,13 @@ type Shopping = {
 
 type Props = {
   shopping: Shopping[];
+  showNotice?: boolean;
 };
 
-export default function ShoppingSection({ shopping }: Props) {
+export default function ShoppingSection({
+  shopping,
+  showNotice = true,
+}: Props) {
   return (
     <section className="mx-auto max-w-7xl py-24">
       <div className="text-center mb-14">
@@ -24,11 +28,11 @@ export default function ShoppingSection({ shopping }: Props) {
         </p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+      <div className="flex flex-wrap justify-center gap-8">
         {shopping.map((shop) => (
           <div
             key={shop.title}
-            className="overflow-hidden rounded-3xl border border-[#ECE7DF] bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl"
+            className="w-full max-w-[300px] overflow-hidden rounded-3xl border border-[#ECE7DF] bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl"
           >
             <img
               src={shop.image}
@@ -44,11 +48,13 @@ export default function ShoppingSection({ shopping }: Props) {
           </div>
         ))}
       </div>
-
-      <div className="mt-10 rounded-3xl bg-[#FCFAF7] p-6 text-sm leading-7 text-gray-600">
-        ※ 쇼핑센터 방문은 여행 일정에 포함되어 있으며, 구매는 고객님의 자율적인
-        선택입니다. 3박 4일은 2곳, 4박 5일은 3곳의 쇼핑센터를 방문합니다.
-      </div>
+      {showNotice && (
+        <div className="mt-10 rounded-3xl bg-[#FCFAF7] p-6 text-sm leading-7 text-gray-600">
+          ※ 쇼핑센터 방문은 여행 일정에 포함되어 있으며, 구매는 고객님의
+          자율적인 선택입니다. 3박 4일은 2곳, 4박 5일은 3곳의 쇼핑센터를
+          방문합니다.
+        </div>
+      )}
     </section>
   );
 }

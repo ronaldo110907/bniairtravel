@@ -1,6 +1,16 @@
 "use client";
 
-import { Hotel } from "@/data/zhangjiajie";
+import { useState } from "react";
+import ImageLightbox from "@/components/ImageLightbox";
+
+type Hotel = {
+  id: number;
+  name: string;
+  grade: string;
+  image: string;
+  roomImage?: string;
+  desc: string;
+};
 
 type Props = {
   title?: string;
@@ -15,7 +25,7 @@ export default function HotelCard({
   baseUrl,
   hotels,
 }: Props) {
-  console.log("hotels =", hotels);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
     <section className="bg-[#1f1f1f] px-6 py-24 text-white">
@@ -34,13 +44,28 @@ export default function HotelCard({
               key={hotel.id}
               className="group overflow-hidden rounded-[34px] border border-white/10 bg-white/5"
             >
-              <div className="overflow-hidden">
+              <div className="flex h-[300px] w-full overflow-hidden">
                 <img
                   src={`${baseUrl}${hotel.image}`}
-                  alt={hotel.name}
-                  onError={() => console.log("이미지 로드 실패")}
-                  className="h-[340px] w-full object-cover opacity-90 transition duration-700 group-hover:scale-105"
+                  alt={`${hotel.name} 호텔`}
+                  onClick={() => setSelectedImage(`${baseUrl}${hotel.image}`)}
+                  className={
+                    hotel.roomImage
+                      ? "h-full w-1/2 object-cover"
+                      : "h-full w-full object-cover"
+                  }
                 />
+
+                {hotel.roomImage && (
+                  <img
+                    src={`${baseUrl}${hotel.roomImage}`}
+                    alt={`${hotel.name} 객실`}
+                    onClick={() =>
+                      setSelectedImage(`${baseUrl}${hotel.roomImage}`)
+                    }
+                    className="h-full w-1/2 object-cover"
+                  />
+                )}
               </div>
 
               <div className="p-8">
@@ -58,6 +83,13 @@ export default function HotelCard({
           ※ 호텔은 현지 사정 및 출발일에 따라 동급 호텔로 변경될 수 있습니다.
         </p>
       </div>
+      {selectedImage && (
+        <ImageLightbox
+          open={!!selectedImage}
+          image={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </section>
   );
 }

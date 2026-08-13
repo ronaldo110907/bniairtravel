@@ -9,9 +9,10 @@ type Product = {
   departure_airport?: string | null;
   airline?: string | null;
   duration?: string | null;
-  hero_badge?: string | null;
+  hero_badge?: string;
   hero_heading?: string | null;
   hero_description?: string | null;
+  slug?: string;
 };
 
 export default function ProductHero({ product }: { product: Product }) {
@@ -37,13 +38,21 @@ export default function ProductHero({ product }: { product: Product }) {
             {product?.hero_badge || "PREMIUM CHINA TRAVEL"}
           </p>
 
-          <h1 className="text-5xl font-bold leading-[1.08] md:text-7xl">
+          <h1 className="whitespace-pre-line text-5xl font-bold leading-[1.08] md:text-7xl">
             {product?.title || "장가계"}
             <br />
-            {product?.hero_heading || "하늘과 맞닿은 비경"}
+            {product?.slug === "phuquoc" ? (
+              <>
+                청주에서 만나는
+                <br />
+                천국을 닮은 휴양지
+              </>
+            ) : (
+              product?.hero_heading || "하늘과 맞닿은 비경"
+            )}
           </h1>
 
-          <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
+          <p className="whitespace-pre-line mt-7 max-w-2xl text-base leading-8 text-white/75 md:text-lg">
             {product?.hero_description ||
               product?.subtitle ||
               "청주공항에서 직항으로 떠나는 장가계 여행. 웅장한 자연과 핵심 관광지를 여유로운 일정으로 만나보세요."}
@@ -65,16 +74,24 @@ export default function ProductHero({ product }: { product: Product }) {
             </Link>
           </div>
 
-          <div className="mt-12 grid max-w-2xl gap-3 sm:grid-cols-3">
+          <div
+            className={`mt-12 grid max-w-2xl gap-3 ${
+              product?.title === "푸꾸옥" ? "sm:grid-cols-2" : "sm:grid-cols-3"
+            }`}
+          >
             <HeroInfo
               label="출발"
               value={product?.departure_airport || "청주공항 직항"}
             />
+
             <HeroInfo label="항공" value={product?.airline || "이스타항공"} />
-            <HeroInfo
-              label="일정"
-              value={product?.duration || "3박4일 / 4박5일"}
-            />
+
+            {product?.title !== "푸꾸옥" && (
+              <HeroInfo
+                label="일정"
+                value={product?.duration || "3박4일 / 4박5일"}
+              />
+            )}
           </div>
         </div>
       </div>
