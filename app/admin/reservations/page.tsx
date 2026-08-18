@@ -186,7 +186,7 @@ function ReservationsContent() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("전체");
+  const [productFilter, setProductFilter] = useState("전체");
   const defaultDepartureRange = getDefaultDepartureRange();
 
   const [departureFrom, setDepartureFrom] = useState(
@@ -1169,7 +1169,7 @@ function ReservationsContent() {
 
   function resetFilters() {
     setSearch("");
-    setStatusFilter("전체");
+    setProductFilter("전체");
     const defaultRange = getDefaultDepartureRange();
 
     setDepartureFrom(defaultRange.from);
@@ -1195,7 +1195,8 @@ function ReservationsContent() {
         .toLowerCase();
 
       if (keyword && !searchable.includes(keyword)) return false;
-      if (statusFilter !== "전체" && item.status !== statusFilter) return false;
+      if (productFilter !== "전체" && item.product !== productFilter)
+        return false;
 
       const departureDate = toDateInputValue(item.departure_date);
       const createdDate = toDateInputValue(item.created_at);
@@ -1210,7 +1211,7 @@ function ReservationsContent() {
   }, [
     list,
     search,
-    statusFilter,
+    productFilter,
     departureFrom,
     departureTo,
     createdFrom,
@@ -1228,7 +1229,7 @@ function ReservationsContent() {
     setPage(1);
   }, [
     search,
-    statusFilter,
+    productFilter,
     departureFrom,
     departureTo,
     createdFrom,
@@ -1422,12 +1423,12 @@ function ReservationsContent() {
 
             <label>
               <span className="mb-2 block text-sm font-bold text-gray-700">
-                예약 상태
+                상품 구분
               </span>
 
               <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
+                value={productFilter}
+                onChange={(event) => setProductFilter(event.target.value)}
                 className="
            w-full rounded-xl
            border border-gray-200
@@ -1438,9 +1439,11 @@ function ReservationsContent() {
               >
                 <option value="전체">전체</option>
 
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
+                {Array.from(
+                  new Set(list.map((item) => item.product).filter(Boolean)),
+                ).map((product) => (
+                  <option key={product} value={product}>
+                    {product}
                   </option>
                 ))}
               </select>
