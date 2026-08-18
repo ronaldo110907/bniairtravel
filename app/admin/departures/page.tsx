@@ -48,10 +48,38 @@ export default function DepartureAdminPage() {
   const [bulkSeat, setBulkSeat] = useState("180");
   const [bulkStatus, setBulkStatus] = useState("예약가능");
   const [courseFilter, setCourseFilter] = useState("전체");
-  const filteredDepartures =
-    courseFilter === "전체"
-      ? departures
-      : departures.filter((departure) => departure.course === courseFilter);
+  const [showPastDepartures, setShowPastDepartures] = useState(false);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const filteredDepartures = departures.filter((departure) => {
+    // 일정 필터
+    if (courseFilter !== "전체" && departure.course !== courseFilter) {
+      return false;
+    }
+
+    const departureDate = new Date(`${departure.departure_date}T00:00:00`);
+    const isPast = departureDate < today;
+
+    // 지난 출발일 전체보기 상태
+    if (showPastDepartures) {
+      return true;
+    }
+
+    // 지난 출발일이지만 정산이 끝나지 않았다면 계속 표시
+    if (isPast && !settlementCompleted[departure.id]) {
+      return true;
+    }
+
+    // 지난 출발일 + 정산완료 → 숨김
+    if (isPast && settlementCompleted[departure.id]) {
+      return false;
+    }
+
+    // 오늘 및 미래 출발일 → 표시
+    return true;
+  });
 
   console.log("selectedProductId =", selectedProductId);
   console.log("filtered =", filteredDepartures.length);
@@ -470,6 +498,16 @@ export default function DepartureAdminPage() {
             className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
           >
             📥 엑셀 다운
+          </button>
+          <button
+            onClick={() => setShowPastDepartures((prev) => !prev)}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+              showPastDepartures
+                ? "bg-gray-700 text-white hover:bg-gray-800"
+                : "bg-violet-600 text-white hover:bg-violet-700"
+            }`}
+          >
+            {showPastDepartures ? "📁 지난 출발일 접기" : "📂 지난 출발일 보기"}
           </button>
         </div>
       </div>
