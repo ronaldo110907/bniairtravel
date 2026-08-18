@@ -48,10 +48,57 @@ export default function Settlement({ reservations, departure }: Props) {
   const [payments, setPayments] = useState<Record<string, any[]>>({});
   const [completedMap, setCompletedMap] = useState<Record<string, boolean>>({});
 
+  const [settlementFileTypes, setSettlementFileTypes] = useState<
+    Record<string, string>
+  >({});
+
+  const [settlementFiles, setSettlementFiles] = useState<
+    Record<string, File | null>
+  >({});
+
+  const [settlementFileMemos, setSettlementFileMemos] = useState<
+    Record<string, string>
+  >({});
+
+  const [settlementUploadingId, setSettlementUploadingId] = useState<
+    string | null
+  >(null);
+
+  const [settlementFileList, setSettlementFileList] = useState<
+    Record<string, any[]>
+  >({});
+
   useEffect(() => {
     loadSettlements();
     loadPayments();
+    loadSettlementFiles();
   }, [reservations]);
+
+  async function loadSettlementFiles() {
+    const { data, error } = await supabase
+      .from("settlement_files")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("SETTLEMENT FILES ERROR", error);
+      return;
+    }
+
+    const grouped: Record<string, any[]> = {};
+
+    (data ?? []).forEach((file) => {
+      const reservationId = String(file.reservation_id);
+
+      if (!grouped[reservationId]) {
+        grouped[reservationId] = [];
+      }
+
+      grouped[reservationId].push(file);
+    });
+
+    setSettlementFileList(grouped);
+  }
 
   async function loadSettlements() {
     if (reservations.length === 0) return;
@@ -90,6 +137,138 @@ export default function Settlement({ reservations, departure }: Props) {
     setOtherCosts(otherCostMap);
     setCompletedMap(completedStatusMap);
     setSettlementIds(idMap);
+  }
+
+  async function viewSettlementFile(filePath: string) {
+    const { data, error } = await supabase.storage
+      .from("settlement-files")
+      .createSignedUrl(filePath, 60 * 10);
+
+    if (error) {
+      console.error("SETTLEMENT FILE VIEW ERROR", error);
+      alert("파일을 열 수 없습니다.");
+      return;
+    }
+
+    window.open(data.signedUrl, "_blank");
+  }
+
+  async function deleteSettlementFile(file: any) {
+    const confirmed = window.confirm(
+      `"${file.file_name}" 정산자료를 삭제하시겠습니까?`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // 1. Private Storage 원본 파일 삭제
+      const { error: storageError } = await supabase.storage
+        .from("settlement-files")
+        .remove([file.file_path]);
+
+      if (storageError) {
+        console.error("SETTLEMENT FILE DELETE ERROR", storageError);
+        alert("파일 삭제에 실패했습니다.");
+        return;
+      }
+
+      // 2. DB 기록 삭제
+      const { error: dbError } = await supabase
+        .from("settlement_files")
+        .delete()
+        .eq("id", file.id);
+
+      if (dbError) {
+        console.error("SETTLEMENT FILE DB DELETE ERROR", dbError);
+        alert("정산자료 정보 삭제에 실패했습니다.");
+        return;
+      }
+
+      // 3. 목록 새로고침
+      await loadSettlementFiles();
+
+      alert("정산자료가 삭제되었습니다.");
+    } catch (error) {
+      console.error("SETTLEMENT FILE DELETE ERROR", error);
+      alert("정산자료 삭제 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function uploadSettlementFile(reservationId: string) {
+    const file = settlementFiles[reservationId];
+
+    if (!file) {
+      alert("업로드할 파일을 선택해주세요.");
+      return;
+    }
+
+    const fileType = settlementFileTypes[reservationId] || "기타";
+    const memo = settlementFileMemos[reservationId] || "";
+
+    setSettlementUploadingId(reservationId);
+
+    try {
+      // 파일명 충돌 방지
+      const fileExt = file.name.split(".").pop();
+      const filePath = `reservation-${reservationId}/${Date.now()}.${fileExt}`;
+
+      // 1. Private Storage 업로드
+      const { error: uploadError } = await supabase.storage
+        .from("settlement-files")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error("SETTLEMENT FILE UPLOAD ERROR", uploadError);
+        alert(uploadError.message);
+        return;
+      }
+
+      // 2. DB에 파일 정보 저장
+      const { error: dbError } = await supabase
+        .from("settlement_files")
+        .insert({
+          reservation_id: reservationId,
+          file_type: fileType,
+          file_name: file.name,
+          file_path: filePath,
+          memo,
+        });
+
+      if (dbError) {
+        // DB 저장 실패 시 방금 업로드한 Storage 파일도 제거
+        await supabase.storage.from("settlement-files").remove([filePath]);
+
+        console.error("SETTLEMENT FILE DB ERROR", dbError);
+        alert(dbError.message);
+        return;
+      }
+
+      // 3. 입력값 초기화
+      setSettlementFiles((prev) => ({
+        ...prev,
+        [reservationId]: null,
+      }));
+
+      setSettlementFileMemos((prev) => ({
+        ...prev,
+        [reservationId]: "",
+      }));
+
+      setSettlementFileTypes((prev) => ({
+        ...prev,
+        [reservationId]: "항공료",
+      }));
+
+      // 4. 최신 목록 다시 불러오기
+      await loadSettlementFiles();
+
+      alert("정산자료가 업로드되었습니다.");
+    } catch (error) {
+      console.error("SETTLEMENT FILE ERROR", error);
+      alert("정산자료 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setSettlementUploadingId(null);
+    }
   }
 
   async function loadPayments() {
@@ -362,6 +541,159 @@ export default function Settlement({ reservations, departure }: Props) {
                           원
                         </div>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* 정산자료 */}
+                  <div className="mt-6 rounded-xl border bg-gray-50 p-4">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="font-bold text-gray-800">📎 정산자료</h3>
+
+                      <span className="text-xs text-gray-500">
+                        {
+                          (settlementFileList[String(reservation.id)] || [])
+                            .length
+                        }
+                        건
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {/* 자료 구분 */}
+                      <div>
+                        <div className="mb-1 text-xs text-gray-500">
+                          자료 구분
+                        </div>
+
+                        <select
+                          value={
+                            settlementFileTypes[String(reservation.id)] ||
+                            "항공료"
+                          }
+                          onChange={(e) =>
+                            setSettlementFileTypes((prev) => ({
+                              ...prev,
+                              [String(reservation.id)]: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-lg border bg-white px-3 py-2"
+                        >
+                          <option value="항공료">항공료</option>
+                          <option value="현지비">현지비</option>
+                          <option value="기타">기타</option>
+                        </select>
+                      </div>
+
+                      {/* 파일 선택 */}
+                      <div>
+                        <div className="mb-1 text-xs text-gray-500">파일</div>
+
+                        <input
+                          type="file"
+                          onChange={(e) =>
+                            setSettlementFiles((prev) => ({
+                              ...prev,
+                              [String(reservation.id)]:
+                                e.target.files?.[0] || null,
+                            }))
+                          }
+                          className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      {/* 메모 */}
+                      <div>
+                        <div className="mb-1 text-xs text-gray-500">메모</div>
+
+                        <input
+                          type="text"
+                          value={
+                            settlementFileMemos[String(reservation.id)] || ""
+                          }
+                          onChange={(e) =>
+                            setSettlementFileMemos((prev) => ({
+                              ...prev,
+                              [String(reservation.id)]: e.target.value,
+                            }))
+                          }
+                          placeholder="선택사항"
+                          className="w-full rounded-lg border bg-white px-3 py-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          uploadSettlementFile(String(reservation.id))
+                        }
+                        disabled={
+                          settlementUploadingId === String(reservation.id)
+                        }
+                        className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+                      >
+                        {settlementUploadingId === String(reservation.id)
+                          ? "업로드 중..."
+                          : "+ 자료 업로드"}
+                      </button>
+                    </div>
+                    {/* 업로드된 정산자료 목록 */}
+                    <div className="mt-4 space-y-2">
+                      {(settlementFileList[String(reservation.id)] || []).map(
+                        (file) => (
+                          <div
+                            key={file.id}
+                            className="flex items-center justify-between rounded-lg border bg-white px-3 py-2"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-700">
+                                  {file.file_type === "항공료"
+                                    ? "✈️"
+                                    : file.file_type === "현지비"
+                                      ? "🏨"
+                                      : "📄"}
+                                </span>
+
+                                <span className="font-semibold text-gray-800">
+                                  {file.file_type}
+                                </span>
+
+                                <span className="truncate text-sm text-gray-600">
+                                  {file.file_name}
+                                </span>
+                              </div>
+
+                              {file.memo && (
+                                <div className="mt-1 text-xs text-gray-500">
+                                  {file.memo}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="ml-4 flex shrink-0 gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  viewSettlementFile(file.file_path)
+                                }
+                                className="rounded-lg border px-3 py-1.5 text-sm font-semibold"
+                              >
+                                보기
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => deleteSettlementFile(file)}
+                                className="rounded-lg bg-red-500 px-3 py-1.5 text-sm font-semibold text-white"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
 
