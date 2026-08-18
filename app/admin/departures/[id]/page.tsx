@@ -150,11 +150,11 @@ export default function DepartureDetailPage() {
           </div>
         </div>
       )}
-      <ReservationList reservations={reservations} />
-
       <RoomAssignment departureId={String(params.id)} />
 
-      <Settlement reservations={reservations} departure={departure} />
+      <div id="settlement">
+        <Settlement reservations={reservations} departure={departure} />
+      </div>
 
       <DepartureSettlementSummary
         reservations={reservations}

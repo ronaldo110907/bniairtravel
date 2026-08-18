@@ -2206,6 +2206,27 @@ function ReservationsContent() {
                   >
                     📄 인보이스 생성
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!selected?.departure_id) {
+                        alert("연결된 출발일 정보가 없습니다.");
+                        return;
+                      }
+
+                      window.location.href = `/admin/departures/${selected.departure_id}#settlement`;
+                    }}
+                    className="
+    rounded-lg
+    bg-amber-500
+    px-4
+    py-2
+    font-bold
+    text-white
+  "
+                  >
+                    💰 정산 바로가기
+                  </button>
                 </div>
                 {showBulkPersonForm && (
                   <div className="mt-4 rounded-xl border bg-gray-50 p-4">
