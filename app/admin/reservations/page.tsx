@@ -2209,12 +2209,14 @@ function ReservationsContent() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (!selected?.departure_id) {
-                        alert("연결된 출발일 정보가 없습니다.");
+                      if (!selected) return;
+
+                      if (selected.departure_id) {
+                        window.location.href = `/admin/departures/${selected.departure_id}#settlement`;
                         return;
                       }
 
-                      window.location.href = `/admin/departures/${selected.departure_id}#settlement`;
+                      window.location.href = `/admin/reservations/${selected.id}/settlement`;
                     }}
                     className="
     rounded-lg
