@@ -149,6 +149,31 @@ export default function CalendarPage() {
                         key={departure.id}
                         className="rounded-lg border bg-white p-3"
                       >
+                        <div className="mb-2">
+                          <span
+                            className={`inline-block rounded-md px-2 py-1 text-xs font-bold text-white ${
+                              departure.products?.title?.includes("백두산")
+                                ? "bg-blue-500"
+                                : departure.products?.title?.includes("장가계")
+                                  ? "bg-orange-500"
+                                  : departure.products?.title?.includes(
+                                        "푸꾸옥",
+                                      )
+                                    ? "bg-emerald-500"
+                                    : departure.products?.title?.includes(
+                                          "상해",
+                                        )
+                                      ? "bg-violet-500"
+                                      : departure.products?.title?.includes(
+                                            "여강",
+                                          )
+                                        ? "bg-pink-500"
+                                        : "bg-gray-500"
+                            }`}
+                          >
+                            {departure.products?.title || "상품명 없음"}
+                          </span>
+                        </div>
                         <div className="mb-3 flex items-center justify-between">
                           <div className="font-bold text-gray-800">
                             💰 {Number(departure.price || 0).toLocaleString()}원

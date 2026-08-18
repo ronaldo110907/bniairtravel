@@ -26,6 +26,18 @@ export default function Calendar({
   const days = Array.from({ length: lastDate }, (_, i) => i + 1);
   const blanks = Array.from({ length: startDay });
 
+  function getProductColor(title?: string) {
+    if (!title) return "bg-gray-500";
+
+    if (title.includes("백두산")) return "bg-blue-500";
+    if (title.includes("장가계")) return "bg-orange-500";
+    if (title.includes("푸꾸옥")) return "bg-emerald-500";
+    if (title.includes("상해")) return "bg-violet-500";
+    if (title.includes("여강")) return "bg-pink-500";
+
+    return "bg-gray-500";
+  }
+
   return (
     <div className="rounded-xl border bg-white p-6">
       {/* 상단 */}
@@ -103,7 +115,9 @@ export default function Calendar({
                 {dayDepartures.map((departure) => (
                   <div
                     key={departure.id}
-                    className="truncate rounded bg-blue-500 px-1 py-0.5 text-[10px] text-white"
+                    className={`truncate rounded px-1 py-0.5 text-[10px] text-white ${getProductColor(
+                      departure.products?.title,
+                    )}`}
                   >
                     {departure.products?.title}
                   </div>
