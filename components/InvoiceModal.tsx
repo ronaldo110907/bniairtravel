@@ -64,6 +64,8 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
   const [totalPrice, setTotalPrice] = useState("");
   const [deposit, setDeposit] = useState("");
   const [commission, setCommission] = useState("");
+  const [paymentDueDate, setPaymentDueDate] = useState("");
+  const [invoiceNotice, setInvoiceNotice] = useState("");
 
   const [invoiceType, setInvoiceType] = useState<"deposit" | "balance">(
     "deposit",
@@ -179,10 +181,10 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
             <img
               src="/images/invoice/BNIheader.jpg"
               alt="Header"
-              className="mb-8 w-full"
+              className="mb-4 w-full"
             />
 
-            <div className="mx-auto mb-8 w-fit bg-gray-200 px-10 py-2">
+            <div className="mx-auto mb-4 w-fit bg-gray-200 px-10 py-2">
               <h2 className="text-4xl font-light tracking-[0.4em]">
                 청 구 서 (INVOICE)
               </h2>
@@ -233,7 +235,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               </div>
             </div>
 
-            <div className="invoice-box mt-6 rounded-lg border border-gray-300">
+            <div className="invoice-box mt-3 rounded-lg border border-gray-300">
               <div className="border-b bg-gray-50 px-4 py-2 font-bold">
                 예약정보
               </div>
@@ -253,7 +255,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               </div>
             </div>
 
-            <div className="invoice-box mt-6 rounded-lg border border-gray-300">
+            <div className="invoice-box mt-3 rounded-lg border border-gray-300">
               <div className="border-b bg-gray-50 px-4 py-2 font-bold">
                 청구구분
               </div>
@@ -285,7 +287,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               </div>
             </div>
 
-            <div className="invoice-box mt-6 rounded-lg border border-gray-300">
+            <div className="invoice-box mt-3 rounded-lg border border-gray-300">
               <div className="border-b bg-gray-50 px-4 py-2 font-bold">
                 청구금액
               </div>
@@ -366,11 +368,71 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
                       {amountToPay.toLocaleString()} 원
                     </td>
                   </tr>
+                  <tr className="border-t">
+                    <td className="bg-gray-50 px-4 py-2 font-semibold">
+                      입금기한
+                    </td>
+
+                    <td className="px-4 py-2">
+                      {isPrinting ? (
+                        <div className="text-right">
+                          {paymentDueDate
+                            ? `${paymentDueDate}까지 입금 부탁드립니다.`
+                            : ""}
+                        </div>
+                      ) : (
+                        <div className="flex justify-end">
+                          <input
+                            type="date"
+                            value={paymentDueDate}
+                            onChange={(event) =>
+                              setPaymentDueDate(event.target.value)
+                            }
+                            className="rounded-md border border-gray-300 px-3 py-1 outline-none"
+                          />
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="border-t">
+                    <td className="bg-gray-50 px-4 py-2 font-semibold">
+                      추가안내
+                    </td>
+
+                    <td className="px-4 py-2">
+                      {isPrinting ? (
+                        <div
+                          className={`whitespace-pre-line text-right ${
+                            invoiceNotice.split("\n").length >= 4
+                              ? "text-xs leading-tight"
+                              : "text-sm leading-tight"
+                          }`}
+                        >
+                          {invoiceNotice || ""}
+                        </div>
+                      ) : (
+                        <textarea
+                          value={invoiceNotice}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            const lines = value.split("\n");
+
+                            if (lines.length <= 3) {
+                              setInvoiceNotice(value);
+                            }
+                          }}
+                          placeholder="필요한 안내사항을 입력해주세요. (최대 3줄)"
+                          rows={3}
+                          className="w-full resize-none rounded-md border border-gray-300 px-3 py-1 outline-none"
+                        />
+                      )}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
-            <div className="invoice-box mt-6 rounded-lg border border-gray-300">
+            <div className="invoice-box mt-4 rounded-lg border border-gray-300">
               <div className="border-b bg-gray-50 px-4 py-2 font-bold">
                 입금계좌
               </div>
