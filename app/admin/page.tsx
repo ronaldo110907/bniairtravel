@@ -115,24 +115,29 @@ export default async function AdminPage() {
             {todayDepartures && todayDepartures.length > 0 ? (
               todayDepartures.map((departure) => (
                 <div key={departure.id} className="mb-3 rounded-lg border p-3">
-                  <div className="font-semibold">
-                    🧳 {departure.products?.title}
-                  </div>
+                  <Link
+                    href={`/admin/departures/${departure.id}`}
+                    className="block rounded-lg transition hover:bg-blue-50"
+                  >
+                    <div className="font-semibold">
+                      🧳 {departure.products?.title}
+                    </div>
 
-                  <div className="mt-2 space-y-1">
-                    {todayReservations
-                      ?.filter((r) => r.departure_id === departure.id)
-                      .map((reservation) => (
-                        <div key={reservation.id} className="text-sm">
-                          👤 {reservation.name} 외{" "}
-                          {Math.max(
-                            (reservation.reservation_people?.length ?? 1) - 1,
-                            0,
-                          )}
-                          명
-                        </div>
-                      ))}
-                  </div>
+                    <div className="mt-2 space-y-1">
+                      {todayReservations
+                        ?.filter((r) => r.departure_id === departure.id)
+                        .map((reservation) => (
+                          <div key={reservation.id} className="text-sm">
+                            👤 {reservation.name} 외{" "}
+                            {Math.max(
+                              (reservation.reservation_people?.length ?? 1) - 1,
+                              0,
+                            )}{" "}
+                            명
+                          </div>
+                        ))}
+                    </div>
+                  </Link>
                 </div>
               ))
             ) : (
@@ -149,13 +154,18 @@ export default async function AdminPage() {
             {weekDepartures && weekDepartures.length > 0 ? (
               weekDepartures.map((departure) => (
                 <div key={departure.id} className="mb-3 rounded-lg border p-3">
-                  <div className="font-semibold">
-                    🧳 {departure.products?.title}
-                  </div>
+                  <Link
+                    href={`/admin/departures/${departure.id}`}
+                    className="block rounded-lg transition hover:bg-blue-50"
+                  >
+                    <div className="font-semibold">
+                      🧳 {departure.products?.title}
+                    </div>
 
-                  <div className="text-sm text-gray-500">
-                    {departure.departure_date}
-                  </div>
+                    <div className="text-sm text-gray-500">
+                      {departure.departure_date}
+                    </div>
+                  </Link>
                 </div>
               ))
             ) : (
@@ -167,7 +177,10 @@ export default async function AdminPage() {
         </div>
 
         <div className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr_2fr]">
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <Link
+            href="/admin/reservations"
+            className="block rounded-xl border bg-white p-5 shadow-sm transition hover:border-orange-300 hover:bg-orange-50"
+          >
             <div className="mb-2 flex items-center gap-2 text-gray-500">
               👥
               <span className="text-sm font-medium">예약인원</span>
@@ -178,7 +191,7 @@ export default async function AdminPage() {
             </div>
 
             <div className="mt-2 text-xs text-gray-400">전체 예약 인원</div>
-          </div>
+          </Link>
 
           <div className="rounded-xl border bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2 text-gray-700">
