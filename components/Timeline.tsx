@@ -11,6 +11,8 @@ type CustomTab = {
 
 type Props = {
   defaultCourse?: "4N5D" | "3N4D";
+  course4Label?: string;
+  course3Label?: string;
 
   itinerary4N5D?: any[];
   itinerary3N4D?: any[];
@@ -28,6 +30,8 @@ type Props = {
 
 export default function Timeline({
   defaultCourse = "4N5D",
+  course4Label = "4박5일",
+  course3Label = "3박4일",
   itinerary4N5D = [],
   itinerary3N4D = [],
   customTabs,
@@ -128,7 +132,7 @@ export default function Timeline({
                   : "text-gray-500 hover:text-[#B88A44]",
               ].join(" ")}
             >
-              4박5일 일정
+              {course4Label} 일정
             </button>
 
             <button
@@ -141,7 +145,7 @@ export default function Timeline({
                   : "text-gray-500 hover:text-[#B88A44]",
               ].join(" ")}
             >
-              3박4일 일정
+              {course3Label} 일정
             </button>
           </div>
         )}
