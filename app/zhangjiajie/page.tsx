@@ -68,6 +68,10 @@ export default async function ZhangjiajiePage() {
         className="mx-auto max-w-7xl scroll-mt-28 px-4 py-24"
       >
         <SectionReveal>
+          <div className="mb-10">
+            <ItineraryEmailButton />
+          </div>
+
           <SectionTitle
             eyebrow="DEPARTURE DATE"
             title="출발일 선택"
@@ -122,10 +126,6 @@ export default async function ZhangjiajiePage() {
 
       <SectionReveal>
         <CancellationSection />
-      </SectionReveal>
-
-      <SectionReveal>
-        <ItineraryEmailButton />
       </SectionReveal>
 
       <SectionReveal>
