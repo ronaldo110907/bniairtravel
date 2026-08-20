@@ -31,6 +31,16 @@ const destinations = [
     href: "/phuquoc",
   },
   {
+    title: "계림",
+    subtitle: "DISCOVER CHINA",
+    period: "2026.10.29 ~ 2027.12.03",
+    description:
+      "한 폭의 산수화 같은 계림과 양삭, 그리고 색다른 천저우의 매력을 만나는 특별한 여행.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/guilin-hero.png",
+    href: "/guilin",
+  },
+  {
     title: "말레이시아 골프",
     subtitle: "DISCOVER MALAYSIA",
     period: "상시 문의",
