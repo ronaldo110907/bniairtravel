@@ -29,6 +29,8 @@ import PreparationSection from "@/components/sections/PreparationSection";
 import CancellationSection from "@/components/sections/CancellationSection";
 import ReservationCTASection from "@/components/sections/ReservationCTASection";
 
+import ItineraryEmailButton from "@/components/ItineraryEmailButton";
+
 import { supabase } from "@/lib/supabase";
 
 export default async function ZhangjiajiePage() {
@@ -120,6 +122,10 @@ export default async function ZhangjiajiePage() {
 
       <SectionReveal>
         <CancellationSection />
+      </SectionReveal>
+
+      <SectionReveal>
+        <ItineraryEmailButton />
       </SectionReveal>
 
       <SectionReveal>
