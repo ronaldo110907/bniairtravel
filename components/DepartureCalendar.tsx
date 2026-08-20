@@ -6,7 +6,8 @@ import SelectedInfo from "./SelectedInfo";
 type Departure = {
   id: string;
   date: string;
-  course: "3박4일" | "4박5일";
+  course: string;
+  variant: string | null;
   airline: string;
   price: number;
   seats: number;
@@ -20,9 +21,10 @@ const DEFAULT_MONTHS = [9, 10, 11];
 
 type Props = {
   productId: string;
+  productName: string;
 };
 
-export default function DepartureCalendar({ productId }: Props) {
+export default function DepartureCalendar({ productId, productName }: Props) {
   const [departures, setDepartures] = useState<Departure[]>([]);
   const [reservations, setReservations] = useState<any[]>([]);
   const [people, setPeople] = useState<any[]>([]);
@@ -69,11 +71,21 @@ export default function DepartureCalendar({ productId }: Props) {
 
       const converted: Departure[] = (departuresData ?? []).map((item: any) => {
         console.log(item.departure_date, item.status);
+        const sharedDepartureIds = item.variant
+          ? (departuresData ?? [])
+              .filter(
+                (departure: any) =>
+                  departure.departure_date === item.departure_date &&
+                  departure.variant,
+              )
+              .map((departure: any) => departure.id)
+          : [item.id];
+
         const reserved = (peopleData ?? []).filter((person: any) =>
           (reservationsData ?? []).some(
             (reservation: any) =>
               reservation.id === person.reservation_id &&
-              reservation.departure_id === item.id &&
+              sharedDepartureIds.includes(reservation.departure_id) &&
               reservation.status === "확정",
           ),
         ).length;
@@ -86,6 +98,7 @@ export default function DepartureCalendar({ productId }: Props) {
           airline: item.airline,
           price: item.price,
           seats: remain,
+          variant: item.variant ?? null,
           course: item.course,
           is_special: item.is_special,
           status:
@@ -118,23 +131,26 @@ export default function DepartureCalendar({ productId }: Props) {
 
     const cells: Array<{
       day: number | null;
-      departure?: Departure;
+      departures: Departure[];
     }> = [];
 
     for (let index = 0; index < firstDay; index += 1) {
-      cells.push({ day: null });
+      cells.push({ day: null, departures: [] });
     }
 
     for (let day = 1; day <= lastDate; day += 1) {
-      const departure = monthDepartures.find(
+      const dayDepartures = monthDepartures.filter(
         (item) => Number(item.date.slice(-2)) === day,
       );
 
-      cells.push({ day, departure });
+      cells.push({
+        day,
+        departures: dayDepartures,
+      });
     }
 
     while (cells.length % 7 !== 0) {
-      cells.push({ day: null });
+      cells.push({ day: null, departures: [] });
     }
 
     return cells;
@@ -220,12 +236,9 @@ export default function DepartureCalendar({ productId }: Props) {
                 );
               }
 
-              const departure = cell.departure;
-              const isClosed = departure?.status === "closed";
-              const isHot = departure?.is_special;
-              const isSelected = departure && selected?.date === departure.date;
+              const dayDepartures = cell.departures;
 
-              if (!departure) {
+              if (dayDepartures.length === 0) {
                 return (
                   <div
                     key={`day-${cell.day}`}
@@ -239,73 +252,71 @@ export default function DepartureCalendar({ productId }: Props) {
               }
 
               return (
-                <button
-                  key={departure.date}
-                  type="button"
-                  onClick={() => !isClosed && setSelected(departure)}
-                  disabled={isClosed}
-                  className={[
-                    "relative min-h-[80px] overflow-hidden rounded-2xl border p-2 text-left transition-all duration-300 sm:min-h-[108px] md:min-h-[132px] md:p-3",
-                    isSelected
-                      ? "border-[#C8A15A] bg-[#FFF8ED] shadow-lg ring-2 ring-[#C8A15A]/20"
-                      : "border-[#E9E1D6] bg-white hover:-translate-y-1 hover:border-[#C8A15A] hover:shadow-md",
-                    isClosed ? "cursor-not-allowed opacity-55" : "",
-                  ].join(" ")}
+                <div
+                  key={`day-${cell.day}`}
+                  className="min-h-[80px] rounded-2xl border border-[#E9E1D6] bg-white p-1.5 sm:min-h-[108px] md:min-h-[132px] md:p-2"
                 >
-                  {isHot && (
-                    <span className="absolute right-1.5 top-1.5 rounded-full bg-red-500 px-1.5 py-1 text-[9px] font-bold text-white md:right-2 md:top-2 md:px-2 md:text-[10px]">
-                      🔥 특가
-                    </span>
-                  )}
+                  <div className="mb-1 text-sm font-extrabold leading-none text-[#222] md:text-lg">
+                    {cell.day}
+                  </div>
 
-                  {isClosed && (
-                    <span className="absolute right-1.5 top-1.5 rounded-full bg-black/45 px-1.5 py-1 text-[9px] font-bold text-white md:right-2 md:top-2 md:px-2 md:text-[10px]">
-                      마감
-                    </span>
-                  )}
+                  <div className="space-y-1">
+                    {dayDepartures.map((departure) => {
+                      const isClosed = departure.status === "closed";
+                      const isHot = departure.is_special;
+                      const isSelected = selected?.id === departure.id;
 
-                  <div className="flex h-full flex-col">
-                    <span className="text-lg font-extrabold leading-none text-[#222] md:text-2xl">
-                      {cell.day}
-                    </span>
-
-                    <div className="mt-auto text-center">
-                      <p className="hidden text-[10px] font-bold text-[#B88A44] sm:block md:text-xs">
-                        {departure.course}
-                      </p>
-
-                      <p className="mt-1 hidden text-[10px] font-semibold text-black/60 md:block">
-                        {departure.price.toLocaleString()}원
-                      </p>
-
-                      <div className="mt-1.5 flex flex-col items-center justify-center gap-1">
-                        <span
+                      return (
+                        <button
+                          key={departure.id}
+                          type="button"
+                          onClick={() => !isClosed && setSelected(departure)}
+                          disabled={isClosed}
                           className={[
-                            "whitespace-nowrap rounded-full px-1.5 py-0.5 text-[9px] font-bold md:px-2 md:text-[10px]",
-                            isClosed
-                              ? "bg-black/10 text-black/45"
-                              : "bg-emerald-50 text-emerald-700",
+                            "relative w-full rounded-xl border px-1.5 py-1.5 text-center transition-all md:px-2 md:py-2",
+                            isSelected
+                              ? "border-[#C8A15A] bg-[#FFF8ED] shadow-sm ring-1 ring-[#C8A15A]/30"
+                              : "border-[#EEE7DD] bg-[#FAF8F4] hover:border-[#C8A15A] hover:bg-[#FFF8ED]",
+                            isClosed ? "cursor-not-allowed opacity-50" : "",
                           ].join(" ")}
                         >
-                          {isClosed ? "예약마감" : "잔여석"}
-                        </span>
+                          <div className="truncate text-[9px] font-bold text-[#A37A33] sm:text-[10px] md:text-xs">
+                            {departure.variant || departure.course}
+                          </div>
 
-                        {!isClosed && (
-                          <span
-                            className={[
-                              "whitespace-nowrap text-sm font-extrabold md:text-lg",
-                              departure.seats <= 5
-                                ? "text-red-500"
-                                : "text-emerald-700",
-                            ].join(" ")}
-                          >
-                            {departure.seats}석
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                          <div className="mt-0.5 hidden text-[9px] font-semibold text-black/60 md:block">
+                            {departure.price.toLocaleString()}원
+                          </div>
+
+                          <div className="mt-1 flex items-center justify-center gap-1">
+                            {isHot && (
+                              <span className="text-[8px] font-bold text-red-500 md:text-[9px]">
+                                🔥 특가
+                              </span>
+                            )}
+
+                            {isClosed ? (
+                              <span className="text-[8px] font-bold text-black/40 md:text-[9px]">
+                                마감
+                              </span>
+                            ) : (
+                              <span
+                                className={[
+                                  "text-[9px] font-bold md:text-[10px]",
+                                  departure.seats <= 5
+                                    ? "text-red-500"
+                                    : "text-emerald-700",
+                                ].join(" ")}
+                              >
+                                잔여 {departure.seats}석
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -318,7 +329,7 @@ export default function DepartureCalendar({ productId }: Props) {
         </div>
       </section>
 
-      <SelectedInfo departure={selected} />
+      <SelectedInfo departure={selected} productName={productName} />
     </div>
   );
 }

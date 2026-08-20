@@ -29,6 +29,14 @@ export default function ProductHero({ product }: { product: Product }) {
         <source src="/video/hero.mp4" type="video/mp4" />
       </video>
 
+      {product?.slug === "guilin" && product?.hero_image && (
+        <img
+          src={product.hero_image}
+          alt="계림"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+
       <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
 
@@ -41,11 +49,18 @@ export default function ProductHero({ product }: { product: Product }) {
           <h1 className="whitespace-pre-line text-5xl font-bold leading-[1.08] md:text-7xl">
             {product?.title || "장가계"}
             <br />
+
             {product?.slug === "phuquoc" ? (
               <>
                 청주에서 만나는
                 <br />
                 천국을 닮은 휴양지
+              </>
+            ) : product?.slug === "guilin" ? (
+              <>
+                산수화 속으로 떠나는
+                <br />
+                계림 · 천저우
               </>
             ) : (
               product?.hero_heading || "하늘과 맞닿은 비경"
@@ -89,7 +104,11 @@ export default function ProductHero({ product }: { product: Product }) {
             {product?.title !== "푸꾸옥" && (
               <HeroInfo
                 label="일정"
-                value={product?.duration || "3박4일 / 4박5일"}
+                value={
+                  product?.slug === "guilin"
+                    ? "3박5일 / 4박6일"
+                    : product?.duration || "3박4일 / 4박5일"
+                }
               />
             )}
           </div>

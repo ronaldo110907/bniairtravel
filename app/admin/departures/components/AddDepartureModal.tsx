@@ -8,6 +8,7 @@ type Props = {
   onSave: (data: {
     departure_date: string;
     course: string;
+    variant: string | null;
     price: number;
     price_note: string | null;
     airline: string;
@@ -28,6 +29,7 @@ export default function AddDepartureModal({
 }: Props) {
   const [departureDate, setDepartureDate] = useState("");
   const [course, setCourse] = useState("");
+  const [variant, setVariant] = useState("");
   const [price, setPrice] = useState("");
   const [priceNote, setPriceNote] = useState("");
   const [airline, setAirline] = useState("");
@@ -40,6 +42,7 @@ export default function AddDepartureModal({
 
     setDepartureDate(departure.departure_date ?? "");
     setCourse(departure.course ?? "");
+    setVariant(departure.variant ?? "");
     setPrice(String(departure.price ?? ""));
     setPriceNote(departure.price_note ?? "");
     setAirline(departure.airline ?? "");
@@ -84,6 +87,18 @@ export default function AddDepartureModal({
               placeholder="예) 4박5일"
               value={course}
               onChange={(e) => setCourse(e.target.value)}
+              className="w-full rounded-lg border p-2"
+              disabled={hasReservation}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">코스구분</label>
+            <input
+              type="text"
+              placeholder="예) 계림 · 양삭"
+              value={variant}
+              onChange={(e) => setVariant(e.target.value)}
               className="w-full rounded-lg border p-2"
               disabled={hasReservation}
             />
@@ -175,6 +190,7 @@ export default function AddDepartureModal({
               onSave({
                 departure_date: departureDate,
                 course,
+                variant: variant || null,
                 price: Number(price),
                 price_note: priceNote || null,
                 airline,

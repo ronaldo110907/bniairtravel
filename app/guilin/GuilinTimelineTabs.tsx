@@ -2,12 +2,17 @@
 
 import { useState } from "react";
 import Timeline from "@/components/Timeline";
+import IncludedCard from "@/components/IncludedCard";
 
 import {
   itineraryGuilin3N5D,
   itineraryGuilin4N6D,
   itineraryChenzhou3N5D,
   itineraryChenzhou4N6D,
+  includesGuilin,
+  excludesGuilin,
+  includesChenzhou,
+  excludesChenzhou,
   mealBaseUrl,
   mealImages,
   flightInfo,
@@ -87,6 +92,13 @@ export default function GuilinTimelineTabs() {
         mealImages={mealImages}
         flightInfo={flightInfo}
       />
+      {/* 지역별 포함 / 불포함 */}
+      <div className="mt-16">
+        <IncludedCard
+          includes={region === "guilin" ? includesGuilin : includesChenzhou}
+          excludes={region === "guilin" ? excludesGuilin : excludesChenzhou}
+        />
+      </div>
     </div>
   );
 }

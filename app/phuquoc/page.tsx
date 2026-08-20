@@ -79,7 +79,12 @@ export default async function PhuQuocPage() {
             description="원하는 출발일을 선택하여 가격과 잔여석을 확인하세요."
           />
 
-          {product?.id && <DepartureCalendar productId={product.id} />}
+          {product?.id && (
+            <DepartureCalendar
+              productId={product.id}
+              productName={product.title}
+            />
+          )}
 
           <p className="mt-3 text-center text-sm font-bold text-red-600">
             ⚠️ 특가상품은 기본 일정과 차이가 있으니 꼭 확인해주세요!

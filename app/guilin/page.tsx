@@ -5,8 +5,10 @@ import HotelCard from "@/components/HotelCard";
 import IncludedCard from "@/components/IncludedCard";
 import GuilinTimelineTabs from "./GuilinTimelineTabs";
 import {
-  includes,
-  excludes,
+  includesGuilin,
+  excludesGuilin,
+  includesChenzhou,
+  excludesChenzhou,
   hotels,
   shopping,
   faqs,
@@ -74,7 +76,12 @@ export default async function GuilinPage() {
             title="출발일 선택"
             description="원하는 출발일을 선택하여 가격과 잔여석을 확인하세요."
           />
-          <DepartureCalendar productId="b367ce56-d07a-49a4-bcd5-a6f44027f265" />
+          {product?.id && (
+            <DepartureCalendar
+              productId={product.id}
+              productName={product.title}
+            />
+          )}
           <p className="mt-3 text-center text-sm font-bold text-red-600">
             ⚠️ 특가상품은 기본 일정과 차이가 있으니 꼭 확인해주세요!
           </p>
@@ -85,9 +92,7 @@ export default async function GuilinPage() {
         <PriceCard product={product} />
       </SectionReveal>
 
-      <SectionReveal>
-        <GuilinTimelineTabs />
-      </SectionReveal>
+      <GuilinTimelineTabs />
 
       <SectionReveal>
         <GallerySlider product={product} />
@@ -98,10 +103,6 @@ export default async function GuilinPage() {
           baseUrl="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/guilin/"
           hotels={hotels}
         />
-      </SectionReveal>
-
-      <SectionReveal>
-        <IncludedCard includes={includes} excludes={excludes} />
       </SectionReveal>
 
       <SectionReveal>
@@ -126,11 +127,11 @@ export default async function GuilinPage() {
 
       <SectionReveal>
         <CTASection
-          title={"장가계,\n지금 예약해보세요."}
+          title={"계림,\n지금 예약해보세요."}
           description={
             "출발일, 잔여석, 상품가격을 확인하고\n가장 알맞은 일정으로 안내해드립니다."
           }
-          buttonHref="/reservation?product=장가계"
+          buttonHref="/reservation?product=계림"
         />
       </SectionReveal>
 

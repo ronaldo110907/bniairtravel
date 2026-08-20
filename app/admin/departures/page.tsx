@@ -43,6 +43,7 @@ export default function DepartureAdminPage() {
   const [bulkEndDate, setBulkEndDate] = useState("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [bulkCourse, setBulkCourse] = useState("");
+  const [bulkVariant, setBulkVariant] = useState("");
   const [bulkPrice, setBulkPrice] = useState("");
   const [bulkAirline, setBulkAirline] = useState("");
   const [bulkSeat, setBulkSeat] = useState("180");
@@ -245,6 +246,7 @@ export default function DepartureAdminPage() {
   async function addDeparture(data: {
     departure_date: string;
     course: string;
+    variant: string | null;
     price: number;
     price_note: string | null;
     airline: string;
@@ -261,9 +263,12 @@ export default function DepartureAdminPage() {
 
       const hasReservation = (count ?? 0) > 0;
       if (hasReservation) {
-        alert("예약이 있는 출발일은 출발일과 일정은 변경되지 않습니다.");
+        alert(
+          "예약이 있는 출발일은 출발일, 일정, 코스구분은 변경되지 않습니다.",
+        );
         data.departure_date = editingDeparture.departure_date;
         data.course = editingDeparture.course;
+        data.variant = editingDeparture.variant ?? null;
       }
       console.log("예약존재:", hasReservation);
       console.log("저장할 status =", data.status);
@@ -272,6 +277,7 @@ export default function DepartureAdminPage() {
         .update({
           departure_date: data.departure_date,
           course: data.course,
+          variant: data.variant,
           price: data.price,
           price_note: data.price_note,
           airline: data.airline,
@@ -296,6 +302,7 @@ export default function DepartureAdminPage() {
       product_id: selectedProductId,
       departure_date: data.departure_date,
       course: data.course,
+      variant: data.variant,
       price: data.price,
       price_note: data.price_note,
       airline: data.airline,
@@ -383,6 +390,7 @@ export default function DepartureAdminPage() {
           product_id: selectedProductId,
           departure_date: current.toISOString().slice(0, 10),
           course: bulkCourse,
+          variant: bulkVariant || null,
           price: Number(bulkPrice),
           airline: bulkAirline,
           seat: Number(bulkSeat),
@@ -392,12 +400,19 @@ export default function DepartureAdminPage() {
         console.log(newDeparture);
 
         // 먼저 중복 확인
-        const { data: exists } = await supabase
+        let duplicateQuery = supabase
           .from("departures")
           .select("id")
           .eq("product_id", selectedProductId)
-          .eq("departure_date", newDeparture.departure_date)
-          .maybeSingle();
+          .eq("departure_date", newDeparture.departure_date);
+
+        if (newDeparture.variant) {
+          duplicateQuery = duplicateQuery.eq("variant", newDeparture.variant);
+        } else {
+          duplicateQuery = duplicateQuery.is("variant", null);
+        }
+
+        const { data: exists } = await duplicateQuery.maybeSingle();
 
         if (exists) {
           skippedCount++;
@@ -424,6 +439,12 @@ export default function DepartureAdminPage() {
 중복 제외 : ${skippedCount}건`,
     );
   }
+  const courseOptions = [
+    "전체",
+    ...Array.from(
+      new Set(departures.map((departure) => departure.course).filter(Boolean)),
+    ),
+  ];
 
   return (
     <div className="p-6">
@@ -478,7 +499,7 @@ export default function DepartureAdminPage() {
         </button>
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-2">
-            {["전체", "3박4일", "4박5일"].map((course) => (
+            {courseOptions.map((course) => (
               <button
                 key={course}
                 onClick={() => setCourseFilter(course)}
@@ -634,6 +655,19 @@ export default function DepartureAdminPage() {
                   value={bulkCourse}
                   onChange={(e) => setBulkCourse(e.target.value)}
                   placeholder="예) 4박5일"
+                  className="w-full rounded border p-2"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  코스구분
+                </label>
+
+                <input
+                  value={bulkVariant}
+                  onChange={(e) => setBulkVariant(e.target.value)}
+                  placeholder="예) 계림 · 양삭"
                   className="w-full rounded border p-2"
                 />
               </div>

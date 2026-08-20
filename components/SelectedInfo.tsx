@@ -6,6 +6,7 @@ type Departure = {
   date: string;
   airline: string;
   course: string;
+  variant: string | null;
   price: number;
   seats: number;
   status: "hot" | "closed" | "available";
@@ -14,9 +15,10 @@ type Departure = {
 
 interface Props {
   departure: Departure | null;
+  productName: string;
 }
 
-export default function SelectedInfo({ departure }: Props) {
+export default function SelectedInfo({ departure, productName }: Props) {
   const router = useRouter();
 
   if (!departure) {
@@ -56,6 +58,9 @@ export default function SelectedInfo({ departure }: Props) {
 
       <div className="space-y-6 p-8">
         <Item icon="🛫" title="항공사" value={departure.airline} />
+        {departure.variant && (
+          <Item icon="📍" title="코스구분" value={departure.variant} />
+        )}
         <Item icon="🗓️" title="여행일정" value={departure.course} />
         <Item
           icon="💰"
@@ -80,7 +85,7 @@ export default function SelectedInfo({ departure }: Props) {
         <button
           onClick={() =>
             router.push(
-              `/reservation?product=장가계&departure=${departure.date}&departure_id=${departure.id}`,
+              `/reservation?product=${encodeURIComponent(productName)}&departure=${departure.date}&departure_id=${departure.id}`,
             )
           }
           className="w-full rounded-2xl bg-[#C8A15A] py-5 text-lg font-bold transition hover:bg-[#B78B3F]"

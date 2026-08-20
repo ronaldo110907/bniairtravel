@@ -71,7 +71,10 @@ export default async function ZhangjiajiePage() {
             title="출발일 선택"
             description="원하는 출발일을 선택하여 가격과 잔여석을 확인하세요."
           />
-          <DepartureCalendar productId="b367ce56-d07a-49a4-bcd5-a6f44027f265" />
+          <DepartureCalendar
+            productId="b367ce56-d07a-49a4-bcd5-a6f44027f265"
+            productName="장가계"
+          />
           <p className="mt-3 text-center text-sm font-bold text-red-600">
             ⚠️ 특가상품은 기본 일정과 차이가 있으니 꼭 확인해주세요!
           </p>

@@ -34,12 +34,28 @@ export default function DepartureTable({
     {},
   );
 
+  const getSharedPassengerCount = (departure: any) => {
+    if (!departure.variant) {
+      return passengerCounts[departure.id] ?? 0;
+    }
+
+    return departures
+      .filter(
+        (item) =>
+          item.product_id === departure.product_id &&
+          item.departure_date === departure.departure_date &&
+          item.variant,
+      )
+      .reduce((sum, item) => sum + (passengerCounts[item.id] ?? 0), 0);
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border bg-white">
       <table className="min-w-full text-sm">
         <thead className="bg-gray-100">
           <tr>
             <th className="px-4 py-3 text-center font-semibold">출발일</th>
+            <th className="px-4 py-3 text-center font-semibold">코스구분</th>
             <th className="px-4 py-3 text-center font-semibold">일정</th>
             <th className="px-4 py-3 text-center font-semibold">가격</th>
             <th className="px-4 py-3 text-center font-semibold">항공사</th>
@@ -61,6 +77,10 @@ export default function DepartureTable({
               </td>
 
               <td className="px-4 py-3 text-center">
+                {departure.variant ?? "-"}
+              </td>
+
+              <td className="px-4 py-3 text-center">
                 {departure.course ?? "-"}
               </td>
 
@@ -79,12 +99,12 @@ export default function DepartureTable({
               </td>
 
               <td className="px-4 py-3 text-center">
-                {departure.seat - (passengerCounts[departure.id] ?? 0)}
+                {departure.seat - getSharedPassengerCount(departure)}
               </td>
 
               <td className="px-4 py-3 text-center">
                 {departure.status === "마감" ||
-                departure.seat - (passengerCounts[departure.id] ?? 0) <= 0 ? (
+                departure.seat - getSharedPassengerCount(departure) <= 0 ? (
                   <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
                     마감
                   </span>

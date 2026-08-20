@@ -90,6 +90,30 @@ export default function CalendarPage() {
     return result.length;
   }
 
+  function getSharedReservedPeopleCount(departure: any) {
+    if (!departure.variant) {
+      return getReservedPeopleCount(departure.id);
+    }
+
+    const sharedDepartureIds = departures
+      .filter(
+        (item) =>
+          item.product_id === departure.product_id &&
+          item.departure_date === departure.departure_date &&
+          item.variant,
+      )
+      .map((item) => item.id);
+
+    return people.filter((person) =>
+      reservations.some(
+        (reservation) =>
+          reservation.id === person.reservation_id &&
+          sharedDepartureIds.includes(reservation.departure_id) &&
+          reservation.status === "확정",
+      ),
+    ).length;
+  }
+
   console.log("선택 날짜:", selectedDate);
   console.log("선택된 출발건:", selectedDepartures);
 
@@ -137,6 +161,8 @@ export default function CalendarPage() {
                 <div className="space-y-4">
                   {selectedDepartures.map((departure: any) => {
                     const reserved = getReservedPeopleCount(departure.id);
+                    const sharedReserved =
+                      getSharedReservedPeopleCount(departure);
                     const remain = departure.seat - reserved;
 
                     const departureReservations = reservations.filter(
@@ -173,6 +199,11 @@ export default function CalendarPage() {
                           >
                             {departure.products?.title || "상품명 없음"}
                           </span>
+                          {departure.variant && (
+                            <div className="mt-1 text-sm font-bold text-[#B88A44]">
+                              📍 {departure.variant}
+                            </div>
+                          )}
                         </div>
                         <div className="mb-3 flex items-center justify-between">
                           <div className="font-bold text-gray-800">
