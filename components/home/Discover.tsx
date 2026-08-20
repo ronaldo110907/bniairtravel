@@ -74,7 +74,7 @@ export default function Discover() {
           <p className="mt-6 text-lg text-gray-500">
             청주공항 출발로 만나는 새로운 여행!!
             <br />
-            장가계, 백두산, 상해, 푸꾸옥등 다양한 여행지를 만나보세요.
+            장가계, 백두산, 상해, 푸꾸옥, 계림등 다양한 여행지를 만나보세요.
           </p>
         </div>
 
