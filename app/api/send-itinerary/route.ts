@@ -309,14 +309,66 @@ const cancellationRulesHtml = cancellationRules
       to: email,
       subject: `[${companyName}] 장가계 ${course} 여행 일정`,
       html: `
-  <div style="font-family: Arial, sans-serif; padding: 30px;">
-    <h1>${companyName}</h1>
+  <div
+    style="
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      color: #111827;
+    "
+  >
+    <div
+      style="
+        margin-bottom: 40px;
+        padding: 32px;
+        border-radius: 16px;
+        background-color: #faf8f4;
+        text-align: center;
+      "
+    >
+      <div
+        style="
+          margin-bottom: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 3px;
+          color: #b88a44;
+        "
+      >
+        TRAVEL ITINERARY
+      </div>
 
-    <h2>장가계 ${course} 여행 일정</h2>
+      <h1
+        style="
+          margin: 0;
+          font-size: 28px;
+          color: #111827;
+        "
+      >
+        장가계 ${course} 여행 일정
+      </h1>
 
-    <p>
-      장가계 여행 일정 안내입니다.
-    </p>
+      <p
+        style="
+          margin: 12px 0 0;
+          color: #6b7280;
+        "
+      >
+        즐거운 여행을 위한 상세 일정을 안내드립니다.
+      </p>
+
+      <div
+        style="
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid #e5e7eb;
+          line-height: 1.8;
+          color: #374151;
+        "
+      >
+        <strong>${companyName}</strong><br />
+        담당자 ${managerName} · ${phone}
+      </div>
+    </div>
 
     <h2 style="margin-top: 40px;">상세 일정</h2>
 
@@ -460,10 +512,6 @@ ${hotelsHtml}
   </p>
 </div>
 <hr style="margin: 40px 0;" />
-
-<p><strong>보내는 여행사 :</strong> ${companyName}</p>
-<p><strong>담당자 :</strong> ${managerName}</p>
-<p><strong>연락처 :</strong> ${phone}</p>
   </div>
 `,
     });
