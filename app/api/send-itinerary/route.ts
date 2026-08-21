@@ -150,9 +150,9 @@ export async function POST(request: Request) {
             ? productData.phuquoc.courses.golf
             : productData.phuquoc.courses.premium;
 
-    const displayCourse = isPhuquoc ? "3박5일" : course;
-
     const isPhuquoc = product === "phuquoc";
+
+    const displayCourse = isPhuquoc ? "3박5일" : course;
 
     const itinerary = isPhuquoc
       ? selectedPhuquocCourse.itinerary
@@ -575,7 +575,7 @@ export async function POST(request: Request) {
           color: #111827;
         "
       >
-        ${productInfo.name} ${displaycourse} 여행 일정
+        ${productInfo.name} ${displayCourse} 여행 일정
       </h1>
 
       <p
