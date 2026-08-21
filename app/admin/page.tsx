@@ -297,31 +297,16 @@ export default async function AdminPage() {
             </p>
           </div>
 
-          <div className="mx-auto mt-6 flex max-w-7xl items-center justify-center gap-5">
-            {/* 1편 - 장가계 홍보 사건 */}
-            <div className="flex-1 overflow-hidden rounded-2xl border bg-gray-50">
-              <img
-                src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/webtoon.png"
-                alt="푸꾸옥 특수부대 침투 작전"
-                className="h-auto w-full"
-              />
-            </div>
-
-            {/* 화살표 */}
-            <div className="shrink-0 text-4xl font-black text-gray-400">➜</div>
-
-            {/* 2편 - 실속 소대 후속편 */}
-            <div className="flex-1 overflow-hidden rounded-2xl border bg-gray-50">
-              <img
-                src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/webtoon1.png"
-                alt="실속 소대 침투 성공 후일담"
-                className="h-auto w-full"
-              />
-            </div>
+          <div className="mx-auto mt-6 max-w-7xl overflow-hidden rounded-2xl border bg-gray-50">
+            <img
+              src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/webtoon2.png"
+              alt="푸꾸옥 특수부대 침투 작전 개발 웹툰"
+              className="h-auto w-full"
+            />
           </div>
 
           <div className="mt-6 border-t pt-4 text-center text-sm italic text-gray-400">
-            침투 전 군장 검사는 철저히 할 것.
+            침투 전 군장 검사는 철저히 할 것. 웹툰 탄생비화!!
             <span className="ml-2 not-italic font-semibold">
               — 홈페이지 개발팀, 2026
             </span>
