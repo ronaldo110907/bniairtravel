@@ -150,6 +150,8 @@ export async function POST(request: Request) {
             ? productData.phuquoc.courses.golf
             : productData.phuquoc.courses.premium;
 
+    const displayCourse = isPhuquoc ? "3박5일" : course;
+
     const isPhuquoc = product === "phuquoc";
 
     const itinerary = isPhuquoc
@@ -515,7 +517,7 @@ export async function POST(request: Request) {
     const { data, error } = await resend.emails.send({
       from: "BNI AIR TRAVEL <onboarding@resend.dev>",
       to: email,
-      subject: `[${companyName}] ${productInfo.name} ${course} 여행 일정`,
+      subject: `[${companyName}] ${productInfo.name} ${displayCourse} 여행 일정`,
       html: `
   <div
     style="
@@ -573,7 +575,7 @@ export async function POST(request: Request) {
           color: #111827;
         "
       >
-        ${productInfo.name} ${course} 여행 일정
+        ${productInfo.name} ${displaycourse} 여행 일정
       </h1>
 
       <p
