@@ -3,14 +3,20 @@
 import { useState } from "react";
 
 type Course = "3박4일" | "4박5일";
+type PhuquocCourse = "premium" | "quality" | "value" | "golf";
 
-export default function ItineraryEmailButton() {
+type Props = {
+  product: string;
+};
+
+export default function ItineraryEmailButton({ product }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [managerName, setManagerName] = useState("");
   const [phone, setPhone] = useState("");
   const [course, setCourse] = useState<Course>("3박4일");
+  const [phuquocCourse, setPhuquocCourse] = useState<PhuquocCourse>("premium");
 
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -51,6 +57,8 @@ export default function ItineraryEmailButton() {
           managerName: managerName.trim(),
           phone: phone.trim(),
           course,
+          product,
+          phuquocCourse,
         }),
       });
 
@@ -132,31 +140,83 @@ export default function ItineraryEmailButton() {
               보내실 일정을 선택해주세요.
             </div>
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setCourse("3박4일")}
-                className={`flex-1 rounded-xl border px-4 py-3 font-bold transition ${
-                  course === "3박4일"
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "bg-white text-gray-700"
-                }`}
-              >
-                3박4일
-              </button>
+            {product === "phuquoc" ? (
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <button
+                  type="button"
+                  onClick={() => setPhuquocCourse("premium")}
+                  className={`rounded-xl border px-4 py-3 font-bold transition ${
+                    phuquocCourse === "premium"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                >
+                  고품격
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setCourse("4박5일")}
-                className={`flex-1 rounded-xl border px-4 py-3 font-bold transition ${
-                  course === "4박5일"
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "bg-white text-gray-700"
-                }`}
-              >
-                4박5일
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setPhuquocCourse("quality")}
+                  className={`rounded-xl border px-4 py-3 font-bold transition ${
+                    phuquocCourse === "quality"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                >
+                  품격
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPhuquocCourse("value")}
+                  className={`rounded-xl border px-4 py-3 font-bold transition ${
+                    phuquocCourse === "value"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                >
+                  실속
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPhuquocCourse("golf")}
+                  className={`rounded-xl border px-4 py-3 font-bold transition ${
+                    phuquocCourse === "golf"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                >
+                  골프
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCourse("3박4일")}
+                  className={`flex-1 rounded-xl border px-4 py-3 font-bold transition ${
+                    course === "3박4일"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                >
+                  3박4일
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCourse("4박5일")}
+                  className={`flex-1 rounded-xl border px-4 py-3 font-bold transition ${
+                    course === "4박5일"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                >
+                  4박5일
+                </button>
+              </div>
+            )}
           </div>
 
           <button

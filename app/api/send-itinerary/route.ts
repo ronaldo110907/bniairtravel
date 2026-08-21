@@ -6,21 +6,223 @@ import {
   hotels,
   includes,
   excludes,
+  flightInfo,
 } from "@/data/zhangjiajie";
+
+import {
+  flightInfo as baekduFlightInfo,
+  itinerary3N4D as baekduItinerary3N4D,
+  itinerary4N5D as baekduItinerary4N5D,
+  hotels as baekduHotels,
+  includes as baekduIncludes,
+  excludes as baekduExcludes,
+} from "@/data/baekdu";
+
+import {
+  flightInfo as phuquocFlightInfo,
+  itineraryPremium as phuquocItineraryPremium,
+  itineraryQuality as phuquocItineraryQuality,
+  itineraryValue as phuquocItineraryValue,
+  itineraryGolf as phuquocItineraryGolf,
+  hotelsPremium as phuquocHotelsPremium,
+  hotelsQuality as phuquocHotelsQuality,
+  hotelsValue as phuquocHotelsValue,
+  hotelsGolf as phuquocHotelsGolf,
+  includesPremium as phuquocIncludesPremium,
+  includesQuality as phuquocIncludesQuality,
+  includesValue as phuquocIncludesValue,
+  includesGolf as phuquocIncludesGolf,
+  excludesPremium as phuquocExcludesPremium,
+  excludesQuality as phuquocExcludesQuality,
+  excludesValue as phuquocExcludesValue,
+  excludesGolf as phuquocExcludesGolf,
+} from "@/data/phuquoc";
+
+import {
+  flightInfo as guilinFlightInfo,
+  itineraryGuilin3N5D as guilinItinerary3N5D,
+  itineraryGuilin4N6D as guilinItinerary4N6D,
+  itineraryChenzhou3N5D as chenzhouItinerary3N5D,
+  itineraryChenzhou4N6D as chenzhouItinerary4N6D,
+  hotels as guilinHotels,
+  includesGuilin as guilinIncludes,
+  excludesGuilin as guilinExcludes,
+  includesChenzhou as chenzhouIncludes,
+  excludesChenzhou as chenzhouExcludes,
+} from "@/data/guilin";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
-    const { email, companyName, managerName, phone, course } =
-  await request.json();
+    const {
+      email,
+      companyName,
+      managerName,
+      phone,
+      course,
+      product,
+      phuquocCourse,
+    } = await request.json();
+    console.log("MAIL PRODUCT:", product);
+    console.log("PHUQUOC COURSE:", phuquocCourse);
 
-    const itinerary =
-  course === "4박5일" ? itinerary4N5D : itinerary3N4D;
-    
+    const productData = {
+      zhangjiajie: {
+        name: "장가계",
+        poster:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie.png",
+        flightInfo,
+        hotels,
+        includes,
+        excludes,
+        itinerary3: itinerary3N4D,
+        itinerary4: itinerary4N5D,
+      },
+
+      baekdu: {
+        name: "백두산",
+        poster:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/baekdu.png",
+        flightInfo: baekduFlightInfo,
+        hotels: baekduHotels,
+        includes: baekduIncludes,
+        excludes: baekduExcludes,
+        itinerary3: baekduItinerary3N4D,
+        itinerary4: baekduItinerary4N5D,
+      },
+
+      phuquoc: {
+        name: "푸꾸옥",
+        poster:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/phuquoc.png",
+
+        flightInfo: phuquocFlightInfo,
+
+        courses: {
+          premium: {
+            name: "고품격",
+            itinerary: phuquocItineraryPremium,
+            hotels: phuquocHotelsPremium,
+            includes: phuquocIncludesPremium,
+            excludes: phuquocExcludesPremium,
+          },
+
+          quality: {
+            name: "품격",
+            itinerary: phuquocItineraryQuality,
+            hotels: phuquocHotelsQuality,
+            includes: phuquocIncludesQuality,
+            excludes: phuquocExcludesQuality,
+          },
+
+          value: {
+            name: "실속",
+            itinerary: phuquocItineraryValue,
+            hotels: phuquocHotelsValue,
+            includes: phuquocIncludesValue,
+            excludes: phuquocExcludesValue,
+          },
+
+          golf: {
+            name: "골프",
+            itinerary: phuquocItineraryGolf,
+            hotels: phuquocHotelsGolf,
+            includes: phuquocIncludesGolf,
+            excludes: phuquocExcludesGolf,
+          },
+        },
+      },
+    };
+
+    const selectedProduct =
+      product === "baekdu" ? productData.baekdu : productData.zhangjiajie;
+
+    const productInfo =
+      product === "phuquoc" ? productData.phuquoc : selectedProduct;
+
+    const selectedPhuquocCourse =
+      phuquocCourse === "quality"
+        ? productData.phuquoc.courses.quality
+        : phuquocCourse === "value"
+          ? productData.phuquoc.courses.value
+          : phuquocCourse === "golf"
+            ? productData.phuquoc.courses.golf
+            : productData.phuquoc.courses.premium;
+
+    const isPhuquoc = product === "phuquoc";
+
+    const itinerary = isPhuquoc
+      ? selectedPhuquocCourse.itinerary
+      : course === "4박5일"
+        ? selectedProduct.itinerary4
+        : selectedProduct.itinerary3;
+
+    const flightHtml = `
+  <div
+    style="
+      margin: 30px 0 40px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background-color: #ffffff;
+    "
+  >
+    <div
+      style="
+        padding: 14px 18px;
+        background-color: #f8fafc;
+        font-size: 17px;
+        font-weight: 700;
+      "
+    >
+      ✈️ 항공 스케줄
+    </div>
+
+    <div
+      style="
+        padding: 18px;
+        border-top: 1px solid #e5e7eb;
+      "
+    >
+      <strong>
+        출국 · ${productInfo.flightInfo.outbound.airline}
+        ${productInfo.flightInfo.outbound.flight}
+      </strong>
+
+      <div style="margin-top: 8px; color: #4b5563;">
+        ${productInfo.flightInfo.outbound.from}
+        ${productInfo.flightInfo.outbound.departure}
+        &nbsp;→&nbsp;
+        ${productInfo.flightInfo.outbound.to}
+        ${productInfo.flightInfo.outbound.arrival}
+      </div>
+    </div>
+
+    <div
+      style="
+        padding: 18px;
+        border-top: 1px solid #e5e7eb;
+      "
+    >
+      <strong>
+        귀국 · ${productInfo.flightInfo.inbound.airline}
+        ${productInfo.flightInfo.inbound.flight}
+      </strong>
+
+      <div style="margin-top: 8px; color: #4b5563;">
+        ${productInfo.flightInfo.inbound.from}
+        ${productInfo.flightInfo.inbound.departure}
+        &nbsp;→&nbsp;
+        ${productInfo.flightInfo.inbound.to}
+        ${productInfo.flightInfo.inbound.arrival}
+      </div>
+    </div>
+  </div>
+`;
     const itineraryHtml = itinerary
-  .map(
-    (item) => `
+      .map(
+        (item) => `
       <div
         style="
           margin-bottom: 24px;
@@ -71,7 +273,7 @@ export async function POST(request: Request) {
           "
         >
           <strong>주요 관광지</strong><br />
-          ${item.places.join(" · ")}
+          $${item.places?.join(" · ") ?? "-----"}
         </div>
 
         <table
@@ -101,7 +303,7 @@ export async function POST(request: Request) {
                 border: 1px solid #e5e7eb;
               "
             >
-              ${item.meals.breakfast}
+              ${item.meals?.breakfast ?? "-----"}
             </td>
 
             <td
@@ -123,7 +325,7 @@ export async function POST(request: Request) {
                 border: 1px solid #e5e7eb;
               "
             >
-              ${item.meals.lunch}
+              ${item.meals?.lunch ?? "-----"}
             </td>
           </tr>
 
@@ -145,7 +347,7 @@ export async function POST(request: Request) {
                 border: 1px solid #e5e7eb;
               "
             >
-              ${item.meals.dinner}
+              ${item.meals?.dinner ?? "-----"}
             </td>
 
             <td
@@ -171,12 +373,14 @@ export async function POST(request: Request) {
         </table>
       </div>
     `,
-  )
-  .join("");
+      )
+      .join("");
 
-  const hotelsHtml = hotels
-  .map(
-    (hotel) => `
+    const hotelsHtml = (
+      isPhuquoc ? selectedPhuquocCourse.hotels : selectedProduct.hotels
+    )
+      .map(
+        (hotel) => `
       <div
         style="
           margin-bottom: 12px;
@@ -216,63 +420,67 @@ export async function POST(request: Request) {
         </div>
       </div>
     `,
-  )
-  .join("");
+      )
+      .join("");
 
-const includesHtml = includes
-  .map(
-    (item) => `
+    const includesHtml = (
+      isPhuquoc ? selectedPhuquocCourse.includes : selectedProduct.includes
+    )
+      .map(
+        (item) => `
       <li style="margin-bottom: 8px; line-height: 1.6;">
         ${item.text}
       </li>
     `,
-  )
-  .join("");
+      )
+      .join("");
 
-const excludesHtml = excludes
-  .map(
-    (item) => `
+    const excludesHtml = (
+      isPhuquoc ? selectedPhuquocCourse.excludes : selectedProduct.excludes
+    )
+      .map(
+        (item) => `
       <li style="margin-bottom: 8px; line-height: 1.6;">
         ${item.text}
       </li>
     `,
-  )
-  .join("");
+      )
+      .join("");
 
-  const cancellationRules = [
-  {
-    period: "예약금 입금 다음날 ~ 출발 60일 전",
-    fee: "예약금 환불 불가",
-  },
-  {
-    period: "출발 59일 ~ 45일 전",
-    fee: "총 여행경비의 30%",
-  },
-  {
-    period: "출발 44일 ~ 30일 전",
-    fee: "총 여행경비의 50%",
-  },
-  {
-    period: "출발 29일 ~ 21일 전",
-    fee: "총 여행경비의 60%",
-  },
-  {
-    period: "출발 20일 ~ 15일 전",
-    fee: "총 여행경비의 70%",
-  },
-  {
-    period: "출발 14일 ~ 1일 전",
-    fee: "총 여행경비의 80%",
-  },
-  {
-    period: "출발 당일",
-    fee: "총 여행경비의 100%",
-  },
-];
+    const cancellationRules = [
+      {
+        period: "예약금 입금 다음날 ~ 출발 60일 전",
+        fee: "예약금 환불 불가",
+      },
+      {
+        period: "출발 59일 ~ 45일 전",
+        fee: "총 여행경비의 30%",
+      },
+      {
+        period: "출발 44일 ~ 30일 전",
+        fee: "총 여행경비의 50%",
+      },
+      {
+        period: "출발 29일 ~ 21일 전",
+        fee: "총 여행경비의 60%",
+      },
+      {
+        period: "출발 20일 ~ 15일 전",
+        fee: "총 여행경비의 70%",
+      },
+      {
+        period: "출발 14일 ~ 1일 전",
+        fee: "총 여행경비의 80%",
+      },
+      {
+        period: "출발 당일",
+        fee: "총 여행경비의 100%",
+      },
+    ];
 
-const cancellationRulesHtml = cancellationRules
-  .map(
-    (rule) => `
+    const cancellationRulesHtml = cancellationRules
+      .map(
+        (rule) => `
       <tr>
         <td
           style="
@@ -294,8 +502,8 @@ const cancellationRulesHtml = cancellationRules
         </td>
       </tr>
     `,
-  )
-  .join("");
+      )
+      .join("");
 
     if (!email) {
       return NextResponse.json(
@@ -307,7 +515,7 @@ const cancellationRulesHtml = cancellationRules
     const { data, error } = await resend.emails.send({
       from: "BNI AIR TRAVEL <onboarding@resend.dev>",
       to: email,
-      subject: `[${companyName}] 장가계 ${course} 여행 일정`,
+      subject: `[${companyName}] ${productInfo.name} ${course} 여행 일정`,
       html: `
   <div
     style="
@@ -316,6 +524,27 @@ const cancellationRulesHtml = cancellationRules
       color: #111827;
     "
   >
+    <div
+  style="
+    text-align: center;
+    margin: 0 auto 28px;
+  "
+>
+  <img
+  src="${productInfo.poster}"
+  alt="${productInfo.name} 여행 안내"
+  width="320"
+    style="
+      display: block;
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      margin: 0 auto;
+      border: 0;
+      border-radius: 14px;
+    "
+  />
+</div>
     <div
       style="
         margin-bottom: 40px;
@@ -344,7 +573,7 @@ const cancellationRulesHtml = cancellationRules
           color: #111827;
         "
       >
-        장가계 ${course} 여행 일정
+        ${productInfo.name} ${course} 여행 일정
       </h1>
 
       <p
@@ -369,8 +598,38 @@ const cancellationRulesHtml = cancellationRules
         담당자 ${managerName} · ${phone}
       </div>
     </div>
+    ${flightHtml}
 
-    <h2 style="margin-top: 40px;">상세 일정</h2>
+<div
+  style="
+    margin: 28px 0 20px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background-color: #f8fafc;
+  "
+>
+  <div
+    style="
+      margin-bottom: 6px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    "
+  >
+    📋 상세 여행일정
+  </div>
+
+  <div
+    style="
+      font-size: 14px;
+      line-height: 1.6;
+      color: #64748b;
+    "
+  >
+    아래에서 요청하신 여행상품의 상세 일정을 확인해 주세요.
+  </div>
+</div>
 
 ${itineraryHtml}
 
@@ -519,10 +778,7 @@ ${hotelsHtml}
     if (error) {
       console.error("RESEND ERROR:", error);
 
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({

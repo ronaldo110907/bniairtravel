@@ -3,6 +3,7 @@ import DepartureCalendar from "@/components/DepartureCalendar";
 import GallerySlider from "@/components/GallerySlider";
 import IncludedCard from "@/components/IncludedCard";
 import PhuquocProductContent from "@/components/phuquoc/PhuquocProductContent";
+import ItineraryEmailButton from "@/components/ItineraryEmailButton";
 
 import {
   includesPremium,
@@ -72,6 +73,7 @@ export default async function PhuQuocPage() {
         id="departure-calendar"
         className="mx-auto max-w-7xl scroll-mt-28 px-4 py-24"
       >
+        <ItineraryEmailButton product="phuquoc" />
         <SectionReveal>
           <SectionTitle
             eyebrow="DEPARTURE DATE"

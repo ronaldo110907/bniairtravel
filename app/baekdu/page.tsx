@@ -27,6 +27,7 @@ import FAQSection from "@/components/sections/FAQSection";
 import PreparationSection from "@/components/sections/PreparationSection";
 import CancellationSection from "@/components/sections/CancellationSection";
 import ReservationCTASection from "@/components/sections/ReservationCTASection";
+import ItineraryEmailButton from "@/components/ItineraryEmailButton";
 
 import { supabase } from "@/lib/supabase";
 
@@ -67,6 +68,7 @@ export default async function BaekduPage() {
         id="departure-calendar"
         className="mx-auto max-w-7xl scroll-mt-28 px-4 py-24"
       >
+        <ItineraryEmailButton product="baekdu" />
         <SectionReveal>
           <SectionTitle
             eyebrow="DEPARTURE DATE"

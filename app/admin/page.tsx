@@ -281,43 +281,35 @@ export default async function AdminPage() {
             </Link>
           </div>
         </div>
-        {/* 홈페이지 개발 원칙 */}
+        {/* 오늘의 개발 작전일지 */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow">
           <div className="text-center">
             <div className="text-sm font-semibold tracking-widest text-gray-400">
-              DEVELOPMENT RULE
+              TODAY&apos;S DEVELOPMENT LOG
             </div>
 
             <h2 className="mt-2 text-xl font-bold text-gray-900">
-              🤔 확실하지 않을 때는 이 질문을 하세요.
+              🌴 푸꾸옥 특수부대 침투 작전
             </h2>
 
-            <div className="mx-auto mt-6 max-w-2xl space-y-4">
-              <div className="rounded-xl bg-gray-50 p-4">
-                <div className="font-bold text-gray-900">
-                  “지원씨, 얘 될 놈이에요?”
-                </div>
-                <div className="mt-1 text-lg font-bold text-blue-600">
-                  → “네. 밀죠.” 😎
-                </div>
-              </div>
+            <p className="mt-2 text-sm text-gray-500">
+              오류 9명 발생부터 장가계 홍보 사건까지... 😂
+            </p>
+          </div>
 
-              <div className="rounded-xl bg-gray-50 p-4">
-                <div className="font-bold text-gray-900">
-                  “얘 아닌 것 같은데요?”
-                </div>
-                <div className="mt-1 text-lg font-bold text-red-500">
-                  → “보내주시죠.” 👋
-                </div>
-              </div>
-            </div>
+          <div className="mx-auto mt-6 max-w-5xl overflow-hidden rounded-2xl border bg-gray-50">
+            <img
+              src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/webtoon.png"
+              alt="푸꾸옥 특수부대 개발 작전일지"
+              className="h-auto w-full"
+            />
+          </div>
 
-            <div className="mt-6 border-t pt-4 text-sm italic text-gray-400">
-              될 놈은 밀고, 아닌 놈은 빨리 보내준다.
-              <span className="ml-2 not-italic font-semibold">
-                — 홈페이지 개발팀, 2026
-              </span>
-            </div>
+          <div className="mt-6 border-t pt-4 text-center text-sm italic text-gray-400">
+            침투 전 군장 검사는 철저히 할 것.
+            <span className="ml-2 not-italic font-semibold">
+              — 홈페이지 개발팀, 2026
+            </span>
           </div>
         </div>
         <div className="overflow-hidden rounded-xl border bg-white shadow">

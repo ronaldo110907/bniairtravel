@@ -69,7 +69,7 @@ export default async function ZhangjiajiePage() {
       >
         <SectionReveal>
           <div className="mb-10">
-            <ItineraryEmailButton />
+            <ItineraryEmailButton product="zhangjiajie" />
           </div>
 
           <SectionTitle
