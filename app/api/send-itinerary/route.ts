@@ -63,9 +63,11 @@ export async function POST(request: Request) {
       course,
       product,
       phuquocCourse,
+      guilinCourse,
     } = await request.json();
     console.log("MAIL PRODUCT:", product);
     console.log("PHUQUOC COURSE:", phuquocCourse);
+    console.log("GUILIN COURSE:", guilinCourse);
 
     const productData = {
       zhangjiajie: {
@@ -133,13 +135,58 @@ export async function POST(request: Request) {
           },
         },
       },
+      guilin: {
+        name: "계림",
+        poster:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/guilin.png",
+
+        flightInfo: guilinFlightInfo,
+
+        courses: {
+          guilin3N5D: {
+            name: "계림 3박5일",
+            itinerary: guilinItinerary3N5D,
+            hotels: guilinHotels,
+            includes: guilinIncludes,
+            excludes: guilinExcludes,
+          },
+
+          guilin4N6D: {
+            name: "계림 4박6일",
+            itinerary: guilinItinerary4N6D,
+            hotels: guilinHotels,
+            includes: guilinIncludes,
+            excludes: guilinExcludes,
+          },
+
+          chenzhou3N5D: {
+            name: "천저우 3박5일",
+            itinerary: chenzhouItinerary3N5D,
+            hotels: guilinHotels,
+            includes: chenzhouIncludes,
+            excludes: chenzhouExcludes,
+          },
+
+          chenzhou4N6D: {
+            name: "천저우 4박6일",
+            itinerary: chenzhouItinerary4N6D,
+            hotels: guilinHotels,
+            includes: chenzhouIncludes,
+            excludes: chenzhouExcludes,
+          },
+        },
+      },
     };
 
     const selectedProduct =
       product === "baekdu" ? productData.baekdu : productData.zhangjiajie;
 
     const productInfo =
-      product === "phuquoc" ? productData.phuquoc : selectedProduct;
+      product === "phuquoc"
+        ? productData.phuquoc
+        : product === "guilin"
+          ? productData.guilin
+          : selectedProduct;
 
     const selectedPhuquocCourse =
       phuquocCourse === "quality"
@@ -149,16 +196,31 @@ export async function POST(request: Request) {
           : phuquocCourse === "golf"
             ? productData.phuquoc.courses.golf
             : productData.phuquoc.courses.premium;
+    const selectedGuilinCourse =
+      guilinCourse === "guilin4N6D"
+        ? productData.guilin.courses.guilin4N6D
+        : guilinCourse === "chenzhou3N5D"
+          ? productData.guilin.courses.chenzhou3N5D
+          : guilinCourse === "chenzhou4N6D"
+            ? productData.guilin.courses.chenzhou4N6D
+            : productData.guilin.courses.guilin3N5D;
 
     const isPhuquoc = product === "phuquoc";
+    const isGuilin = product === "guilin";
 
-    const displayCourse = isPhuquoc ? "3박5일" : course;
+    const displayCourse = isPhuquoc
+      ? "3박5일"
+      : isGuilin
+        ? selectedGuilinCourse.name
+        : course;
 
     const itinerary = isPhuquoc
       ? selectedPhuquocCourse.itinerary
-      : course === "4박5일"
-        ? selectedProduct.itinerary4
-        : selectedProduct.itinerary3;
+      : isGuilin
+        ? selectedGuilinCourse.itinerary
+        : course === "4박5일"
+          ? selectedProduct.itinerary4
+          : selectedProduct.itinerary3;
 
     const flightHtml = `
   <div
@@ -379,7 +441,11 @@ export async function POST(request: Request) {
       .join("");
 
     const hotelsHtml = (
-      isPhuquoc ? selectedPhuquocCourse.hotels : selectedProduct.hotels
+      isPhuquoc
+        ? selectedPhuquocCourse.hotels
+        : isGuilin
+          ? selectedGuilinCourse.hotels
+          : selectedProduct.hotels
     )
       .map(
         (hotel) => `
@@ -426,7 +492,11 @@ export async function POST(request: Request) {
       .join("");
 
     const includesHtml = (
-      isPhuquoc ? selectedPhuquocCourse.includes : selectedProduct.includes
+      isPhuquoc
+        ? selectedPhuquocCourse.includes
+        : isGuilin
+          ? selectedGuilinCourse.includes
+          : selectedProduct.includes
     )
       .map(
         (item) => `
@@ -438,7 +508,11 @@ export async function POST(request: Request) {
       .join("");
 
     const excludesHtml = (
-      isPhuquoc ? selectedPhuquocCourse.excludes : selectedProduct.excludes
+      isPhuquoc
+        ? selectedPhuquocCourse.excludes
+        : isGuilin
+          ? selectedGuilinCourse.excludes
+          : selectedProduct.excludes
     )
       .map(
         (item) => `

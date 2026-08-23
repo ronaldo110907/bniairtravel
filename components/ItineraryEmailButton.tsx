@@ -4,6 +4,11 @@ import { useState } from "react";
 
 type Course = "3박4일" | "4박5일";
 type PhuquocCourse = "premium" | "quality" | "value" | "golf";
+type GuilinCourse =
+  | "guilin3N5D"
+  | "guilin4N6D"
+  | "chenzhou3N5D"
+  | "chenzhou4N6D";
 
 type Props = {
   product: string;
@@ -17,6 +22,7 @@ export default function ItineraryEmailButton({ product }: Props) {
   const [phone, setPhone] = useState("");
   const [course, setCourse] = useState<Course>("3박4일");
   const [phuquocCourse, setPhuquocCourse] = useState<PhuquocCourse>("premium");
+  const [guilinCourse, setGuilinCourse] = useState<GuilinCourse>("guilin3N5D");
 
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -59,6 +65,7 @@ export default function ItineraryEmailButton({ product }: Props) {
           course,
           product,
           phuquocCourse,
+          guilinCourse,
         }),
       });
 
@@ -135,70 +142,108 @@ export default function ItineraryEmailButton({ product }: Props) {
             />
           </div>
 
-          <div className="mt-5">
-            <div className="mb-3 text-sm font-bold text-gray-700">
+          <div className="mt-6">
+            <div className="mb-3 text-sm font-bold text-[#5f4a2f]">
               보내실 일정을 선택해주세요.
             </div>
 
             {product === "phuquoc" ? (
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                <button
-                  type="button"
-                  onClick={() => setPhuquocCourse("premium")}
-                  className={`rounded-xl border px-4 py-3 font-bold transition ${
-                    phuquocCourse === "premium"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "bg-white text-gray-700"
-                  }`}
-                >
-                  고품격
-                </button>
+                {[
+                  { key: "premium", label: "고품격" },
+                  { key: "quality", label: "품격" },
+                  { key: "value", label: "실속" },
+                  { key: "golf", label: "골프" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setPhuquocCourse(item.key as PhuquocCourse)}
+                    className={`rounded-xl border px-4 py-3 font-bold transition ${
+                      phuquocCourse === item.key
+                        ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                        : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44] hover:bg-[#f7f3ec]"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ) : product === "guilin" ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-2xl border border-[#e5dccf] bg-[#faf8f4] p-4">
+                  <div className="mb-3 text-center text-sm font-bold text-[#8b6b3f]">
+                    계림
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={() => setPhuquocCourse("quality")}
-                  className={`rounded-xl border px-4 py-3 font-bold transition ${
-                    phuquocCourse === "quality"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "bg-white text-gray-700"
-                  }`}
-                >
-                  품격
-                </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setGuilinCourse("guilin3N5D")}
+                      className={`rounded-xl border px-3 py-3 font-bold transition ${
+                        guilinCourse === "guilin3N5D"
+                          ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                          : "border-[#ddd3c4] bg-white text-[#5f4a2f] hover:border-[#b88a44]"
+                      }`}
+                    >
+                      3박5일
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => setPhuquocCourse("value")}
-                  className={`rounded-xl border px-4 py-3 font-bold transition ${
-                    phuquocCourse === "value"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "bg-white text-gray-700"
-                  }`}
-                >
-                  실속
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => setGuilinCourse("guilin4N6D")}
+                      className={`rounded-xl border px-3 py-3 font-bold transition ${
+                        guilinCourse === "guilin4N6D"
+                          ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                          : "border-[#ddd3c4] bg-white text-[#5f4a2f] hover:border-[#b88a44]"
+                      }`}
+                    >
+                      4박6일
+                    </button>
+                  </div>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setPhuquocCourse("golf")}
-                  className={`rounded-xl border px-4 py-3 font-bold transition ${
-                    phuquocCourse === "golf"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "bg-white text-gray-700"
-                  }`}
-                >
-                  골프
-                </button>
+                <div className="rounded-2xl border border-[#e5dccf] bg-[#faf8f4] p-4">
+                  <div className="mb-3 text-center text-sm font-bold text-[#8b6b3f]">
+                    천저우
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setGuilinCourse("chenzhou3N5D")}
+                      className={`rounded-xl border px-3 py-3 font-bold transition ${
+                        guilinCourse === "chenzhou3N5D"
+                          ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                          : "border-[#ddd3c4] bg-white text-[#5f4a2f] hover:border-[#b88a44]"
+                      }`}
+                    >
+                      3박5일
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setGuilinCourse("chenzhou4N6D")}
+                      className={`rounded-xl border px-3 py-3 font-bold transition ${
+                        guilinCourse === "chenzhou4N6D"
+                          ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                          : "border-[#ddd3c4] bg-white text-[#5f4a2f] hover:border-[#b88a44]"
+                      }`}
+                    >
+                      4박6일
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setCourse("3박4일")}
-                  className={`flex-1 rounded-xl border px-4 py-3 font-bold transition ${
+                  className={`rounded-xl border px-4 py-3 font-bold transition ${
                     course === "3박4일"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "bg-white text-gray-700"
+                      ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                      : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44]"
                   }`}
                 >
                   3박4일
@@ -207,10 +252,10 @@ export default function ItineraryEmailButton({ product }: Props) {
                 <button
                   type="button"
                   onClick={() => setCourse("4박5일")}
-                  className={`flex-1 rounded-xl border px-4 py-3 font-bold transition ${
+                  className={`rounded-xl border px-4 py-3 font-bold transition ${
                     course === "4박5일"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "bg-white text-gray-700"
+                      ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                      : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44]"
                   }`}
                 >
                   4박5일
@@ -218,7 +263,6 @@ export default function ItineraryEmailButton({ product }: Props) {
               </div>
             )}
           </div>
-
           <button
             type="button"
             onClick={sendEmail}
