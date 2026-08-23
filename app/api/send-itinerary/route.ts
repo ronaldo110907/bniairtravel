@@ -60,6 +60,7 @@ export async function POST(request: Request) {
       companyName,
       managerName,
       phone,
+      etc,
       course,
       product,
       phuquocCourse,
@@ -673,7 +674,40 @@ export async function POST(request: Request) {
         <strong>${companyName}</strong><br />
         담당자 ${managerName} · ${phone}
       </div>
-    </div>
+        </div>
+
+    ${
+      etc?.trim()
+        ? `
+          <div
+            style="
+              margin: -15px 0 30px;
+              padding: 18px 20px;
+              border: 1px solid #e5e7eb;
+              border-radius: 12px;
+              background-color: #f8fafc;
+              line-height: 1.7;
+              color: #374151;
+            "
+          >
+            <div
+              style="
+                margin-bottom: 8px;
+                font-weight: 700;
+                color: #111827;
+              "
+            >
+              📌 기타사항
+            </div>
+
+            <div style="white-space: pre-line;">
+              ${etc}
+            </div>
+          </div>
+        `
+        : ""
+    }
+
     ${flightHtml}
 
 <div

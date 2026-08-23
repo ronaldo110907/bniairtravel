@@ -20,6 +20,7 @@ export default function ItineraryEmailButton({ product }: Props) {
   const [companyName, setCompanyName] = useState("");
   const [managerName, setManagerName] = useState("");
   const [phone, setPhone] = useState("");
+  const [etc, setEtc] = useState("");
   const [course, setCourse] = useState<Course>("3박4일");
   const [phuquocCourse, setPhuquocCourse] = useState<PhuquocCourse>("premium");
   const [guilinCourse, setGuilinCourse] = useState<GuilinCourse>("guilin3N5D");
@@ -62,6 +63,7 @@ export default function ItineraryEmailButton({ product }: Props) {
           companyName: companyName.trim(),
           managerName: managerName.trim(),
           phone: phone.trim(),
+          etc: etc.trim(),
           course,
           product,
           phuquocCourse,
@@ -141,6 +143,14 @@ export default function ItineraryEmailButton({ product }: Props) {
               className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
+
+          <textarea
+            value={etc}
+            onChange={(e) => setEtc(e.target.value)}
+            placeholder="기타사항 (예: 요청하신 1월 13일 출발은 1인 1,290,000원입니다.)"
+            rows={2}
+            className="mt-3 w-full resize-none rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+          />
 
           <div className="mt-6">
             <div className="mb-3 text-sm font-bold text-[#5f4a2f]">
