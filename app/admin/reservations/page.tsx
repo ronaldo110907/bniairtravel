@@ -23,6 +23,8 @@ type ReservationPeople = {
   passport_sex: string | null;
   passport_nationality: string | null;
   sort_order: number;
+
+  is_guide: boolean;
 };
 
 type Product = {
@@ -456,6 +458,8 @@ function ReservationsContent() {
 
         passport_sex: editPerson.passport_sex || null,
         passport_nationality: editPerson.passport_nationality || null,
+
+        is_guide: editPerson.is_guide ?? false,
       })
       .eq("id", editPerson.id)
       .select()
@@ -2338,6 +2342,31 @@ px-4 py-2
                             />
 
                             <div className="mt-4 flex gap-2">
+                              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                <label className="flex cursor-pointer items-center gap-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={editPerson.is_guide ?? false}
+                                    onChange={(e) =>
+                                      setEditPerson({
+                                        ...editPerson,
+                                        is_guide: e.target.checked,
+                                      })
+                                    }
+                                    className="h-5 w-5"
+                                  />
+
+                                  <div>
+                                    <div className="font-bold text-amber-900">
+                                      인솔자(FREE)
+                                    </div>
+                                    <div className="mt-1 text-xs text-amber-700">
+                                      정산 시 판매금액과 현지비 계산에서
+                                      제외됩니다.
+                                    </div>
+                                  </div>
+                                </label>
+                              </div>
                               <button
                                 type="button"
                                 onClick={updatePerson}

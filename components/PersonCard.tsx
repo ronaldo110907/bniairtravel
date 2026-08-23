@@ -11,6 +11,7 @@ type ReservationPeople = {
   passport_sex: string | null;
   passport_nationality: string | null;
   sort_order: number;
+  is_guide: boolean;
 };
 
 export type PersonCardProps = {
@@ -84,6 +85,12 @@ export default function PersonCard({
           )}
 
           <div className="font-bold">{person.name}</div>
+
+          {person.is_guide && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
+              👤 인솔자
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

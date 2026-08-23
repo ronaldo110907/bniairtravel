@@ -14,6 +14,7 @@ type SettlementExcelParams = {
 
   reservationName: string;
   peopleCount: number;
+  paidPeopleCount: number;
 
   unitPrice: number;
   airfare: number;
@@ -31,6 +32,7 @@ export function downloadSettlementExcel({
   arrivalDate,
   reservationName,
   peopleCount,
+  paidPeopleCount,
   unitPrice,
   airfare,
   landCost,
@@ -38,15 +40,12 @@ export function downloadSettlementExcel({
   payments,
   isCompleted,
 }: SettlementExcelParams) {
-  const totalPrice = unitPrice * peopleCount;
+  const totalPrice = unitPrice * paidPeopleCount;
 
   const totalAirfare = airfare * peopleCount;
-  const totalLandCost = landCost * peopleCount;
+  const totalLandCost = landCost * paidPeopleCount;
 
-  const totalCost =
-    totalAirfare +
-    totalLandCost +
-    otherCost;
+  const totalCost = totalAirfare + totalLandCost + otherCost;
 
   const profit = totalPrice - totalCost;
 
@@ -66,12 +65,17 @@ export function downloadSettlementExcel({
 
     ["상품명", productName, "예약자", reservationName],
     ["출발일", departureDate, "도착일", arrivalDate],
-    ["인원", `${peopleCount}명`, "정산상태", isCompleted ? "정산완료" : "미정산"],
+    [
+      "인원",
+      `${peopleCount}명`,
+      "정산상태",
+      isCompleted ? "정산완료" : "미정산",
+    ],
 
     ["매 출", "", "", ""],
 
     ["구분", "단가", "인원", "금액"],
-    ["상품가", unitPrice, peopleCount, totalPrice],
+    ["상품가", unitPrice, paidPeopleCount, totalPrice],
 
     ["입 금 내 역", "", "", ""],
 
@@ -79,12 +83,7 @@ export function downloadSettlementExcel({
   ];
 
   if (payments.length === 0) {
-    rows.push([
-      "-",
-      "등록된 입금내역 없음",
-      0,
-      "-",
-    ]);
+    rows.push(["-", "등록된 입금내역 없음", 0, "-"]);
   } else {
     payments.forEach((payment) => {
       rows.push([
@@ -104,13 +103,13 @@ export function downloadSettlementExcel({
 
     ["구분", "단가", "인원", "금액"],
     ["항공료", airfare, peopleCount, totalAirfare],
-    ["랜드비", landCost, peopleCount, totalLandCost],
+    ["랜드비", landCost, paidPeopleCount, totalLandCost],
     ["기타비용", "", "", otherCost],
 
     ["총 원가", "", "", totalCost],
     ["예약 수익", "", "", profit],
 
-     // 결재란
+    // 결재란
     ["", "결재", "계", "대표님"],
     ["", "", "", ""],
   );
@@ -124,36 +123,115 @@ export function downloadSettlementExcel({
   const paymentStartRow = 9;
   const paymentCount = Math.max(payments.length, 1);
 
-  const totalPaymentRow =
-    paymentStartRow + paymentCount;
+  const totalPaymentRow = paymentStartRow + paymentCount;
 
-  const unpaidRow =
-    totalPaymentRow + 1;
+  const unpaidRow = totalPaymentRow + 1;
 
-  const costTitleRow =
-    unpaidRow + 1;
+  const costTitleRow = unpaidRow + 1;
 
-  const costHeaderRow =
-    costTitleRow + 1;
+  const costHeaderRow = costTitleRow + 1;
 
-  const airfareRow =
-    costHeaderRow + 1;
+  const airfareRow = costHeaderRow + 1;
 
-  const landRow =
-    airfareRow + 1;
+  const landRow = airfareRow + 1;
 
-  const otherRow =
-    landRow + 1;
+  const otherRow = landRow + 1;
 
-  const totalCostRow =
-    otherRow + 1;
+  const totalCostRow = otherRow + 1;
 
-  const profitRow =
-    totalCostRow + 1;
+  const profitRow = totalCostRow + 1;
+
+  // ==============================
+  // 엑셀 자동 계산 수식
+  // ==============================
+
+  // 상품가 금액 = 단가 × 유료인원
+  ws["D7"] = {
+    t: "n",
+    f: "B7*C7",
+    v: totalPrice,
+  };
+
+  // 총 입금액 = 입금내역 합계
+  const totalPaymentCell = XLSX.utils.encode_cell({
+    r: totalPaymentRow,
+    c: 2,
+  });
+
+  const paymentFirstExcelRow = paymentStartRow + 1;
+  const paymentLastExcelRow = paymentStartRow + paymentCount;
+
+  ws[totalPaymentCell] = {
+    t: "n",
+    f:
+      payments.length > 0
+        ? `SUM(C${paymentFirstExcelRow}:C${paymentLastExcelRow})`
+        : "0",
+    v: totalPayment,
+  };
+
+  // 미수금 = 상품가 - 총 입금액
+  const unpaidCell = XLSX.utils.encode_cell({
+    r: unpaidRow,
+    c: 2,
+  });
+
+  ws[unpaidCell] = {
+    t: "n",
+    f: `MAX(D7-${totalPaymentCell},0)`,
+    v: unpaid,
+  };
+
+  // 항공료 금액 = 단가 × 전체인원
+  const airfareAmountCell = XLSX.utils.encode_cell({
+    r: airfareRow,
+    c: 3,
+  });
+
+  ws[airfareAmountCell] = {
+    t: "n",
+    f: `B${airfareRow + 1}*C${airfareRow + 1}`,
+    v: totalAirfare,
+  };
+
+  // 랜드비 금액 = 단가 × 유료인원
+  const landAmountCell = XLSX.utils.encode_cell({
+    r: landRow,
+    c: 3,
+  });
+
+  ws[landAmountCell] = {
+    t: "n",
+    f: `B${landRow + 1}*C${landRow + 1}`,
+    v: totalLandCost,
+  };
+
+  // 총 원가 = 항공료 + 랜드비 + 기타비용
+  const totalCostCell = XLSX.utils.encode_cell({
+    r: totalCostRow,
+    c: 3,
+  });
+
+  ws[totalCostCell] = {
+    t: "n",
+    f: `D${airfareRow + 1}+D${landRow + 1}+D${otherRow + 1}`,
+    v: totalCost,
+  };
+
+  // 예약 수익 = 상품가 - 총 원가
+  const profitCell = XLSX.utils.encode_cell({
+    r: profitRow,
+    c: 3,
+  });
+
+  ws[profitCell] = {
+    t: "n",
+    f: `D7-${totalCostCell}`,
+    v: profit,
+  };
 
   const approvalHeaderRow = profitRow + 1;
   const approvalBottomRow = approvalHeaderRow + 1;
-
 
   ws["!merges"] = [
     // 제목
@@ -205,34 +283,29 @@ export function downloadSettlementExcel({
     },
 
     // 결재 - 세로 병합
-{
-  s: { r: approvalHeaderRow, c: 1 },
-  e: { r: approvalBottomRow, c: 1 },
-},
+    {
+      s: { r: approvalHeaderRow, c: 1 },
+      e: { r: approvalBottomRow, c: 1 },
+    },
 
-// 계 - 서명칸 세로 병합
-{
-  s: { r: approvalHeaderRow + 1, c: 2 },
-  e: { r: approvalBottomRow, c: 2 },
-},
+    // 계 - 서명칸 세로 병합
+    {
+      s: { r: approvalHeaderRow + 1, c: 2 },
+      e: { r: approvalBottomRow, c: 2 },
+    },
 
-// 대표님 - 서명칸 세로 병합
-{
-  s: { r: approvalHeaderRow + 1, c: 3 },
-  e: { r: approvalBottomRow, c: 3 },
-},
+    // 대표님 - 서명칸 세로 병합
+    {
+      s: { r: approvalHeaderRow + 1, c: 3 },
+      e: { r: approvalBottomRow, c: 3 },
+    },
   ];
 
   // ==============================
   // 열 너비
   // ==============================
 
-  ws["!cols"] = [
-    { wch: 18 },
-    { wch: 22 },
-    { wch: 16 },
-    { wch: 24 },
-  ];
+  ws["!cols"] = [{ wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 24 }];
 
   // ==============================
   // 행 높이
@@ -243,52 +316,34 @@ export function downloadSettlementExcel({
       return { hpt: 34 };
     }
 
-    if (
-      index === 4 ||
-      index === 7 ||
-      index === costTitleRow
-    ) {
+    if (index === 4 || index === 7 || index === costTitleRow) {
       return { hpt: 25 };
     }
-    
-    // 결재란 높이
-if (index === approvalHeaderRow) {
-  return { hpt: 22 };
-}
 
-// 계 / 대표님 서명 공간 높이
-if (
-  index === approvalHeaderRow + 1 ||
-  index === approvalBottomRow
-) {
-  return { hpt: 60 };
-}
-return { hpt: 21 };
+    // 결재란 높이
+    if (index === approvalHeaderRow) {
+      return { hpt: 22 };
+    }
+
+    // 계 / 대표님 서명 공간 높이
+    if (index === approvalHeaderRow + 1 || index === approvalBottomRow) {
+      return { hpt: 60 };
+    }
+    return { hpt: 21 };
   });
 
   // ==============================
   // 공통 셀 스타일
   // ==============================
 
-  const range = XLSX.utils.decode_range(
-    ws["!ref"] || "A1:D1",
-  );
+  const range = XLSX.utils.decode_range(ws["!ref"] || "A1:D1");
 
-  for (
-    let row = range.s.r;
-    row <= range.e.r;
-    row++
-  ) {
-    for (
-      let col = range.s.c;
-      col <= range.e.c;
-      col++
-    ) {
-      const address =
-        XLSX.utils.encode_cell({
-          r: row,
-          c: col,
-        });
+  for (let row = range.s.r; row <= range.e.r; row++) {
+    for (let col = range.s.c; col <= range.e.c; col++) {
+      const address = XLSX.utils.encode_cell({
+        r: row,
+        c: col,
+      });
 
       if (!ws[address]) {
         ws[address] = {
@@ -345,128 +400,121 @@ return { hpt: 21 };
       vertical: "center",
     },
 
-   border: {
-  top: {
-    style: "medium",
-    color: { rgb: "000000" },
-  },
-  bottom: {
-    style: "medium",
-    color: { rgb: "000000" },
-  },
-  left: {
-    style: "medium",
-    color: { rgb: "000000" },
-  },
-  right: {
-    style: "medium",
-    color: { rgb: "000000" },
-  },
-},
-  };
- // ==============================
-// 제목 외곽 테두리
-// ==============================
-
-// 제목 위/아래 굵은선
-["A1", "B1", "C1", "D1"].forEach((address) => {
-  if (!ws[address]) {
-    ws[address] = { t: "s", v: "" };
-  }
-
-  ws[address].s = {
-    ...ws[address].s,
     border: {
-      ...ws[address].s?.border,
-
       top: {
         style: "medium",
         color: { rgb: "000000" },
       },
-
       bottom: {
+        style: "medium",
+        color: { rgb: "000000" },
+      },
+      left: {
+        style: "medium",
+        color: { rgb: "000000" },
+      },
+      right: {
         style: "medium",
         color: { rgb: "000000" },
       },
     },
   };
-});
+  // ==============================
+  // 제목 외곽 테두리
+  // ==============================
 
-// 제목 왼쪽 끝
-ws["A1"].s.border.left = {
-  style: "medium",
-  color: { rgb: "000000" },
-};
+  // 제목 위/아래 굵은선
+  ["A1", "B1", "C1", "D1"].forEach((address) => {
+    if (!ws[address]) {
+      ws[address] = { t: "s", v: "" };
+    }
 
-// 제목 오른쪽 끝
-ws["D1"].s.border.right = {
-  style: "medium",
-  color: { rgb: "000000" },
-};
+    ws[address].s = {
+      ...ws[address].s,
+      border: {
+        ...ws[address].s?.border,
 
-// 제목 아래 굵은선 전체 A:D
-["A1", "B1", "C1", "D1"].forEach((address) => {
-  if (!ws[address]) {
-    ws[address] = { t: "s", v: "" };
-  }
+        top: {
+          style: "medium",
+          color: { rgb: "000000" },
+        },
 
-  ws[address].s = {
-    ...ws[address].s,
-    border: {
-      ...ws[address].s?.border,
-      bottom: {
-        style: "medium",
-        color: { rgb: "000000" },
+        bottom: {
+          style: "medium",
+          color: { rgb: "000000" },
+        },
       },
-    },
+    };
+  });
+
+  // 제목 왼쪽 끝
+  ws["A1"].s.border.left = {
+    style: "medium",
+    color: { rgb: "000000" },
   };
-});
+
+  // 제목 오른쪽 끝
+  ws["D1"].s.border.right = {
+    style: "medium",
+    color: { rgb: "000000" },
+  };
+
+  // 제목 아래 굵은선 전체 A:D
+  ["A1", "B1", "C1", "D1"].forEach((address) => {
+    if (!ws[address]) {
+      ws[address] = { t: "s", v: "" };
+    }
+
+    ws[address].s = {
+      ...ws[address].s,
+      border: {
+        ...ws[address].s?.border,
+        bottom: {
+          style: "medium",
+          color: { rgb: "000000" },
+        },
+      },
+    };
+  });
 
   // ==============================
   // 기본정보 라벨
   // ==============================
 
-  ["A2", "C2", "A3", "C3", "A4", "C4"].forEach(
-    (address) => {
-      ws[address].s = {
-        ...ws[address].s,
+  ["A2", "C2", "A3", "C3", "A4", "C4"].forEach((address) => {
+    ws[address].s = {
+      ...ws[address].s,
 
-        font: {
-          name: "맑은 고딕",
-          sz: 10,
-          bold: true,
-        },
+      font: {
+        name: "맑은 고딕",
+        sz: 10,
+        bold: true,
+      },
 
-        fill: {
-          fgColor: {
-            rgb: "F2F2F2",
-          },
+      fill: {
+        fgColor: {
+          rgb: "F2F2F2",
         },
+      },
 
-        alignment: {
-          horizontal: "center",
-          vertical: "center",
-        },
-      };
-    },
-  );
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+      },
+    };
+  });
 
   // ==============================
   // 구역 제목
   // ==============================
 
-  const sectionRows = [
-    4,
-    7,
-    costTitleRow,
-  ];
+  const sectionRows = [4, 7, costTitleRow];
 
   sectionRows.forEach((row) => {
-    const address =
-      XLSX.utils.encode_cell({
-        r: row,
-        c: 0,
-      });
+    const address = XLSX.utils.encode_cell({
+      r: row,
+      c: 0,
+    });
 
     ws[address].s = {
       font: {
@@ -514,19 +562,14 @@ ws["D1"].s.border.right = {
   // 표 헤더
   // ==============================
 
-  const headerRows = [
-    5,
-    8,
-    costHeaderRow,
-  ];
+  const headerRows = [5, 8, costHeaderRow];
 
   headerRows.forEach((row) => {
     for (let col = 0; col <= 3; col++) {
-      const address =
-        XLSX.utils.encode_cell({
-          r: row,
-          c: col,
-        });
+      const address = XLSX.utils.encode_cell({
+        r: row,
+        c: col,
+      });
 
       ws[address].s = {
         ...ws[address].s,
@@ -560,10 +603,7 @@ ws["D1"].s.border.right = {
 
     const cell = ws[key];
 
-    if (
-      cell &&
-      typeof cell.v === "number"
-    ) {
+    if (cell && typeof cell.v === "number") {
       cell.z = '#,##0"원"';
 
       cell.s = {
@@ -590,50 +630,40 @@ ws["D1"].s.border.right = {
     };
   }
 
-  const airfarePeopleCell =
-    XLSX.utils.encode_cell({
-      r: airfareRow,
-      c: 2,
-    });
+  const airfarePeopleCell = XLSX.utils.encode_cell({
+    r: airfareRow,
+    c: 2,
+  });
 
-  const landPeopleCell =
-    XLSX.utils.encode_cell({
-      r: landRow,
-      c: 2,
-    });
+  const landPeopleCell = XLSX.utils.encode_cell({
+    r: landRow,
+    c: 2,
+  });
 
-  [airfarePeopleCell, landPeopleCell].forEach(
-    (address) => {
-      if (ws[address]) {
-        ws[address].z = '0"명"';
+  [airfarePeopleCell, landPeopleCell].forEach((address) => {
+    if (ws[address]) {
+      ws[address].z = '0"명"';
 
-        ws[address].s = {
-          ...ws[address].s,
-          alignment: {
-            horizontal: "center",
-            vertical: "center",
-          },
-        };
-      }
-    },
-  );
+      ws[address].s = {
+        ...ws[address].s,
+        alignment: {
+          horizontal: "center",
+          vertical: "center",
+        },
+      };
+    }
+  });
 
   // ==============================
   // 총계 강조
   // ==============================
 
-  [
-    totalPaymentRow,
-    unpaidRow,
-    totalCostRow,
-    profitRow,
-  ].forEach((row) => {
+  [totalPaymentRow, unpaidRow, totalCostRow, profitRow].forEach((row) => {
     for (let col = 0; col <= 3; col++) {
-      const address =
-        XLSX.utils.encode_cell({
-          r: row,
-          c: col,
-        });
+      const address = XLSX.utils.encode_cell({
+        r: row,
+        c: col,
+      });
 
       ws[address].s = {
         ...ws[address].s,
@@ -646,10 +676,7 @@ ws["D1"].s.border.right = {
 
         fill: {
           fgColor: {
-            rgb:
-              row === profitRow
-                ? "E2F0D9"
-                : "FFF2CC",
+            rgb: row === profitRow ? "E2F0D9" : "FFF2CC",
           },
         },
       };
@@ -657,103 +684,101 @@ ws["D1"].s.border.right = {
   });
 
   // ==============================
-// 결재란 최종 스타일
-// ==============================
+  // 결재란 최종 스타일
+  // ==============================
 
-for (let row = approvalHeaderRow; row <= approvalBottomRow; row++) {
-  for (let col = 1; col <= 3; col++) {
-    const address = XLSX.utils.encode_cell({
-      r: row,
-      c: col,
-    });
+  for (let row = approvalHeaderRow; row <= approvalBottomRow; row++) {
+    for (let col = 1; col <= 3; col++) {
+      const address = XLSX.utils.encode_cell({
+        r: row,
+        c: col,
+      });
 
-    if (!ws[address]) {
-      ws[address] = {
-        t: "s",
-        v: "",
+      if (!ws[address]) {
+        ws[address] = {
+          t: "s",
+          v: "",
+        };
+      }
+
+      ws[address].s = {
+        ...ws[address].s,
+
+        font: {
+          name: "맑은 고딕",
+          sz: 10,
+          bold: true,
+        },
+
+        alignment: {
+          horizontal: "center",
+          vertical: "center",
+        },
+
+        border: {
+          top: {
+            style: "medium",
+            color: { rgb: "000000" },
+          },
+          bottom: {
+            style: "medium",
+            color: { rgb: "000000" },
+          },
+          left: {
+            style: "medium",
+            color: { rgb: "000000" },
+          },
+          right: {
+            style: "medium",
+            color: { rgb: "000000" },
+          },
+        },
       };
     }
-
-    ws[address].s = {
-      ...ws[address].s,
-
-      font: {
-        name: "맑은 고딕",
-        sz: 10,
-        bold: true,
-      },
-
-      alignment: {
-        horizontal: "center",
-        vertical: "center",
-      },
-
-      border: {
-        top: {
-          style: "medium",
-          color: { rgb: "000000" },
-        },
-        bottom: {
-          style: "medium",
-          color: { rgb: "000000" },
-        },
-        left: {
-          style: "medium",
-          color: { rgb: "000000" },
-        },
-        right: {
-          style: "medium",
-          color: { rgb: "000000" },
-        },
-      },
-    };
   }
-}
-// ==============================
-// 결재란 왼쪽 빈칸 테두리 제거
-// ==============================
+  // ==============================
+  // 결재란 왼쪽 빈칸 테두리 제거
+  // ==============================
 
-for (let row = approvalHeaderRow; row <= approvalBottomRow; row++) {
-  const address = XLSX.utils.encode_cell({
-    r: row,
-    c: 0, // A열
-  });
+  for (let row = approvalHeaderRow; row <= approvalBottomRow; row++) {
+    const address = XLSX.utils.encode_cell({
+      r: row,
+      c: 0, // A열
+    });
 
-  if (ws[address]) {
-    ws[address].s = {
-      ...ws[address].s,
-      border: {},
-    };
+    if (ws[address]) {
+      ws[address].s = {
+        ...ws[address].s,
+        border: {},
+      };
+    }
   }
-}
 
   // ==============================
   // A4 인쇄 설정
   // ==============================
 
   ws["!pageSetup"] = {
-  paperSize: 9,
-  orientation: "portrait",
-  fitToWidth: 1,
-  fitToHeight: 0,
-};
+    paperSize: 9,
+    orientation: "portrait",
+    fitToWidth: 1,
+    fitToHeight: 0,
+  };
 
-ws["!margins"] = {
-  left: 0.7,
-  right: 0.7,
-  top: 1.7,
-  bottom: 1.7,
-  header: 0.15,
-  footer: 0.15,
-};
+  ws["!margins"] = {
+    left: 0.7,
+    right: 0.7,
+    top: 1.7,
+    bottom: 1.7,
+    header: 0.15,
+    footer: 0.15,
+  };
 
-// 인쇄 영역 - 무조건 A:D
-ws["!printArea"] =
-  `A1:D${approvalBottomRow + 1}`;
-  
-// 인쇄 영역 - 결재란까지 포함
-ws["!printArea"] =
-  `A1:D${approvalBottomRow + 1}`;
+  // 인쇄 영역 - 무조건 A:D
+  ws["!printArea"] = `A1:D${approvalBottomRow + 1}`;
+
+  // 인쇄 영역 - 결재란까지 포함
+  ws["!printArea"] = `A1:D${approvalBottomRow + 1}`;
 
   // ==============================
   // 파일 생성
@@ -761,14 +786,7 @@ ws["!printArea"] =
 
   const wb = XLSX.utils.book_new();
 
-  XLSX.utils.book_append_sheet(
-    wb,
-    ws,
-    "예약 정산",
-  );
+  XLSX.utils.book_append_sheet(wb, ws, "예약 정산");
 
-  XLSX.writeFile(
-    wb,
-    `정산_${reservationName}_${departureDate}.xlsx`,
-  );
+  XLSX.writeFile(wb, `정산_${reservationName}_${departureDate}.xlsx`);
 }

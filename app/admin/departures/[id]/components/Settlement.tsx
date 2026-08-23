@@ -28,6 +28,21 @@ function getArrivalDate(departureDate: string, course: string) {
   return `${resultYear}-${resultMonth}-${resultDay}`;
 }
 
+function getPeopleCounts(reservation: any) {
+  const totalPeople = reservation.people?.length || 0;
+
+  const guideCount =
+    reservation.people?.filter((person: any) => person.is_guide).length || 0;
+
+  const paidPeople = totalPeople - guideCount;
+
+  return {
+    totalPeople,
+    guideCount,
+    paidPeople,
+  };
+}
+
 export default function Settlement({ reservations, departure }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [unitPrices, setUnitPrices] = useState<Record<string, number>>({});
@@ -320,8 +335,8 @@ export default function Settlement({ reservations, departure }: Props) {
 
   async function saveSettlement(reservation: any) {
     const unitPrice = unitPrices[reservation.id] || 0;
-    const peopleCount = reservation.people?.length || 0;
-    const totalPrice = unitPrice * peopleCount;
+    const { paidPeople } = getPeopleCounts(reservation);
+    const totalPrice = unitPrice * paidPeople;
 
     const airfare = airfares[reservation.id] || 0;
     const landCost = landCosts[reservation.id] || 0;
@@ -420,13 +435,13 @@ export default function Settlement({ reservations, departure }: Props) {
     const nextCompleted = !completedMap[reservation.id];
 
     const unitPrice = unitPrices[reservation.id] || 0;
-    const peopleCount = reservation.people?.length || 0;
+    const { paidPeople } = getPeopleCounts(reservation);
 
     const { error } = await supabase.from("reservation_settlements").upsert(
       {
         reservation_id: reservation.id,
         unit_price: unitPrice,
-        total_price: unitPrice * peopleCount,
+        total_price: unitPrice * paidPeople,
         airfare: airfares[reservation.id] || 0,
         land_cost: landCosts[reservation.id] || 0,
         other_cost: otherCosts[reservation.id] || 0,
@@ -525,7 +540,13 @@ export default function Settlement({ reservations, departure }: Props) {
                       <div>
                         <div className="mb-1 text-xs text-gray-500">인원</div>
                         <div className="rounded-lg bg-gray-100 px-3 py-2 text-right">
-                          {reservation.people?.length || 0}명
+                          {getPeopleCounts(reservation).paidPeople}명
+                          {getPeopleCounts(reservation).guideCount > 0 && (
+                            <span className="ml-2 text-xs font-semibold text-amber-600">
+                              (인솔자 {getPeopleCounts(reservation).guideCount}
+                              명 제외)
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -536,7 +557,7 @@ export default function Settlement({ reservations, departure }: Props) {
                         <div className="rounded-lg bg-blue-50 px-3 py-2 text-right font-bold text-blue-700">
                           {(
                             (unitPrices[reservation.id] || 0) *
-                            (reservation.people?.length || 0)
+                            getPeopleCounts(reservation).paidPeople
                           ).toLocaleString()}
                           원
                         </div>
@@ -872,7 +893,7 @@ export default function Settlement({ reservations, departure }: Props) {
                             <span className="font-bold text-red-600">
                               {Math.max(
                                 (unitPrices[reservation.id] || 0) *
-                                  (reservation.people?.length || 0) -
+                                  getPeopleCounts(reservation).paidPeople -
                                   (payments[reservation.id]?.reduce(
                                     (sum, payment) =>
                                       sum + Number(payment.amount || 0),
@@ -971,7 +992,7 @@ export default function Settlement({ reservations, departure }: Props) {
                           <span className="font-semibold">
                             {(
                               (landCosts[reservation.id] || 0) *
-                              (reservation.people?.length || 0)
+                              getPeopleCounts(reservation).paidPeople
                             ).toLocaleString()}
                             원
                           </span>
@@ -988,7 +1009,7 @@ export default function Settlement({ reservations, departure }: Props) {
                               (airfares[reservation.id] || 0) *
                                 (reservation.people?.length || 0) +
                               (landCosts[reservation.id] || 0) *
-                                (reservation.people?.length || 0) +
+                                getPeopleCounts(reservation).paidPeople +
                               (otherCosts[reservation.id] || 0)
                             ).toLocaleString()}
                             원
@@ -1008,7 +1029,7 @@ export default function Settlement({ reservations, departure }: Props) {
                               ((airfares[reservation.id] || 0) *
                                 (reservation.people?.length || 0) +
                                 (landCosts[reservation.id] || 0) *
-                                  (reservation.people?.length || 0) +
+                                  getPeopleCounts(reservation).paidPeople +
                                 (otherCosts[reservation.id] || 0))
                             ).toLocaleString()}
                             원
@@ -1031,6 +1052,8 @@ export default function Settlement({ reservations, departure }: Props) {
 
                           reservationName: reservation.name,
                           peopleCount: reservation.people?.length || 0,
+                          paidPeopleCount:
+                            getPeopleCounts(reservation).paidPeople,
 
                           unitPrice: unitPrices[reservation.id] || 0,
                           airfare: airfares[reservation.id] || 0,

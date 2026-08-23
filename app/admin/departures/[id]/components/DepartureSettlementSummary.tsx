@@ -75,14 +75,19 @@ export default function DepartureSettlementSummary({
 
     const peopleCount = reservation.people?.length || 0;
 
+    const guideCount =
+      reservation.people?.filter((person: any) => person.is_guide).length || 0;
+
+    const paidPeople = peopleCount - guideCount;
+
     const unitPrice = Number(settlement?.unit_price || 0);
     const airfare = Number(settlement?.airfare || 0);
     const landCost = Number(settlement?.land_cost || 0);
     const otherCost = Number(settlement?.other_cost || 0);
 
-    const sales = unitPrice * peopleCount;
+    const sales = unitPrice * paidPeople;
 
-    const expense = airfare * peopleCount + landCost * peopleCount + otherCost;
+    const expense = airfare * peopleCount + landCost * paidPeople + otherCost;
 
     const profit = sales - expense;
 
