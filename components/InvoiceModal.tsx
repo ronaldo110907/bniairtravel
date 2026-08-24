@@ -265,7 +265,7 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
 
               <div className="flex items-center justify-between gap-4 p-4">
                 {/* 고객구분 */}
-                <div className="flex items-center gap-2">
+                <div className="no-print flex items-center gap-2">
                   <span className="mr-1 text-sm font-semibold text-gray-600">
                     고객
                   </span>
@@ -294,7 +294,6 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
                     여행사
                   </button>
                 </div>
-
                 {/* 청구구분 */}
                 <div className="flex items-center gap-2">
                   <span className="mr-1 text-sm font-semibold text-gray-600">
