@@ -106,6 +106,7 @@ export default async function ZhangjiajiePage() {
           mealBaseUrl={mealBaseUrl}
           mealImages={mealImages}
           flightInfo={flightInfo}
+          webtoonHref="/zhangjiajie/webtoon"
         />
       </SectionReveal>
 

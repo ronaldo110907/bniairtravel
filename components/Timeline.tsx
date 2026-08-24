@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
+import Link from "next/link";
 
 type CustomTab = {
   key: string;
@@ -22,6 +23,7 @@ type Props = {
   onCustomTabChange?: (key: string) => void;
 
   description?: string;
+  webtoonHref?: string;
 
   mealBaseUrl: string;
   mealImages: Record<string, string>;
@@ -38,6 +40,7 @@ export default function Timeline({
   activeCustomTab: controlledCustomTab,
   onCustomTabChange,
   description = "장가계 핵심 관광지를 여유롭게 둘러보는 프리미엄 일정",
+  webtoonHref,
   mealBaseUrl,
   mealImages,
   flightInfo,
@@ -98,7 +101,33 @@ export default function Timeline({
 
         <p className="mt-5 text-gray-500">{description}</p>
       </div>
+      {webtoonHref && (
+        <div className="mx-auto mb-10 max-w-2xl px-4">
+          <Link
+            href={webtoonHref}
+            className="group block rounded-2xl border border-[#E8DCC4] bg-[#FCFAF7] px-6 py-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+          >
+            <p className="text-sm font-bold tracking-wider text-[#B88A44]">
+              🎨 TRAVEL WEBTOON
+            </p>
 
+            <p className="mt-2 text-lg font-bold text-gray-900 md:text-xl">
+              웹툰으로 미리 떠나는 여행
+            </p>
+
+            <p className="mt-1 text-sm text-gray-500">
+              재미있는 웹툰으로 여행 일정을 먼저 만나보세요.
+            </p>
+
+            <div className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#B88A44]">
+              웹툰 여행 보기
+              <span className="transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </div>
+          </Link>
+        </div>
+      )}
       <div className="mb-14 flex justify-center">
         {customTabs && customTabs.length > 0 ? (
           // 푸꾸옥 등 상품별 커스텀 탭
