@@ -64,7 +64,10 @@ export default async function AdminPage() {
 
   const { data: products } = await supabase.from("products").select("*");
 
-  const { data: departures } = await supabase.from("departures").select("*");
+  const { data: departures } = await supabase
+    .from("departures")
+    .select("*")
+    .gte("departure_date", today);
 
   const { data: reservations } = await supabase.from("reservations").select(`
     departure_id,
