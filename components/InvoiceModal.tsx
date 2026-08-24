@@ -66,7 +66,9 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
   const [commission, setCommission] = useState("");
   const [paymentDueDate, setPaymentDueDate] = useState("");
   const [invoiceNotice, setInvoiceNotice] = useState("");
-
+  const [customerType, setCustomerType] = useState<"individual" | "agency">(
+    "individual",
+  );
   const [invoiceType, setInvoiceType] = useState<"deposit" | "balance">(
     "deposit",
   );
@@ -76,7 +78,8 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
   const totalAmount = (reservation?.departure_price ?? 0) * peopleCount;
   const enteredTotalPrice = parseMoney(totalPrice);
   const enteredDeposit = parseMoney(deposit);
-  const enteredCommission = parseMoney(commission);
+  const enteredCommission =
+    customerType === "agency" ? parseMoney(commission) : 0;
 
   const balance = Math.max(
     enteredTotalPrice - enteredDeposit - enteredCommission,
@@ -255,6 +258,40 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               </div>
             </div>
 
+            {/* 고객구분 */}
+            <div className="invoice-box mt-3 rounded-lg border border-gray-300">
+              <div className="border-b bg-gray-50 px-4 py-2 font-bold">
+                고객구분
+              </div>
+
+              <div className="flex gap-3 p-4">
+                <button
+                  type="button"
+                  onClick={() => setCustomerType("individual")}
+                  className={`rounded-lg px-5 py-2 font-semibold ${
+                    customerType === "individual"
+                      ? "bg-blue-600 text-white"
+                      : "border border-gray-300 bg-white"
+                  }`}
+                >
+                  개인고객
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCustomerType("agency")}
+                  className={`rounded-lg px-5 py-2 font-semibold ${
+                    customerType === "agency"
+                      ? "bg-blue-600 text-white"
+                      : "border border-gray-300 bg-white"
+                  }`}
+                >
+                  여행사
+                </button>
+              </div>
+            </div>
+
+            {/* 청구구분 */}
             <div className="invoice-box mt-3 rounded-lg border border-gray-300">
               <div className="border-b bg-gray-50 px-4 py-2 font-bold">
                 청구구분
@@ -331,24 +368,26 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
                       </div>
                     </td>
                   </tr>
-                  <tr className="border-b">
-                    <td className="bg-gray-50 px-4 py-3 font-semibold">
-                      커미션
-                    </td>
+                  {customerType === "agency" && (
+                    <tr className="border-b">
+                      <td className="bg-gray-50 px-4 py-3 font-semibold">
+                        커미션
+                      </td>
 
-                    <td className="px-4 py-2">
-                      <div className="flex items-center justify-end gap-2">
-                        <input
-                          value={commission}
-                          onChange={(event) =>
-                            setCommission(formatMoney(event.target.value))
-                          }
-                          className="w-56 rounded-md border border-gray-300 px-3 py-2 text-right outline-none"
-                        />
-                        <span className="font-medium">원</span>
-                      </div>
-                    </td>
-                  </tr>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center justify-end gap-2">
+                          <input
+                            value={commission}
+                            onChange={(event) =>
+                              setCommission(formatMoney(event.target.value))
+                            }
+                            className="w-56 rounded-md border border-gray-300 px-3 py-2 text-right outline-none"
+                          />
+                          <span className="font-medium">원</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                   <tr>
                     <td className="bg-yellow-50 px-4 py-4 text-lg font-bold">
                       {invoiceType === "deposit" ? "잔금" : "최종결제"}
