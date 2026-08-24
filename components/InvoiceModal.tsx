@@ -258,69 +258,73 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               </div>
             </div>
 
-            {/* 고객구분 */}
             <div className="invoice-box mt-3 rounded-lg border border-gray-300">
               <div className="border-b bg-gray-50 px-4 py-2 font-bold">
-                고객구분
+                청구설정
               </div>
 
-              <div className="flex gap-3 p-4">
-                <button
-                  type="button"
-                  onClick={() => setCustomerType("individual")}
-                  className={`rounded-lg px-5 py-2 font-semibold ${
-                    customerType === "individual"
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-300 bg-white"
-                  }`}
-                >
-                  개인고객
-                </button>
+              <div className="flex items-center justify-between gap-4 p-4">
+                {/* 고객구분 */}
+                <div className="flex items-center gap-2">
+                  <span className="mr-1 text-sm font-semibold text-gray-600">
+                    고객
+                  </span>
 
-                <button
-                  type="button"
-                  onClick={() => setCustomerType("agency")}
-                  className={`rounded-lg px-5 py-2 font-semibold ${
-                    customerType === "agency"
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-300 bg-white"
-                  }`}
-                >
-                  여행사
-                </button>
-              </div>
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomerType("individual")}
+                    className={`rounded-lg px-4 py-2 font-semibold ${
+                      customerType === "individual"
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-300 bg-white"
+                    }`}
+                  >
+                    개인고객
+                  </button>
 
-            {/* 청구구분 */}
-            <div className="invoice-box mt-3 rounded-lg border border-gray-300">
-              <div className="border-b bg-gray-50 px-4 py-2 font-bold">
-                청구구분
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomerType("agency")}
+                    className={`rounded-lg px-4 py-2 font-semibold ${
+                      customerType === "agency"
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-300 bg-white"
+                    }`}
+                  >
+                    여행사
+                  </button>
+                </div>
 
-              <div className="flex gap-3 p-4">
-                <button
-                  type="button"
-                  onClick={() => setInvoiceType("deposit")}
-                  className={`rounded-lg px-5 py-2 font-semibold ${
-                    invoiceType === "deposit"
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-300 bg-white"
-                  }`}
-                >
-                  계약금 청구
-                </button>
+                {/* 청구구분 */}
+                <div className="flex items-center gap-2">
+                  <span className="mr-1 text-sm font-semibold text-gray-600">
+                    청구
+                  </span>
 
-                <button
-                  type="button"
-                  onClick={() => setInvoiceType("balance")}
-                  className={`rounded-lg px-5 py-2 font-semibold ${
-                    invoiceType === "balance"
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-300 bg-white"
-                  }`}
-                >
-                  잔금 청구
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvoiceType("deposit")}
+                    className={`rounded-lg px-4 py-2 font-semibold ${
+                      invoiceType === "deposit"
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-300 bg-white"
+                    }`}
+                  >
+                    계약금 청구
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setInvoiceType("balance")}
+                    className={`rounded-lg px-4 py-2 font-semibold ${
+                      invoiceType === "balance"
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-300 bg-white"
+                    }`}
+                  >
+                    잔금 청구
+                  </button>
+                </div>
               </div>
             </div>
 
