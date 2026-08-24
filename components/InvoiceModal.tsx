@@ -108,6 +108,9 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
   }
 
   @media print {
+    .no-print {
+  display: none !important;
+}
     html,
     body {
       margin: 0 !important;
