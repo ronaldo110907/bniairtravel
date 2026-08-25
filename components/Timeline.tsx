@@ -250,7 +250,7 @@ export default function Timeline({
                   </span>
 
                   <span className="rounded-full border border-[#E8DCC4] px-4 py-2 text-xs font-semibold text-gray-500">
-                    {activeCourse === "4N5D" ? "4박5일" : "3박4일"}
+                    {activeCourse === "4N5D" ? course4Label : course3Label}
                   </span>
                 </div>
 
