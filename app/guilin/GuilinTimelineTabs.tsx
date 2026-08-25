@@ -91,6 +91,7 @@ export default function GuilinTimelineTabs() {
         mealBaseUrl={mealBaseUrl}
         mealImages={mealImages}
         flightInfo={flightInfo}
+        webtoonHref={region === "guilin" ? "/guilin/webtoon" : undefined}
       />
       {/* 지역별 포함 / 불포함 */}
       <div className="mt-16">
