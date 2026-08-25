@@ -17,7 +17,16 @@ function getTravelDays(course: string | null) {
   return null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+
+  // Vercel Cron의 인증된 호출이면 실제 파기 실행
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+    return POST(request);
+  }
+
+  // 일반 GET은 기존처럼 조회만
   try {
     // 1. 예약자 + 예약 정보 조회
     const { data: people, error: peopleError } = await supabaseAdmin.from(
