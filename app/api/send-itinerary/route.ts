@@ -590,7 +590,7 @@ export async function POST(request: Request) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "BNI AIR TRAVEL <onboarding@resend.dev>",
+      from: "청주출발 전세기 <info@cjjbni.com>",
       to: email,
       subject: `[${companyName}] ${productInfo.name} ${displayCourse} 여행 일정`,
       html: `
