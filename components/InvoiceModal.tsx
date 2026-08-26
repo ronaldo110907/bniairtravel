@@ -6,6 +6,12 @@ import CancellationSection from "@/components/sections/CancellationSection";
 
 type ReservationPeople = {
   id: string;
+  name?: string;
+  passport_name?: string;
+  passport_sex?: string;
+  passport_birth?: string;
+  passport_number?: string;
+  passport_expiry?: string;
 };
 
 type Reservation = {
@@ -248,7 +254,10 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
 
               <div className="grid grid-cols-[120px_1fr] gap-y-3 p-4 text-sm">
                 <div className="font-semibold text-gray-600">예약자</div>
-                <div>{reservation.name}</div>
+                <div>
+                  {reservation.name}
+                  {peopleCount > 1 ? ` 외 ${peopleCount - 1}명` : ""}
+                </div>
 
                 <div className="font-semibold text-gray-600">상품</div>
                 <div>{reservation.product}</div>
@@ -522,6 +531,105 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               </div>
             </div>
 
+            <div className="print-page-break" />
+
+            {/* 2페이지 - 예약확인서 */}
+            <div className="invoice-page bg-white p-6">
+              <img
+                src="/images/invoice/BNIheader.jpg"
+                alt="Header"
+                className="mb-6 w-full"
+              />
+
+              <div className="mx-auto mb-8 w-fit bg-gray-200 px-10 py-2">
+                <h2 className="text-4xl font-light tracking-[0.4em]">
+                  예 약 확 인 서
+                </h2>
+              </div>
+
+              {/* 예약 기본정보 */}
+              <div className="mb-6 rounded-lg border border-gray-300">
+                <div className="border-b bg-gray-50 px-4 py-2 font-bold">
+                  예약정보
+                </div>
+
+                <div className="grid grid-cols-[120px_1fr] gap-y-3 p-4 text-sm">
+                  <div className="font-semibold text-gray-600">예약자</div>
+                  <div>
+                    {reservation.name}
+                    {peopleCount > 1 ? ` 외 ${peopleCount - 1}명` : ""}
+                  </div>
+
+                  <div className="font-semibold text-gray-600">상품</div>
+                  <div>{reservation.product}</div>
+
+                  <div className="font-semibold text-gray-600">출발일</div>
+                  <div>{reservation.departure_date}</div>
+
+                  <div className="font-semibold text-gray-600">총 인원</div>
+                  <div>{peopleCount}명</div>
+                </div>
+              </div>
+
+              {/* 예약자 명단 */}
+              <div className="rounded-lg border border-gray-300">
+                <div className="border-b bg-gray-50 px-4 py-2 font-bold">
+                  예약자 명단
+                </div>
+
+                <table className="w-full table-fixed text-center text-sm">
+                  <thead>
+                    <tr className="border-b bg-gray-100">
+                      <th className="w-[6%] px-2 py-3">No.</th>
+                      <th className="w-[14%] px-2 py-3">한글명</th>
+                      <th className="w-[20%] px-2 py-3">영문명</th>
+                      <th className="w-[9%] px-2 py-3">성별</th>
+                      <th className="w-[15%] px-2 py-3">생년월일</th>
+                      <th className="w-[18%] px-2 py-3">여권번호</th>
+                      <th className="w-[18%] px-2 py-3">여권만료일</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {reservation.people?.map((person, index) => (
+                      <tr key={person.id} className="border-b last:border-b-0">
+                        <td className="px-2 py-3">{index + 1}</td>
+
+                        <td className="px-2 py-3 font-medium">
+                          {person.name || "-"}
+                        </td>
+
+                        <td className="px-2 py-3">
+                          {person.passport_name || "-"}
+                        </td>
+
+                        <td className="px-2 py-3">
+                          {person.passport_sex || "-"}
+                        </td>
+
+                        <td className="px-2 py-3">
+                          {person.passport_birth || "-"}
+                        </td>
+
+                        <td className="px-2 py-3">
+                          {person.passport_number || "-"}
+                        </td>
+
+                        <td className="px-2 py-3">
+                          {person.passport_expiry || "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-8 text-center text-sm text-gray-500">
+                상기 내용으로 예약이 확인되었습니다.
+              </div>
+            </div>
+
+            {/* 3페이지로 이동 */}
             <div className="print-page-break" />
 
             <div className="invoice-page bg-white p-6">
