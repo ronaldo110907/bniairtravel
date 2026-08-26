@@ -17,7 +17,6 @@ import {
   itineraryGuilin3N5D,
   itineraryChenzhou3N5D,
   itineraryChenzhou4N6D,
-  reviews,
   mealBaseUrl,
   mealImages,
 } from "@/data/guilin";
@@ -109,10 +108,6 @@ export default async function GuilinPage() {
 
       <SectionReveal>
         <CancellationSection />
-      </SectionReveal>
-
-      <SectionReveal>
-        <ReviewSection reviews={reviews} />
       </SectionReveal>
 
       <SectionReveal>

@@ -125,7 +125,8 @@ export const shopping: Shopping[] = [
     desc: "혈액순환, 통증완화, 피로해소 등의 효과가 있는 제품을 소개합니다.",
   },
 ];
-
+{
+  /*
 export const reviews: Review[] = [
   {
     id: 1,
@@ -168,6 +169,8 @@ export const reviews: Review[] = [
     text: "가족여행으로 정말 만족했습니다. 다음에도 이용하고 싶습니다.",
   },
 ];
+*/
+}
 
 export const faqs: FAQ[] = [
   {
@@ -209,7 +212,7 @@ export const includesGuilin: IncludedItem[] = [
   { id: 2, text: "전 일정 호텔(2인 1실)" },
   {
     id: 3,
-    text: "특식5회(이강폭포딤섬특식,민물생선요리,사천식 샤브샤브,토종닭백숙,삼겹살무제한)",
+    text: "특식4회(이강폭포딤섬특식,사천식 샤브샤브,삼겹살무제한,동북요리)",
   },
   { id: 4, text: "전용 차량(리무진),한국어 가이드&기사팁" },
   { id: 5, text: "요산(케이블카),우산공원,양강사호 야간유람선" },
@@ -217,10 +220,10 @@ export const includesGuilin: IncludedItem[] = [
     id: 6,
     text: "세외도원(뱃놀이),월량산,여의봉(케의블카+잔도+출렁다리+드론영상)",
   },
-  { id: 7, text: "이강유람선,관암동굴(쪽배+유람선+모노레일),첩채산,상비산" },
+  { id: 7, text: "이강유람선,노적암동굴,상공산,상비산" },
   { id: 8, text: "[특전] 산수간쇼+인상유삼조+발&전신마사지 90분체험" },
   { id: 9, text: "1억원 여행자보험" },
-  { id: 10, text: "[4박6일]북제산 투어(케이블카왕복)" },
+  { id: 10, text: "[4박6일]용승 투어(용적체전/칠성반일)" },
 ];
 
 export const excludesGuilin: IncludedItem[] = [
@@ -255,6 +258,14 @@ export const excludesChenzhou: IncludedItem[] = [
 export const hotels: Hotel[] = [
   {
     id: 1,
+    name: "계림 이강 대폭포 호텔",
+    grade: "★★★★★",
+    image: "lijiangpupo.JPG",
+    roomImage: "lijiangpuporoom.JPG",
+    desc: "계림시 시내 중심에 있으며 야간에 호텔 전체에 폭포수를 쏟아내는 장관을 연출하는 5성급 호텔입니다.",
+  },
+  {
+    id: 2,
     name: "계림 머큐어 호텔",
     grade: "★★★★",
     image: "mercure.jpg",
@@ -262,15 +273,23 @@ export const hotels: Hotel[] = [
     desc: "계림시 하이테크존 레스토랑 지역에 위치한 시내 중심 호텔입니다.",
   },
   {
-    id: 2,
-    name: "양삭 스위트 BY 래디슨",
+    id: 3,
+    name: "양삭 페어필드 메리어트 호텔",
     grade: "★★★★",
-    image: "raedison.JPG",
-    roomImage: "raedisonroom.JPG",
+    image: "fairfield.jpg",
+    roomImage: "fairfieldroom.jpg",
     desc: "쾌적한 객실과 다양한 부대시설을 갖춘 프리미엄 호텔입니다.",
   },
   {
-    id: 3,
+    id: 4,
+    name: "용승 온천중심호텔",
+    grade: "★★★★",
+    image: "yongseung.JPG",
+    roomImage: "hotwaterroom.JPG",
+    desc: "온천욕을 즐길 수 있는 쾌적한 4성급 호텔입니다.",
+  },
+  {
+    id: 5,
     name: "천저우 홀리데이인 익스프레스호텔",
     grade: "★★★★",
     image: "cheonzhou.JPG",
@@ -317,25 +336,19 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
       lunch: "-----",
       dinner: "불포함",
     },
-    hotel: "계림 머큐어/갤러리호텔 또는 동급",
+    hotel: "계림 이강 대폭포호텔 또는 동급",
   },
 
   {
     day: "DAY 2",
     icon: "🏞️",
-    title: "요산 · 산수간쇼 · 우산공원 · 동서항 · 양강사호",
+    title: "요산 · 산수간쇼 · 상비산 · 노적암동굴 · 마사지",
     description:
-      "계림 시내를 한눈에 볼 수 있는 요산을 케이블카로 관광하고, 계림의 산수와 문화를 환상적으로 표현한 산수간쇼를 관람합니다. 아름다운 꽃과 조경을 감상할 수 있는 우산공원과 계림의 명동으로 불리는 동서항 정양보행가를 둘러본 뒤 양강사호 야간유람을 즐깁니다.",
+      "계림 시내를 한눈에 볼 수 있는 요산을 케이블카로 관광하고, 계림의 산수와 문화를 환상적으로 표현한 산수간쇼를 관람합니다. 코끼리가 물을마시는듯한 형상을 한 상비산과 천연 종유석 동굴인 노적암동굴을 둘러본 후 발&전신마사지 90분 체험을 합니다.",
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yosan.jpg",
     imagePosition: "center 70%",
-    places: [
-      "요산",
-      "산수간쇼",
-      "우산공원",
-      "동서항 정양보행가",
-      "양강사호 야간유람",
-    ],
+    places: ["요산", "산수간쇼", "상비산", "노적암동굴", "발&전신 마사지 90분"],
     spotImages: [
       {
         name: "요산",
@@ -348,47 +361,40 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
           "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/shanshuijian.jpg",
       },
       {
-        name: "양강사호",
+        name: "상비산",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yangjiang.JPG",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sangbi.jpg",
       },
     ],
     duration: "전일 관광",
     meals: {
       breakfast: "호텔식",
-      lunch: "현지식",
-      dinner: "이강폭포 딤섬특식",
+      lunch: "이강폭포 딤섬특식",
+      dinner: "삼겹살무제한",
     },
-    hotel: "계림 머큐어/갤러리호텔 또는 동급",
+    hotel: "계림 이강 대폭포 호텔 또는 동급",
   },
 
   {
     day: "DAY 3",
     icon: "⛰️",
-    title: "세외도원 · 대용수 · 월량산 · 여의봉 · 서가시장 · 인상유삼조",
+    title: "이강유람 · 여의봉 · 서가시장 · 인상유삼저",
     description:
-      "호텔 조식 후 백사로 이동하여 각 민족의 풍습과 수공예품을 볼 수 있는 세외도원을 뱃놀이로 관광합니다. 양삭으로 이동하여 천년 묵은 대용수와 초승달 모양의 월량산을 둘러보고, 여의봉 케이블카와 잔도·출렁다리·드론영상 체험을 즐깁니다. 이후 서가시장에서 자유시간을 가진 뒤 인상유삼저 공연을 관람합니다.",
+      "호텔 조식 후 양삭으로 이동하여 계림산수의 하이라이트인 유람선을 탑승합니다. 여의봉 케이블카와 잔도·출렁다리·드론영상 체험을 즐긴 후 서가시장에서 자유시간을 가진 뒤 인상유삼저 공연을 관람합니다.",
     image:
-      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
     imagePosition: "center 70%",
-    places: [
-      "세외도원",
-      "대용수",
-      "월량산",
-      "여의봉",
-      "서가시장",
-      "인상유삼저",
-    ],
+    places: ["이강유람", "여의봉", "서가시장", "인상유삼저"],
     spotImages: [
       {
-        name: "세외도원",
+        name: "이강유람",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
       },
       {
-        name: "월량산",
+        name: "여의봉",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/wolliangsan.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yeoeui.jpg",
       },
       {
         name: "인상유삼저",
@@ -399,44 +405,45 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
     duration: "전일 관광",
     meals: {
       breakfast: "호텔식",
-      lunch: "민물 생선요리",
+      lunch: "현지식",
       dinner: "사천식 샤브샤브",
     },
-    hotel: "양삭 스위트 By 레디슨 호텔 또는 동급",
+    hotel: "양삭 페어필드 메리어트 호텔 또는 동급",
   },
 
   {
     day: "DAY 4",
     icon: "🌊",
-    title: "이강유람선 · 관암동굴 · 첩채산 · 상비산 · 발마사지",
+    title:
+      "세외도원 · 상공산 · 월량산 · 동서향 정양가 보행거리 · 양강사호 유람선",
     description:
-      "호텔 조식 후 이강 선착장으로 이동하여 계림 산수의 하이라이트인 이강유람선을 즐깁니다. 아름다운 종유동굴 관암동굴과 비단이 켜켜이 포개진 형태의 첩채산, 코끼리가 물을 마시는 형상의 상비산을 관광합니다. 이후 전통 발마사지 체험 후 공항으로 이동합니다.",
+      "호텔 조식 후 각 민족의 풍습과 전통을 볼수 있는 세외도원에서 뗏목투어를 합니다. 이후 상공산 전망대에 올라 계림 산수의 절경을 또한번 감사합니다. 계림시내로 이동하여 보행자 거리와 양강사호 야간유람선을 탑승한 후 공항으로 이동합니다.",
     image:
-      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
     imagePosition: "center 70%",
-    places: ["이강유람선", "관암동굴", "첩채산", "상비산", "발마사지"],
+    places: ["세외도원", "상공산", "월량산", "보행거리", "양강사호 유람선"],
     spotImages: [
       {
-        name: "이강유람선",
+        name: "세외도원",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
       },
       {
-        name: "관암동굴",
+        name: "상공산",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/gwanamjpg.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/guilin1.jpg",
       },
       {
-        name: "상비산",
+        name: "양강사호 유람선",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sangbi.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yangjiang.JPG",
       },
     ],
     duration: "전일 관광 후 공항 이동",
     meals: {
       breakfast: "호텔식",
-      lunch: "토종 닭백숙",
-      dinner: "삼겹살 무제한",
+      lunch: "현지식",
+      dinner: "동북요리",
     },
     hotel: "해당 없음",
   },
@@ -478,25 +485,19 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "계림 머큐어/캘러리호텔 또는 동급",
+    hotel: "계림 이강 대폭포호텔 또는 동급",
   },
 
   {
     day: "DAY 2",
     icon: "🏞️",
-    title: "요산 · 산수간쇼 · 우산공원 · 동서항 · 양강사호",
+    title: "상비산 · 요산 · 산수간쇼 · 노적암동굴 · 발&전신마사지 90분",
     description:
-      "계림 시내를 한눈에 볼 수 있는 요산을 케이블카로 관광하고, 계림의 산수와 문화를 표현한 산수간쇼를 관람합니다. 이후 아름다운 꽃과 조경을 감상할 수 있는 우산공원과 계림의 명동으로 불리는 동서항 정양보행가를 둘러본 뒤 양강사호 야간유람을 즐깁니다.",
+      "코끼리가 물을 마시는 형상을 한 상비산과 계림 시내를 한눈에 볼 수 있는 요산을 케이블카로 관광하고, 계림의 산수와 문화를 표현한 산수간쇼를 관람합니다. 이후 천연 종유석 동굴인 노적암동굴을 관람 후 발&전신마사지 체험후 호텔로 이동합니다.",
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yosan.jpg",
     imagePosition: "center 70%",
-    places: [
-      "요산",
-      "산수간쇼",
-      "우산공원",
-      "동서항 정양보행가",
-      "양강사호 야간유람",
-    ],
+    places: ["요산", "산수간쇼", "노적암동굴", "발&전신마사지 90분"],
     spotImages: [
       {
         name: "요산",
@@ -509,47 +510,76 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
           "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/shanshuijian.jpg",
       },
       {
-        name: "양강사호",
+        name: "상비산",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yangjiang.JPG",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sangbi.jpg",
+      },
+    ],
+    duration: "전일 관광",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "이강폭포 딤섬특식",
+      dinner: "삼겹살무제한",
+    },
+    hotel: "계림 이강 대폭포호텔 또는 동급",
+  },
+
+  {
+    day: "DAY 3",
+    icon: "⛰️",
+    title: "용승 · 용척제전 · 칠성반일 · 온천욕",
+    description:
+      "용승으로 이동하여 다랭이논으로 유명한 용척제전을 둘러본 후 케이블카를 탑승하여 칠성반일 전망대로 올라갑니다. 호텔 체크인 후 온천욕을 즐깁니다.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/qisungbanil.jpg",
+    imagePosition: "center 70%",
+    places: ["용승", "용척제전", "칠성반일", "온천욕"],
+    spotImages: [
+      {
+        name: "용척제전",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/longdi.jpg",
+      },
+      {
+        name: "칠성반일",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/qisungbanil.jpg",
+      },
+      {
+        name: "온천욕",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/hotwater.jpg",
       },
     ],
     duration: "전일 관광",
     meals: {
       breakfast: "호텔식",
       lunch: "현지식",
-      dinner: "이강폭포 딤섬특식",
+      dinner: "현지식",
     },
-    hotel: "계림 머큐어/캘러리호텔 또는 동급",
+    hotel: "용승 온천중심호텔 또는 동급",
   },
 
   {
-    day: "DAY 3",
-    icon: "⛰️",
-    title: "세외도원 · 대용수 · 월량산 · 여의봉 · 서가시장 · 인상유삼조",
+    day: "DAY 4",
+    icon: "🏔️",
+    title: "이강유람 · 여의봉 · 서가시장 · 인상유삼저",
     description:
-      "백사로 이동하여 각 민족의 풍습과 수공예품을 볼 수 있는 세외도원을 뱃놀이로 관광합니다. 양삭으로 이동하여 천년 묵은 대용수와 초승달 모양의 월량산을 둘러보고, 여의봉 케이블카와 잔도·출렁다리·드론영상 체험을 즐깁니다. 이후 서가시장에서 자유시간을 가진 뒤 인상유삼조 공연을 관람합니다.",
+      "호텔 조식 후 양삭으로 이동하여 계림산수의 하이라이트인 유람선을 탑승합니다. 여의봉 케이블카와 잔도·출렁다리·드론영상 체험을 즐긴 후 서가시장에서 자유시간을 가진 뒤 인상유삼저 공연을 관람합니다.",
     image:
-      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
     imagePosition: "center 70%",
-    places: [
-      "세외도원",
-      "대용수",
-      "월량산",
-      "여의봉",
-      "서가시장",
-      "인상유삼조",
-    ],
+    places: ["이강유람", "여의봉", "서가시장", "인상유삼저"],
     spotImages: [
       {
-        name: "세외도원",
+        name: "이강유람",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
       },
       {
-        name: "월량산",
+        name: "여의봉",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/wolliangsan.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yeoeui.jpg",
       },
       {
         name: "인상유삼저",
@@ -561,74 +591,44 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
     meals: {
       breakfast: "호텔식",
       lunch: "현지식",
-      dinner: "민물 생선요리",
-    },
-    hotel: "양삭 스위트 By 레디슨 호텔 또는 동급",
-  },
-
-  {
-    day: "DAY 4",
-    icon: "🏔️",
-    title: "계평 · 북제산 · 서가시장",
-    description:
-      "호텔 조식 후 계평으로 이동하여 TV에 등장한 신비로운 북제산 투어를 진행합니다. 관광 후 양삭으로 이동하여 서가시장에서 자유시간을 갖습니다.",
-    image:
-      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/bukje.jpg",
-    imagePosition: "center 70%",
-    places: ["북제산산", "서가시장"],
-    spotImages: [
-      {
-        name: "북제산",
-        image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/bukje.jpg",
-      },
-      {
-        name: "서가시장",
-        image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/seoga.png",
-      },
-    ],
-    duration: "전일 관광",
-    meals: {
-      breakfast: "호텔식",
-      lunch: "현지식",
       dinner: "사천식 샤브샤브",
     },
-    hotel: "양삭 스위트 By 레디슨 호텔 또는 동급",
+    hotel: "양삭 페어필드 메리어트 호텔 또는 동급",
   },
 
   {
     day: "DAY 5",
     icon: "🌊",
-    title: "이강유람선 · 관암동굴 · 첩채산 · 상비산 · 발마사지",
+    title:
+      "세외도원 · 상공산 · 월량산 · 동서향 정양가 보행거리 · 양강사호 유람선",
     description:
-      "호텔 조식 후 이강 선착장으로 이동하여 계림 산수의 하이라이트인 이강유람선을 즐깁니다. 아름다운 종유동굴 관암동굴과 비단이 겹쳐진 절벽의 첩채산, 코끼리가 물을 마시는 형상의 상비산을 관광합니다. 이후 전통 발마사지 체험 후 공항으로 이동합니다.",
+      "호텔 조식 후 각 민족의 풍습과 전통을 볼수 있는 세외도원에서 뗏목투어를 합니다. 이후 상공산 전망대에 올라 계림 산수의 절경을 또한번 감사합니다. 계림시내로 이동하여 보행자 거리와 양강사호 야간유람선을 탑승한 후 공항으로 이동합니다.",
     image:
-      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
     imagePosition: "center 70%",
-    places: ["이강유람선", "관암동굴", "첩채산", "상비산", "발마사지"],
+    places: ["세외도원", "상공산", "월량산", "보행거리", "양강사호 유람선"],
     spotImages: [
       {
-        name: "이강유람선",
+        name: "세외도원",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
       },
       {
-        name: "관암동굴",
+        name: "상공산",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/gwanamjpg.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/guilin1.jpg",
       },
       {
-        name: "상비산",
+        name: "양강사호 유람선",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sangbi.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yangjiang.JPG",
       },
     ],
     duration: "전일 관광 후 공항 이동",
     meals: {
       breakfast: "호텔식",
-      lunch: "토종 닭백숙",
-      dinner: "삼겹살 무제한",
+      lunch: "현지식",
+      dinner: "동북요리",
     },
     hotel: "해당 없음",
   },
