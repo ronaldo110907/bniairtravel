@@ -8,6 +8,10 @@ type Props = {
   onManage: (departure: any) => void;
   passengerCounts: Record<string, number>;
   settlementCompleted: Record<string, boolean>;
+
+  selectedDepartureIds: string[];
+  onToggleSelection: (id: string) => void;
+  onToggleSelectAll: () => void;
 };
 
 export default function DepartureTable({
@@ -18,6 +22,9 @@ export default function DepartureTable({
   onDelete,
   onView,
   onManage,
+  selectedDepartureIds,
+  onToggleSelection,
+  onToggleSelectAll,
 }: Props) {
   const groupedDepartures = departures.reduce(
     (acc: Record<string, any[]>, departure) => {
@@ -33,6 +40,12 @@ export default function DepartureTable({
     },
     {},
   );
+
+  const allSelected =
+    departures.length > 0 &&
+    departures.every((departure) =>
+      selectedDepartureIds.includes(departure.id),
+    );
 
   const getSharedPassengerCount = (departure: any) => {
     if (!departure.variant) {
@@ -54,6 +67,15 @@ export default function DepartureTable({
       <table className="min-w-full text-sm">
         <thead className="bg-gray-100">
           <tr>
+            <th className="w-12 px-3 py-3 text-center">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={onToggleSelectAll}
+                className="h-4 w-4 cursor-pointer"
+              />
+            </th>
+
             <th className="px-4 py-3 text-center font-semibold">출발일</th>
             <th className="px-4 py-3 text-center font-semibold">코스구분</th>
             <th className="px-4 py-3 text-center font-semibold">일정</th>
@@ -71,7 +93,21 @@ export default function DepartureTable({
 
         <tbody>
           {departures.map((departure) => (
-            <tr key={departure.id} className="border-t">
+            <tr
+              key={departure.id}
+              className={`border-t ${
+                selectedDepartureIds.includes(departure.id) ? "bg-blue-50" : ""
+              }`}
+            >
+              <td className="px-3 py-3 text-center">
+                <input
+                  type="checkbox"
+                  checked={selectedDepartureIds.includes(departure.id)}
+                  onChange={() => onToggleSelection(departure.id)}
+                  className="h-4 w-4 cursor-pointer"
+                />
+              </td>
+
               <td className="px-4 py-3 text-center">
                 {departure.departure_date}
               </td>

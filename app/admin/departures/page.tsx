@@ -31,6 +31,9 @@ export default function DepartureAdminPage() {
   const [selectedProductId, setSelectedProductId] = useState("");
 
   const [departures, setDepartures] = useState<Departure[]>([]);
+  const [selectedDepartureIds, setSelectedDepartureIds] = useState<string[]>(
+    [],
+  );
   const [passengerCounts, setPassengerCounts] = useState<
     Record<string, number>
   >({});
@@ -50,6 +53,14 @@ export default function DepartureAdminPage() {
   const [bulkStatus, setBulkStatus] = useState("예약가능");
   const [courseFilter, setCourseFilter] = useState("전체");
   const [showPastDepartures, setShowPastDepartures] = useState(false);
+
+  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
+
+  const [bulkEditField, setBulkEditField] = useState<
+    "price" | "airline" | "seat" | "status"
+  >("price");
+
+  const [bulkEditValue, setBulkEditValue] = useState("");
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -81,6 +92,36 @@ export default function DepartureAdminPage() {
     // 오늘 및 미래 출발일 → 표시
     return true;
   });
+
+  function toggleDepartureSelection(id: string) {
+    setSelectedDepartureIds((current) =>
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id],
+    );
+  }
+
+  function toggleSelectAll() {
+    const visibleIds = filteredDepartures.map((departure) => departure.id);
+
+    const allSelected =
+      visibleIds.length > 0 &&
+      visibleIds.every((id) => selectedDepartureIds.includes(id));
+
+    if (allSelected) {
+      setSelectedDepartureIds((current) =>
+        current.filter((id) => !visibleIds.includes(id)),
+      );
+    } else {
+      setSelectedDepartureIds((current) =>
+        Array.from(new Set([...current, ...visibleIds])),
+      );
+    }
+  }
+
+  function clearSelection() {
+    setSelectedDepartureIds([]);
+  }
 
   console.log("selectedProductId =", selectedProductId);
   console.log("filtered =", filteredDepartures.length);
@@ -343,6 +384,165 @@ export default function DepartureAdminPage() {
 
     await loadDepartures();
   }
+
+  async function deleteSelectedDepartures() {
+    if (selectedDepartureIds.length === 0) return;
+
+    const confirmed = confirm(
+      `선택한 ${selectedDepartureIds.length}건을 일괄 삭제하시겠습니까?\n\n예약이 있는 출발일은 삭제에서 제외됩니다.`,
+    );
+
+    if (!confirmed) return;
+
+    // 선택된 출발일 중 예약이 있는 출발일 확인
+    const { data: reservations, error: reservationError } = await supabase
+      .from("reservations")
+      .select("departure_id")
+      .in("departure_id", selectedDepartureIds);
+
+    if (reservationError) {
+      console.error(reservationError);
+      alert("예약 확인 중 오류가 발생했습니다.");
+      return;
+    }
+
+    const reservedDepartureIds = new Set(
+      (reservations ?? [])
+        .map((reservation) => reservation.departure_id)
+        .filter(Boolean),
+    );
+
+    // 예약 없는 출발일만 삭제 대상
+    const deletableIds = selectedDepartureIds.filter(
+      (id) => !reservedDepartureIds.has(id),
+    );
+
+    const skippedCount = selectedDepartureIds.length - deletableIds.length;
+
+    if (deletableIds.length === 0) {
+      alert(
+        `선택한 출발일은 모두 예약이 있어 삭제할 수 없습니다.\n\n제외 : ${skippedCount}건`,
+      );
+      return;
+    }
+
+    const { error } = await supabase
+      .from("departures")
+      .delete()
+      .in("id", deletableIds);
+
+    if (error) {
+      console.error(error);
+      alert("일괄 삭제에 실패했습니다.");
+      return;
+    }
+
+    await loadDepartures();
+    clearSelection();
+
+    alert(
+      `일괄 삭제 완료!\n\n삭제 : ${deletableIds.length}건\n예약 존재로 제외 : ${skippedCount}건`,
+    );
+  }
+
+  async function updateSelectedDepartures() {
+    if (selectedDepartureIds.length === 0) return;
+
+    if (!bulkEditValue.trim()) {
+      alert("수정할 값을 입력해주세요.");
+      return;
+    }
+
+    const updateData: {
+      price?: number;
+      airline?: string;
+      seat?: number;
+      status?: string;
+    } = {};
+
+    let fieldLabel = "";
+
+    if (bulkEditField === "price") {
+      const price = Number(bulkEditValue.replaceAll(",", ""));
+
+      if (!Number.isFinite(price) || price < 0) {
+        alert("가격을 올바르게 입력해주세요.");
+        return;
+      }
+
+      updateData.price = price;
+      fieldLabel = "가격";
+    }
+
+    if (bulkEditField === "airline") {
+      updateData.airline = bulkEditValue.trim();
+      fieldLabel = "항공사";
+    }
+
+    if (bulkEditField === "seat") {
+      const seat = Number(bulkEditValue);
+
+      if (!Number.isInteger(seat) || seat <= 0) {
+        alert("총좌석을 올바르게 입력해주세요.");
+        return;
+      }
+
+      // 현재 예약인원보다 적게 좌석을 수정하는 것 방지
+      const invalidDepartures = departures.filter(
+        (departure) =>
+          selectedDepartureIds.includes(departure.id) &&
+          (passengerCounts[departure.id] ?? 0) > seat,
+      );
+
+      if (invalidDepartures.length > 0) {
+        alert(
+          `예약인원보다 총좌석을 적게 설정할 수 없습니다.\n\n확인 필요 : ${invalidDepartures.length}건`,
+        );
+        return;
+      }
+
+      updateData.seat = seat;
+      fieldLabel = "총좌석";
+    }
+
+    if (bulkEditField === "status") {
+      const allowedStatuses = ["예약가능", "마감임박", "마감"];
+
+      if (!allowedStatuses.includes(bulkEditValue)) {
+        alert("상태를 선택해주세요.");
+        return;
+      }
+
+      updateData.status = bulkEditValue;
+      fieldLabel = "상태";
+    }
+
+    const confirmed = confirm(
+      `선택한 ${selectedDepartureIds.length}건의 ${fieldLabel}을(를) 일괄 수정하시겠습니까?`,
+    );
+
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("departures")
+      .update(updateData)
+      .in("id", selectedDepartureIds);
+
+    if (error) {
+      console.error(error);
+      alert("일괄 수정에 실패했습니다.");
+      return;
+    }
+
+    await loadDepartures();
+
+    setIsBulkEditOpen(false);
+    setBulkEditValue("");
+    clearSelection();
+
+    alert(`${selectedDepartureIds.length}건 일괄 수정 완료!`);
+  }
+
   async function loadDepartureReservations(departureId: string) {
     const { data, error } = await supabase
       .from("reservations")
@@ -538,10 +738,51 @@ export default function DepartureAdminPage() {
       ))}
       */}
 
+      {selectedDepartureIds.length > 0 && (
+        <div className="my-4 flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+          <div className="font-semibold text-blue-800">
+            선택 {selectedDepartureIds.length}건
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              선택 해제
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setBulkEditField("price");
+                setBulkEditValue("");
+                setIsBulkEditOpen(true);
+              }}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              ✏️ 일괄 수정
+            </button>
+
+            <button
+              type="button"
+              onClick={deleteSelectedDepartures}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              🗑️ 일괄 삭제
+            </button>
+          </div>
+        </div>
+      )}
+
       <DepartureTable
         departures={filteredDepartures}
         passengerCounts={passengerCounts}
         settlementCompleted={settlementCompleted}
+        selectedDepartureIds={selectedDepartureIds}
+        onToggleSelection={toggleDepartureSelection}
+        onToggleSelectAll={toggleSelectAll}
         onEdit={(departure) => {
           setEditingDeparture(departure);
           const hasReservation = (passengerCounts[departure.id] ?? 0) > 0;
@@ -565,6 +806,100 @@ export default function DepartureAdminPage() {
         departure={editingDeparture}
         hasReservation={hasReservation}
       />
+      {isBulkEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-bold">✏️ 출발일 일괄 수정</h2>
+
+            <p className="mt-2 text-sm text-gray-500">
+              선택한 {selectedDepartureIds.length}건을 한 번에 수정합니다.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-semibold">
+                  수정 항목
+                </label>
+
+                <select
+                  value={bulkEditField}
+                  onChange={(e) => {
+                    setBulkEditField(
+                      e.target.value as "price" | "airline" | "seat" | "status",
+                    );
+                    setBulkEditValue("");
+                  }}
+                  className="w-full rounded-lg border px-3 py-2"
+                >
+                  <option value="price">가격</option>
+                  <option value="airline">항공사</option>
+                  <option value="seat">총좌석</option>
+                  <option value="status">상태</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold">
+                  변경 값
+                </label>
+
+                {bulkEditField === "status" ? (
+                  <select
+                    value={bulkEditValue}
+                    onChange={(e) => setBulkEditValue(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2"
+                  >
+                    <option value="">상태 선택</option>
+                    <option value="예약가능">예약가능</option>
+                    <option value="마감임박">마감임박</option>
+                    <option value="마감">마감</option>
+                  </select>
+                ) : (
+                  <input
+                    type={bulkEditField === "seat" ? "number" : "text"}
+                    value={bulkEditValue}
+                    onChange={(e) => setBulkEditValue(e.target.value)}
+                    placeholder={
+                      bulkEditField === "price"
+                        ? "예) 1290000"
+                        : bulkEditField === "airline"
+                          ? "예) 티웨이항공"
+                          : "예) 180"
+                    }
+                    className="w-full rounded-lg border px-3 py-2"
+                  />
+                )}
+              </div>
+
+              <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
+                출발일, 일정, 코스구분은 일괄 수정되지 않습니다.
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkEditOpen(false);
+                  setBulkEditValue("");
+                }}
+                className="rounded-lg border px-4 py-2 hover:bg-gray-100"
+              >
+                취소
+              </button>
+
+              <button
+                type="button"
+                onClick={updateSelectedDepartures}
+                className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+              >
+                일괄 적용
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isBulkOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6">
