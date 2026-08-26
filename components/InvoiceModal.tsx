@@ -6,12 +6,12 @@ import CancellationSection from "@/components/sections/CancellationSection";
 
 type ReservationPeople = {
   id: string;
-  name?: string;
-  passport_name?: string;
-  passport_sex?: string;
-  passport_birth?: string;
-  passport_number?: string;
-  passport_expiry?: string;
+  name?: string | null;
+  passport_name?: string | null;
+  passport_sex?: string | null;
+  passport_birth?: string | null;
+  passport_number?: string | null;
+  passport_expiry?: string | null;
 };
 
 type Reservation = {
