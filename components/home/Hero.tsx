@@ -9,7 +9,15 @@ const images = [
   "/images/hero/hero1.jpg",
   "/images/hero/hero2.jpg",
   "/images/hero/hero3.jpg",
+
+  // 푸꾸옥
   "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/phuquoc/phuquoc1.jpg",
+
+  // 계림
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/guilin-hero.png",
+
+  // 샤먼
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/hero.png",
 ];
 
 export default function Hero() {

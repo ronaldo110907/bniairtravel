@@ -41,6 +41,16 @@ const destinations = [
     href: "/guilin",
   },
   {
+    title: "샤먼",
+    subtitle: "DISCOVER CHINA",
+    period: "2026.12.03 ~ 2027.03.25",
+    description:
+      "한겨울에 만나는 따뜻한 도시. 아름다운 해변과 이국적인 풍경, 여유로운 골프까지 샤먼에서 만나보세요.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/hero.png",
+    href: "/xiamen",
+  },
+  {
     title: "말레이시아 골프",
     subtitle: "DISCOVER MALAYSIA",
     period: "상시 문의",
