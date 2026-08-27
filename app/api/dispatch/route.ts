@@ -60,16 +60,16 @@ export async function GET(request: Request) {
       );
     }
 
-    const people = reservations.flatMap((reservation) =>
-      [...(reservation.people || [])]
-        .sort(
-          (a: any, b: any) => (a.sort_order ?? 9999) - (b.sort_order ?? 9999),
-        )
-        .map((person: any) => ({
+    const people = reservations
+      .flatMap((reservation) =>
+        (reservation.people || []).map((person: any) => ({
           ...person,
           reservationPhone: reservation.phone,
         })),
-    );
+      )
+      .sort(
+        (a: any, b: any) => (a.sort_order ?? 9999) - (b.sort_order ?? 9999),
+      );
 
     const rows = people.map((person: any, index: number) => {
       const passportName = person.passport_name ?? "";
