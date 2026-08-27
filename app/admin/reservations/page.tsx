@@ -244,7 +244,7 @@ function ReservationsContent() {
     passport_expiry: "",
 
     passport_sex: "",
-    passport_nationality: "",
+    passport_nationality: "KOR",
   });
 
   const [isEditingCustomer, setIsEditingCustomer] = useState(false);
@@ -354,7 +354,7 @@ function ReservationsContent() {
       passport_expiry: "",
 
       passport_sex: "",
-      passport_nationality: "",
+      passport_nationality: "KOR",
     });
   }
   async function saveBulkPeople() {
