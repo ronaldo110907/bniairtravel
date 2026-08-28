@@ -15,10 +15,6 @@ type Departure = {
   is_special: boolean;
 };
 
-const YEAR = 2026;
-// 상품별 시작월 자동 계산
-const DEFAULT_MONTHS = [9, 10, 11];
-
 type Props = {
   productId: string;
   productName: string;
@@ -28,11 +24,20 @@ export default function DepartureCalendar({ productId, productName }: Props) {
   const [departures, setDepartures] = useState<Departure[]>([]);
   const [reservations, setReservations] = useState<any[]>([]);
   const [people, setPeople] = useState<any[]>([]);
-  const months = useMemo(() => {
+  const monthOptions = useMemo(() => {
+    const now = new Date();
+
+    const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
     const list = [
-      ...new Set(departures.map((d) => Number(d.date.split("-")[1]))),
-    ].sort((a, b) => a - b);
-    return list.length ? list : DEFAULT_MONTHS;
+      ...new Set(
+        departures
+          .map((d) => d.date.slice(0, 7))
+          .filter((yearMonth) => yearMonth >= currentYearMonth),
+      ),
+    ].sort();
+
+    return list.length ? list : [currentYearMonth];
   }, [departures]);
 
   const [monthIndex, setMonthIndex] = useState(0);
@@ -113,21 +118,22 @@ export default function DepartureCalendar({ productId, productName }: Props) {
 
     loadDepartures();
   }, [productId]);
-  const currentMonth = months[monthIndex] ?? months[0];
+  const currentYearMonth = monthOptions[monthIndex] ?? monthOptions[0];
+
+  const [currentYear, currentMonth] = currentYearMonth.split("-").map(Number);
 
   const monthDepartures = useMemo(
     () =>
-      departures.filter(
-        (item) => Number(item.date.split("-")[1]) === currentMonth,
-      ),
-    [departures, currentMonth],
+      departures.filter((item) => item.date.slice(0, 7) === currentYearMonth),
+    [departures, currentYearMonth],
   );
 
   const [selected, setSelected] = useState<Departure | null>(null);
 
   const calendarCells = useMemo(() => {
-    const firstDay = new Date(YEAR, currentMonth - 1, 1).getDay();
-    const lastDate = new Date(YEAR, currentMonth, 0).getDate();
+    const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
+
+    const lastDate = new Date(currentYear, currentMonth, 0).getDate();
 
     const cells: Array<{
       day: number | null;
@@ -154,18 +160,18 @@ export default function DepartureCalendar({ productId, productName }: Props) {
     }
 
     return cells;
-  }, [currentMonth, monthDepartures]);
+  }, [currentYear, currentMonth, monthDepartures]);
 
   const moveMonth = (direction: -1 | 1) => {
     const nextIndex = monthIndex + direction;
 
-    if (nextIndex < 0 || nextIndex >= months.length) return;
+    if (nextIndex < 0 || nextIndex >= monthOptions.length) return;
 
-    const nextMonth = months[nextIndex];
+    const nextYearMonth = monthOptions[nextIndex];
+
     const firstDeparture =
-      departures.find(
-        (item) => Number(item.date.split("-")[1]) === nextMonth,
-      ) ?? null;
+      departures.find((item) => item.date.slice(0, 7) === nextYearMonth) ??
+      null;
 
     setMonthIndex(nextIndex);
     setSelected(firstDeparture);
@@ -190,14 +196,14 @@ export default function DepartureCalendar({ productId, productName }: Props) {
               DEPARTURE CALENDAR
             </p>
             <h3 className="mt-2 text-2xl font-bold md:text-3xl">
-              {YEAR}년 {currentMonth}월
+              {currentYear}년 {currentMonth}월
             </h3>
           </div>
 
           <button
             type="button"
             onClick={() => moveMonth(1)}
-            disabled={monthIndex === months.length - 1}
+            disabled={monthIndex === monthOptions.length - 1}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-xl transition hover:border-[#C8A15A] hover:bg-[#FFF8ED] disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="다음 달"
           >
