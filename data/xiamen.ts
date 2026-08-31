@@ -92,14 +92,140 @@ export const mealImages: Record<string, string> = {};
 // ======================================================
 // 실속 3박 5일
 // ======================================================
+// ======================================================
+// 관광지 이미지 자동 보급소
+// ======================================================
 
-export const itineraryValue3N5D: ItineraryItem[] = [
+const xiamenImageBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/";
+
+// ======================================================
+// 호텔
+// ======================================================
+
+export const xiamenHotelBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/xiamen/";
+
+export const xiamenHotels = [
+  {
+    id: 1,
+    name: "화렉스 호텔",
+    grade: "★★★★★",
+    image: `${xiamenHotelBaseUrl}hualex.jpg`,
+    roomImage: `${xiamenHotelBaseUrl}hualexroom.jpg`,
+    desc: "샤먼 일정 중 이용하는 5성급 호텔입니다.",
+  },
+  {
+    id: 2,
+    name: "큐리오 힐튼",
+    grade: "★★★★★",
+    image: `${xiamenHotelBaseUrl}hilton.jpg`,
+    roomImage: `${xiamenHotelBaseUrl}hiltonroom.jpg`,
+    desc: "편안한 객실과 안정적인 숙박 환경을 갖춘 5성급 호텔입니다.",
+  },
+];
+
+export const wuyishanHotels = [
+  ...xiamenHotels,
+  {
+    id: 3,
+    name: "무이산 윈덤 호텔",
+    grade: "준5성급",
+    image: `${xiamenHotelBaseUrl}whindom.jpg`,
+    roomImage: `${xiamenHotelBaseUrl}whindomroom.jpg`,
+    desc: "무이산 일정 중 이용하는 호텔로 편안한 휴식을 제공합니다.",
+  },
+];
+
+const xiamenSpotImageMap: Record<string, string> = {
+  // 샤먼
+  "샤먼 국제공항": `${xiamenImageBaseUrl}xiamenairport.jpg`,
+
+  남보타사: `${xiamenImageBaseUrl}nambotasa.jpeg`,
+  백성해변: `${xiamenImageBaseUrl}baeksung.jpg`,
+  "증조안 미식거리": `${xiamenImageBaseUrl}zhungjoan.jpg`,
+
+  원림식물원: `${xiamenImageBaseUrl}wonlim.jpg`,
+  중산로: `${xiamenImageBaseUrl}zhongshan.jpg`,
+
+  고랑서: `${xiamenImageBaseUrl}golangseo.jpg`,
+  민남전기쇼: `${xiamenImageBaseUrl}minnamjeonki.jpg`,
+
+  전라갱토루: `${xiamenImageBaseUrl}jeonlagang.jpg`,
+  "탑하촌 토루마을": `${xiamenImageBaseUrl}tophachon.jpg`,
+  유창루: `${xiamenImageBaseUrl}yoochangru.jpg`,
+
+  "루장강 나이트크루즈": `${xiamenImageBaseUrl}nightship.jpg`,
+  "야경 유람선 선택관광": `${xiamenImageBaseUrl}nightship.jpg`,
+
+  "해상명주탑 전망대": `${xiamenImageBaseUrl}haishangmingzhu.jpg`,
+
+  "일월곡 온천": `${xiamenImageBaseUrl}hotwaterjpg.jpg`,
+  "일월곡 온천욕 선택관광": `${xiamenImageBaseUrl}hotwaterjpg.jpg`,
+
+  // 무이산
+  천유봉: `${xiamenImageBaseUrl}chunyoubong.jpg`,
+  인상대홍포쇼: `${xiamenImageBaseUrl}hongpo.jpg`,
+  "무이산 구곡 뗏목투어": `${xiamenImageBaseUrl}wuyishanship.jpg`,
+};
+
+function attachXiamenImages(itinerary: ItineraryItem[]): ItineraryItem[] {
+  return itinerary.map((item) => {
+    // 기존에 직접 넣어놓은 사진은 그대로 보존
+    const manualSpotImages = item.spotImages ?? [];
+
+    const usedNames = new Set(manualSpotImages.map((spot) => spot.name));
+
+    const usedImages = new Set(manualSpotImages.map((spot) => spot.image));
+
+    // places 이름을 보고 자동 사진 보급
+    const autoSpotImages =
+      item.places
+        ?.map((place) => {
+          const image = xiamenSpotImageMap[place];
+
+          if (!image) return null;
+
+          return {
+            name: place,
+            image,
+          };
+        })
+        .filter(
+          (
+            spot,
+          ): spot is {
+            name: string;
+            image: string;
+          } => spot !== null,
+        )
+        .filter(
+          (spot) => !usedNames.has(spot.name) && !usedImages.has(spot.image),
+        ) ?? [];
+
+    const spotImages = [...manualSpotImages, ...autoSpotImages];
+
+    return {
+      ...item,
+
+      // 메인사진이 없으면 첫 번째 관광지 사진 자동 사용
+      image: item.image ?? spotImages[0]?.image,
+
+      // 관광지 사진 자동 배치
+      spotImages: spotImages.length > 0 ? spotImages : undefined,
+    };
+  });
+}
+export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
   {
     day: "DAY 1",
     icon: "✈️",
     title: "청주공항 출발 · 샤먼 도착",
     description:
       "청주 국제공항을 출발하여 샤먼 국제공항에 도착합니다. 가이드 미팅 후 호텔로 이동하여 투숙 및 휴식합니다.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/xiamenairport.jpg",
+    imagePosition: "center 70%",
     places: ["청주 국제공항", "샤먼 국제공항"],
     duration: "샤먼 도착 후 호텔 이동",
     meals: {
@@ -116,11 +242,26 @@ export const itineraryValue3N5D: ItineraryItem[] = [
     title: "원림식물원 · 중산로",
     description:
       "호텔 조식 후 오전 자유시간을 즐기고 중식 후 원림식물원과 샤먼의 대표 보행자 거리인 중산로를 관광합니다.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/zhongshan.jpg",
+    imagePosition: "center 70%",
     places: [
       "오전 자유일정",
       "원림식물원",
       "중산로",
       "중구산 케이블카 선택관광",
+    ],
+    spotImages: [
+      {
+        name: "원림식물원",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/wonlim.jpg",
+      },
+      {
+        name: "중산로 관광",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/zhongshan.jpg",
+      },
     ],
     duration: "오후 샤먼 관광",
     meals: {
@@ -137,6 +278,8 @@ export const itineraryValue3N5D: ItineraryItem[] = [
     title: "고랑서 · 숙장화원 · 일광암",
     description:
       "고랑서로 이동하여 숙장화원과 일광암을 관광하고 다양한 현지 먹거리와 상점이 모여있는 증조안 미식거리를 둘러봅니다.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/golangseo.jpg",
     places: [
       "고랑서",
       "숙장화원",
@@ -145,6 +288,23 @@ export const itineraryValue3N5D: ItineraryItem[] = [
       "민남전기쇼 또는 링링서커스 선택관광",
       "발+전신마사지 90분 선택관광",
       "요트체험 선택관광",
+    ],
+    spotImages: [
+      {
+        name: "고랑서",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/golangseo.jpg",
+      },
+      {
+        name: "증조안 미식거리",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/zhungjoan.jpg",
+      },
+      {
+        name: "민남전기쇼",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/minnamjeonki.jpg",
+      },
     ],
     duration: "전일 관광",
     meals: {
@@ -161,6 +321,8 @@ export const itineraryValue3N5D: ItineraryItem[] = [
     title: "남정토루 · 전라갱토루 · 탑하촌",
     description:
       "남정토루로 이동하여 전라갱토루, 탑하촌 토루마을, 유창루를 관광합니다. 하문으로 돌아온 후 자유일정을 즐기고 공항으로 이동합니다.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/tophachon.jpg",
     places: [
       "전라갱토루",
       "탑하촌 토루마을",
@@ -169,6 +331,23 @@ export const itineraryValue3N5D: ItineraryItem[] = [
       "야경 유람선 선택관광",
       "발+전신마사지 90분 선택관광",
       "공항 이동",
+    ],
+    spotImages: [
+      {
+        name: "전라갱토루",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/jeonlagang.jpg",
+      },
+      {
+        name: "탑하촌 토루마을",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/tophachon.jpg",
+      },
+      {
+        name: "야경유람선",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/nightship.jpg",
+      },
     ],
     duration: "전일 관광 후 공항 이동",
     meals: {
@@ -185,6 +364,8 @@ export const itineraryValue3N5D: ItineraryItem[] = [
     title: "샤먼 출발 · 청주공항 도착",
     description:
       "샤먼 국제공항을 출발하여 청주 국제공항에 도착한 후 여행을 마무리합니다.",
+    image:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/phuquoc/cjj.jpg",
     places: ["샤먼 국제공항", "청주 국제공항"],
     duration: "귀국",
     meals: {
@@ -194,13 +375,13 @@ export const itineraryValue3N5D: ItineraryItem[] = [
     },
     hotel: "해당없음",
   },
-];
+]);
 
 // ======================================================
 // 고품격 3박 5일
 // ======================================================
 
-export const itineraryPremium3N5D: ItineraryItem[] = [
+export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
   {
     day: "DAY 1",
     icon: "✈️",
@@ -293,13 +474,13 @@ export const itineraryPremium3N5D: ItineraryItem[] = [
     },
     hotel: "해당없음",
   },
-];
+]);
 
 // ======================================================
 // 고품격 4박 6일
 // ======================================================
 
-export const itineraryPremium4N6D: ItineraryItem[] = [
+export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
   {
     day: "DAY 1",
     icon: "✈️",
@@ -414,13 +595,13 @@ export const itineraryPremium4N6D: ItineraryItem[] = [
     },
     hotel: "해당없음",
   },
-];
+]);
 
 // ======================================================
 // 무이산 고품격 4박 6일
 // ======================================================
 
-export const itineraryWuyishan4N6D: ItineraryItem[] = [
+export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
   {
     day: "DAY 1",
     icon: "✈️",
@@ -536,7 +717,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = [
     },
     hotel: "해당없음",
   },
-];
+]);
 
 // ======================================================
 // 골프 3박 5일

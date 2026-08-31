@@ -27,6 +27,8 @@ import {
   includesGolf4,
   excludesGolf4,
   shoppingXiamen,
+  xiamenHotels,
+  wuyishanHotels,
 } from "@/data/xiamen";
 
 const itineraryMap: Record<XiamenProductType, ItineraryItem[]> = {
@@ -76,6 +78,8 @@ export default function XiamenProductContent() {
     activeType === "wuyishan4"
       ? "※ 찻집 · 라텍스 · 침향 중 2곳을 방문합니다. 구매는 고객님의 자율적인 선택이며, 노쇼핑 진행 시 현지비가 추가될 수 있습니다."
       : "※ 찻집 · 라텍스 · 침향 중 2곳을 방문합니다. 구매는 고객님의 자율적인 선택입니다.";
+
+  const hotels = activeType === "wuyishan4" ? wuyishanHotels : xiamenHotels;
 
   return (
     <section className="bg-[#faf8f4] px-4 py-24 md:px-6">
@@ -141,7 +145,38 @@ export default function XiamenProductContent() {
 
           <p className="mt-3 text-sm text-gray-500">{activeTab?.description}</p>
         </div>
+        {/* ==================== 관광 지도 ==================== */}
 
+        {!isGolf && (
+          <div className="mb-16">
+            <div
+              className={[
+                "grid gap-6",
+                activeType === "wuyishan4"
+                  ? "md:grid-cols-2"
+                  : "mx-auto max-w-4xl",
+              ].join(" ")}
+            >
+              <div className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-4 shadow-sm">
+                <img
+                  src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/xiamenmap.png"
+                  alt="하문 관광지 경로 안내"
+                  className="w-full rounded-2xl"
+                />
+              </div>
+
+              {activeType === "wuyishan4" && (
+                <div className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-4 shadow-sm">
+                  <img
+                    src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/wuyishanmap.png"
+                    alt="무이산 관광 안내도"
+                    className="w-full rounded-2xl"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {/* ==================== 일정 ==================== */}
 
         <div className="relative">
@@ -305,6 +340,75 @@ export default function XiamenProductContent() {
         <p className="mt-12 text-center text-xs leading-6 text-gray-400 md:text-sm">
           ※ 상기 일정은 항공 및 현지 사정에 따라 변경될 수 있습니다.
         </p>
+
+        {/* ==================== 호텔 ==================== */}
+
+        <div className="mt-20 overflow-hidden rounded-[36px] bg-[#1f1f1f] px-6 py-14 text-white md:px-10">
+          <div className="mb-10">
+            <p className="mb-3 text-sm tracking-[0.35em] text-[#C8A15A]">
+              HOTEL
+            </p>
+
+            <h2 className="text-3xl font-bold md:text-4xl">
+              5성급 프리미엄 호텔
+            </h2>
+
+            <p className="mt-4 leading-7 text-white/60">
+              편안한 여행을 위해 엄선된 호텔을 이용합니다.
+            </p>
+          </div>
+
+          <div className="grid gap-7 md:grid-cols-2">
+            {hotels.map((hotel) => (
+              <div
+                key={hotel.id}
+                className="overflow-hidden rounded-[28px] border border-white/10 bg-white/5"
+              >
+                {/* 호텔 외관 + 객실 */}
+                <div className="grid grid-cols-2 gap-[2px] bg-black">
+                  <div className="overflow-hidden">
+                    <img
+                      src={hotel.image}
+                      alt={`${hotel.name} 외관`}
+                      className="h-[220px] w-full object-cover transition duration-700 hover:scale-105"
+                    />
+                  </div>
+
+                  <div className="overflow-hidden">
+                    <img
+                      src={hotel.roomImage}
+                      alt={`${hotel.name} 객실`}
+                      className="h-[220px] w-full object-cover transition duration-700 hover:scale-105"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <p className="text-sm font-semibold text-[#C8A15A]">
+                    {hotel.grade}
+                  </p>
+
+                  <h3 className="mt-2 text-xl font-bold md:text-2xl">
+                    {hotel.name}
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-7 text-white/60">
+                    {hotel.desc}
+                  </p>
+
+                  <div className="mt-4 flex gap-5 text-xs text-white/40">
+                    <span>호텔 외관</span>
+                    <span>객실 이미지</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-7 text-xs leading-6 text-white/40">
+            ※ 호텔은 현지 사정 및 출발일에 따라 동급 호텔로 변경될 수 있습니다.
+          </p>
+        </div>
 
         {/* ==================== 포함 / 불포함 ==================== */}
 
