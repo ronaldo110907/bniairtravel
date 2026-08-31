@@ -9,7 +9,13 @@ type GuilinCourse =
   | "guilin4N6D"
   | "chenzhou3N5D"
   | "chenzhou4N6D";
-
+type XiamenCourse =
+  | "value3"
+  | "premium3"
+  | "premium4"
+  | "wuyishan4"
+  | "golf3"
+  | "golf4";
 type Props = {
   product: string;
 };
@@ -24,6 +30,7 @@ export default function ItineraryEmailButton({ product }: Props) {
   const [course, setCourse] = useState<Course>("3박4일");
   const [phuquocCourse, setPhuquocCourse] = useState<PhuquocCourse>("premium");
   const [guilinCourse, setGuilinCourse] = useState<GuilinCourse>("guilin3N5D");
+  const [xiamenCourse, setXiamenCourse] = useState<XiamenCourse>("value3");
 
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -68,6 +75,7 @@ export default function ItineraryEmailButton({ product }: Props) {
           product,
           phuquocCourse,
           guilinCourse,
+          xiamenCourse,
         }),
       });
 
@@ -244,6 +252,30 @@ export default function ItineraryEmailButton({ product }: Props) {
                     </button>
                   </div>
                 </div>
+              </div>
+            ) : product === "xiamen" ? (
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                {[
+                  { key: "value3", label: "실속 3박5일" },
+                  { key: "premium3", label: "고품격 3박5일" },
+                  { key: "premium4", label: "고품격 4박6일" },
+                  { key: "wuyishan4", label: "무이산 4박6일" },
+                  { key: "golf3", label: "골프 3박5일" },
+                  { key: "golf4", label: "골프 4박6일" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setXiamenCourse(item.key as XiamenCourse)}
+                    className={`rounded-xl border px-4 py-3 font-bold transition ${
+                      xiamenCourse === item.key
+                        ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                        : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44] hover:bg-[#f7f3ec]"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">

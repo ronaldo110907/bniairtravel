@@ -51,6 +51,28 @@ import {
   excludesChenzhou as chenzhouExcludes,
 } from "@/data/guilin";
 
+import {
+  flightInfo as xiamenFlightInfo,
+  itineraryValue3N5D as xiamenItineraryValue3N5D,
+  itineraryPremium3N5D as xiamenItineraryPremium3N5D,
+  itineraryPremium4N6D as xiamenItineraryPremium4N6D,
+  itineraryWuyishan4N6D as xiamenItineraryWuyishan4N6D,
+  itineraryGolf3N5D as xiamenItineraryGolf3N5D,
+  itineraryGolf4N6D as xiamenItineraryGolf4N6D,
+  includesValue3 as xiamenIncludesValue3,
+  excludesValue3 as xiamenExcludesValue3,
+  includesPremium3 as xiamenIncludesPremium3,
+  excludesPremium3 as xiamenExcludesPremium3,
+  includesPremium4 as xiamenIncludesPremium4,
+  excludesPremium4 as xiamenExcludesPremium4,
+  includesWuyishan4 as xiamenIncludesWuyishan4,
+  excludesWuyishan4 as xiamenExcludesWuyishan4,
+  includesGolf3 as xiamenIncludesGolf3,
+  excludesGolf3 as xiamenExcludesGolf3,
+  includesGolf4 as xiamenIncludesGolf4,
+  excludesGolf4 as xiamenExcludesGolf4,
+} from "@/data/xiamen";
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
@@ -65,10 +87,12 @@ export async function POST(request: Request) {
       product,
       phuquocCourse,
       guilinCourse,
+      xiamenCourse,
     } = await request.json();
     console.log("MAIL PRODUCT:", product);
     console.log("PHUQUOC COURSE:", phuquocCourse);
     console.log("GUILIN COURSE:", guilinCourse);
+    console.log("XIAMEN COURSE:", xiamenCourse);
 
     const productData = {
       zhangjiajie: {
@@ -177,6 +201,57 @@ export async function POST(request: Request) {
           },
         },
       },
+      xiamen: {
+        name: "샤먼",
+        poster:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/xiamen.png",
+
+        flightInfo: xiamenFlightInfo,
+
+        courses: {
+          value3: {
+            name: "실속 3박5일",
+            itinerary: xiamenItineraryValue3N5D,
+            includes: xiamenIncludesValue3,
+            excludes: xiamenExcludesValue3,
+          },
+
+          premium3: {
+            name: "고품격 3박5일",
+            itinerary: xiamenItineraryPremium3N5D,
+            includes: xiamenIncludesPremium3,
+            excludes: xiamenExcludesPremium3,
+          },
+
+          premium4: {
+            name: "고품격 4박6일",
+            itinerary: xiamenItineraryPremium4N6D,
+            includes: xiamenIncludesPremium4,
+            excludes: xiamenExcludesPremium4,
+          },
+
+          wuyishan4: {
+            name: "무이산 4박6일",
+            itinerary: xiamenItineraryWuyishan4N6D,
+            includes: xiamenIncludesWuyishan4,
+            excludes: xiamenExcludesWuyishan4,
+          },
+
+          golf3: {
+            name: "골프 3박5일",
+            itinerary: xiamenItineraryGolf3N5D,
+            includes: xiamenIncludesGolf3,
+            excludes: xiamenExcludesGolf3,
+          },
+
+          golf4: {
+            name: "골프 4박6일",
+            itinerary: xiamenItineraryGolf4N6D,
+            includes: xiamenIncludesGolf4,
+            excludes: xiamenExcludesGolf4,
+          },
+        },
+      },
     };
 
     const selectedProduct =
@@ -187,7 +262,9 @@ export async function POST(request: Request) {
         ? productData.phuquoc
         : product === "guilin"
           ? productData.guilin
-          : selectedProduct;
+          : product === "xiamen"
+            ? productData.xiamen
+            : selectedProduct;
 
     const selectedPhuquocCourse =
       phuquocCourse === "quality"
@@ -205,23 +282,40 @@ export async function POST(request: Request) {
           : guilinCourse === "chenzhou4N6D"
             ? productData.guilin.courses.chenzhou4N6D
             : productData.guilin.courses.guilin3N5D;
+    const selectedXiamenCourse =
+      xiamenCourse === "premium3"
+        ? productData.xiamen.courses.premium3
+        : xiamenCourse === "premium4"
+          ? productData.xiamen.courses.premium4
+          : xiamenCourse === "wuyishan4"
+            ? productData.xiamen.courses.wuyishan4
+            : xiamenCourse === "golf3"
+              ? productData.xiamen.courses.golf3
+              : xiamenCourse === "golf4"
+                ? productData.xiamen.courses.golf4
+                : productData.xiamen.courses.value3;
 
     const isPhuquoc = product === "phuquoc";
     const isGuilin = product === "guilin";
+    const isXiamen = product === "xiamen";
 
     const displayCourse = isPhuquoc
       ? "3박5일"
       : isGuilin
         ? selectedGuilinCourse.name
-        : course;
+        : isXiamen
+          ? selectedXiamenCourse.name
+          : course;
 
     const itinerary = isPhuquoc
       ? selectedPhuquocCourse.itinerary
       : isGuilin
         ? selectedGuilinCourse.itinerary
-        : course === "4박5일"
-          ? selectedProduct.itinerary4
-          : selectedProduct.itinerary3;
+        : isXiamen
+          ? selectedXiamenCourse.itinerary
+          : course === "4박5일"
+            ? selectedProduct.itinerary4
+            : selectedProduct.itinerary3;
 
     const flightHtml = `
   <div
@@ -441,15 +535,16 @@ export async function POST(request: Request) {
       )
       .join("");
 
-    const hotelsHtml = (
-      isPhuquoc
-        ? selectedPhuquocCourse.hotels
-        : isGuilin
-          ? selectedGuilinCourse.hotels
-          : selectedProduct.hotels
-    )
-      .map(
-        (hotel) => `
+    const hotelsHtml = isXiamen
+      ? ""
+      : (isPhuquoc
+          ? selectedPhuquocCourse.hotels
+          : isGuilin
+            ? selectedGuilinCourse.hotels
+            : selectedProduct.hotels
+        )
+          .map(
+            (hotel) => `
       <div
         style="
           margin-bottom: 12px;
@@ -489,15 +584,17 @@ export async function POST(request: Request) {
         </div>
       </div>
     `,
-      )
-      .join("");
+          )
+          .join("");
 
     const includesHtml = (
       isPhuquoc
         ? selectedPhuquocCourse.includes
         : isGuilin
           ? selectedGuilinCourse.includes
-          : selectedProduct.includes
+          : isXiamen
+            ? selectedXiamenCourse.includes
+            : selectedProduct.includes
     )
       .map(
         (item) => `
@@ -513,7 +610,9 @@ export async function POST(request: Request) {
         ? selectedPhuquocCourse.excludes
         : isGuilin
           ? selectedGuilinCourse.excludes
-          : selectedProduct.excludes
+          : isXiamen
+            ? selectedXiamenCourse.excludes
+            : selectedProduct.excludes
     )
       .map(
         (item) => `
@@ -743,9 +842,14 @@ export async function POST(request: Request) {
 
 ${itineraryHtml}
 
-<h2 style="margin-top: 40px;">이용 예정 호텔</h2>
-
-${hotelsHtml}
+${
+  isXiamen
+    ? ""
+    : `
+      <h2 style="margin-top: 40px;">이용 예정 호텔</h2>
+      ${hotelsHtml}
+    `
+}
 
 <h2 style="margin-top: 40px;">포함사항</h2>
 

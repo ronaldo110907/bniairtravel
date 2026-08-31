@@ -62,6 +62,12 @@ export default function ProductHero({ product }: { product: Product }) {
                 <br />
                 계림 · 천저우
               </>
+            ) : product?.slug === "xiamen" ? (
+              <>
+                낭만과 여유가
+                <br />
+                머무는 도시
+              </>
             ) : (
               product?.hero_heading || "하늘과 맞닿은 비경"
             )}
@@ -105,7 +111,7 @@ export default function ProductHero({ product }: { product: Product }) {
               <HeroInfo
                 label="일정"
                 value={
-                  product?.slug === "guilin"
+                  product?.slug === "xiamen"
                     ? "3박5일 / 4박6일"
                     : product?.duration || "3박4일 / 4박5일"
                 }
