@@ -284,36 +284,54 @@ export default async function AdminPage() {
             </Link>
           </div>
         </div>
-        {/* 오늘의 개발 작전일지 */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow">
-          <div className="text-center">
-            <div className="text-sm font-semibold tracking-widest text-gray-400">
-              TODAY&apos;S DEVELOPMENT LOG
-            </div>
+        {/* 개발 웹툰 비하인드 */}
+        <div className="rounded-xl bg-white px-6 py-6 text-center shadow-sm">
+          <Link
+            href="/admin/webtoon"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-xl bg-gray-900 px-7 py-4 font-bold text-white shadow transition hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-lg"
+          >
+            📚 홈페이지 개발 웹툰 비하인드 보기
+          </Link>
 
-            <h2 className="mt-2 text-xl font-bold text-gray-900">
-              🌴 푸꾸옥 특수부대 침투 작전
-            </h2>
+          <p className="mt-2 text-xs text-gray-400">
+            BNI 개발팀의 실제 작전 기록 ㅋㅋㅋ
+          </p>
 
-            <p className="mt-2 text-sm text-gray-500">
-              오류 9명 발생부터 장가계 홍보 사건까지... 😂
-            </p>
+          {/* 웹툰 미리보기 */}
+          <div className="mx-auto mt-5 grid max-w-4xl grid-cols-5 gap-3">
+            {[
+              "webtoon.png",
+              "webtoon5.png",
+              "webtoon10.png",
+              "webtoon15.png",
+              "webtoon20.png",
+            ].map((file) => (
+              <Link
+                key={file}
+                href="/admin/webtoon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group overflow-hidden rounded-xl border bg-gray-100 shadow-sm"
+              >
+                <img
+                  src={`https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/webtoon/${file}`}
+                  alt="BNI 개발 웹툰"
+                  className="aspect-[4/3] w-full object-cover object-top transition duration-300 group-hover:scale-105"
+                />
+              </Link>
+            ))}
           </div>
 
-          <div className="mx-auto mt-6 max-w-7xl overflow-hidden rounded-2xl border bg-gray-50">
-            <img
-              src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/webtoon2.png"
-              alt="푸꾸옥 특수부대 침투 작전 개발 웹툰"
-              className="h-auto w-full"
-            />
-          </div>
-
-          <div className="mt-6 border-t pt-4 text-center text-sm italic text-gray-400">
-            침투 전 군장 검사는 철저히 할 것. 웹툰 탄생비화!!
-            <span className="ml-2 not-italic font-semibold">
-              — 홈페이지 개발팀, 2026
-            </span>
-          </div>
+          <Link
+            href="/admin/webtoon"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-block text-sm font-semibold text-gray-500 transition hover:text-gray-900"
+          >
+            전체 개발작전일지 보기 →
+          </Link>
         </div>
         <div className="overflow-hidden rounded-xl border bg-white shadow">
           <img
