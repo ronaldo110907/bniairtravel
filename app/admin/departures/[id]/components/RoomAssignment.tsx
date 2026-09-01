@@ -9,6 +9,11 @@ type Props = {
 
 export default function RoomAssignment({ departureId }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const [showBulkForm, setShowBulkForm] = useState(false);
+
+  const [bulkSingle, setBulkSingle] = useState(0);
+  const [bulkTwin, setBulkTwin] = useState(0);
+  const [bulkTriple, setBulkTriple] = useState(0);
 
   const [roomName, setRoomName] = useState("");
 
@@ -72,6 +77,81 @@ export default function RoomAssignment({ departureId }: Props) {
     setShowForm(false);
   }
 
+  function getNextRoomNumber(prefix: string) {
+    const numbers = rooms
+      .map((room) => {
+        const name = String(room.room_name ?? "");
+
+        if (!name.startsWith(prefix)) return NaN;
+
+        return Number(name.slice(prefix.length));
+      })
+      .filter((number) => Number.isFinite(number));
+
+    if (numbers.length === 0) return 1;
+
+    return Math.max(...numbers) + 1;
+  }
+
+  async function saveBulkRooms() {
+    const singleCount = Math.max(0, Number(bulkSingle) || 0);
+    const twinCount = Math.max(0, Number(bulkTwin) || 0);
+    const tripleCount = Math.max(0, Number(bulkTriple) || 0);
+
+    if (singleCount + twinCount + tripleCount === 0) {
+      alert("생성할 객실 수를 입력해주세요.");
+      return;
+    }
+
+    const newRooms = [];
+
+    const singleStart = getNextRoomNumber("싱글");
+    const twinStart = getNextRoomNumber("트윈");
+    const tripleStart = getNextRoomNumber("트리플");
+
+    for (let i = 0; i < singleCount; i++) {
+      newRooms.push({
+        departure_id: departureId,
+        room_name: `싱글${singleStart + i}`,
+        room_type: "1인실",
+        memo: null,
+      });
+    }
+
+    for (let i = 0; i < twinCount; i++) {
+      newRooms.push({
+        departure_id: departureId,
+        room_name: `트윈${twinStart + i}`,
+        room_type: "2인실",
+        memo: null,
+      });
+    }
+
+    for (let i = 0; i < tripleCount; i++) {
+      newRooms.push({
+        departure_id: departureId,
+        room_name: `트리플${tripleStart + i}`,
+        room_type: "3인실",
+        memo: null,
+      });
+    }
+
+    const { error } = await supabase.from("rooms").insert(newRooms);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    await loadRooms();
+
+    setBulkSingle(0);
+    setBulkTwin(0);
+    setBulkTriple(0);
+    setShowBulkForm(false);
+
+    alert(`${newRooms.length}개 객실이 생성되었습니다.`);
+  }
   async function loadRooms() {
     const { data } = await supabase
       .from("rooms")
@@ -243,12 +323,72 @@ export default function RoomAssignment({ departureId }: Props) {
         <h2 className="text-lg font-bold">🛏 객실 배정</h2>
 
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => setShowBulkForm(!showBulkForm)}
           className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white"
         >
-          {showForm ? "취소" : "+ 객실 추가"}
+          {showBulkForm ? "취소" : "+ 일괄 객실추가"}
         </button>
       </div>
+      {showBulkForm && (
+        <div className="mb-4 rounded-lg border bg-blue-50 p-4">
+          <div className="mb-4 font-bold">🛏 객실 일괄 생성</div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                싱글룸 (1인실)
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                value={bulkSingle}
+                onChange={(e) => setBulkSingle(Number(e.target.value))}
+                className="w-full rounded-lg border bg-white px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                트윈룸 (2인실)
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                value={bulkTwin}
+                onChange={(e) => setBulkTwin(Number(e.target.value))}
+                className="w-full rounded-lg border bg-white px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                트리플룸 (3인실)
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                value={bulkTriple}
+                onChange={(e) => setBulkTriple(Number(e.target.value))}
+                className="w-full rounded-lg border bg-white px-3 py-2"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 text-sm text-gray-500">
+            자동 생성: 싱글1 · 트윈1 · 트리플1 형식으로 객실번호가 지정됩니다.
+          </div>
+
+          <button
+            onClick={saveBulkRooms}
+            className="mt-4 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white"
+          >
+            객실 일괄 생성
+          </button>
+        </div>
+      )}
       {showForm && (
         <div className="mb-4 rounded-lg border bg-gray-50 p-4">
           <div className="mb-3">
