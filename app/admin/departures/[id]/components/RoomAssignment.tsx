@@ -363,12 +363,24 @@ export default function RoomAssignment({ departureId }: Props) {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold">🛏 객실 배정</h2>
 
-        <button
-          onClick={() => setShowBulkForm(!showBulkForm)}
-          className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white"
-        >
-          {showBulkForm ? "취소" : "+ 일괄 객실추가"}
-        </button>
+        <div className="flex items-center gap-2">
+          {assignmentComplete && (
+            <button
+              type="button"
+              onClick={() => setIsAssignmentCollapsed(true)}
+              className="rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700"
+            >
+              ✅ 배정완료 · 접기
+            </button>
+          )}
+
+          <button
+            onClick={() => setShowBulkForm(!showBulkForm)}
+            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white"
+          >
+            {showBulkForm ? "취소" : "+ 일괄 객실추가"}
+          </button>
+        </div>
       </div>
       {showBulkForm && (
         <div className="mb-4 rounded-lg border bg-blue-50 p-4">
