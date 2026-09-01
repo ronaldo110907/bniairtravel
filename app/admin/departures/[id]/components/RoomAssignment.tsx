@@ -17,6 +17,7 @@ export default function RoomAssignment({ departureId }: Props) {
   const [roomMembers, setRoomMembers] = useState<any[]>([]);
   const [editRoomId, setEditRoomId] = useState<string | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>([]);
 
   const [people, setPeople] = useState<any[]>([]);
 
@@ -132,22 +133,65 @@ export default function RoomAssignment({ departureId }: Props) {
     setPeople(data ?? []);
   }
 
-  async function assignPerson(roomId: string, personId: string) {
-    const { error } = await supabase.from("room_members").insert({
-      room_id: roomId,
-      reservation_person_id: personId,
-    });
+  function getRoomCapacity(roomType: string) {
+    if (roomType === "1인실") return 1;
+    if (roomType === "3인실") return 3;
 
-    if (error) {
-      alert(error.message);
+    return 2;
+  }
+
+  async function selectPersonForRoom(room: any, personId: string) {
+    const capacity = getRoomCapacity(room.room_type);
+
+    const assignedCount = roomMembers.filter(
+      (member) => member.room_id === room.id,
+    ).length;
+
+    const remainingCapacity = capacity - assignedCount;
+
+    if (remainingCapacity <= 0) {
+      alert("이미 객실 정원이 모두 배정되었습니다.");
+      setSelectedRoomId(null);
+      setSelectedPersonIds([]);
       return;
     }
 
-    await loadRoomMembers();
+    const isSelected = selectedPersonIds.includes(personId);
 
-    setSelectedRoomId(null);
+    let nextSelected: string[];
+
+    if (isSelected) {
+      nextSelected = selectedPersonIds.filter((id) => id !== personId);
+    } else {
+      if (selectedPersonIds.length >= remainingCapacity) {
+        return;
+      }
+
+      nextSelected = [...selectedPersonIds, personId];
+    }
+
+    setSelectedPersonIds(nextSelected);
+
+    // 객실에 필요한 인원이 모두 선택되면 한 번에 저장
+    if (nextSelected.length === remainingCapacity) {
+      const rows = nextSelected.map((id) => ({
+        room_id: room.id,
+        reservation_person_id: id,
+      }));
+
+      const { error } = await supabase.from("room_members").insert(rows);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      await loadRoomMembers();
+
+      setSelectedPersonIds([]);
+      setSelectedRoomId(null);
+    }
   }
-
   async function removePerson(roomMemberId: string) {
     const { error } = await supabase
       .from("room_members")
@@ -289,11 +333,13 @@ export default function RoomAssignment({ departureId }: Props) {
                   </div>
 
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      setSelectedPersonIds([]);
+
                       setSelectedRoomId(
                         selectedRoomId === room.id ? null : room.id,
-                      )
-                    }
+                      );
+                    }}
                     className="rounded border px-2 py-1 text-xs hover:bg-gray-100"
                   >
                     + 객실배정
@@ -311,8 +357,12 @@ export default function RoomAssignment({ departureId }: Props) {
                         .map((person) => (
                           <div
                             key={person.id}
-                            onClick={() => assignPerson(room.id, person.id)}
-                            className="cursor-pointer rounded px-2 py-1 hover:bg-white"
+                            onClick={() => selectPersonForRoom(room, person.id)}
+                            className={`cursor-pointer rounded px-2 py-1 ${
+                              selectedPersonIds.includes(person.id)
+                                ? "bg-blue-100 font-semibold text-blue-700"
+                                : "hover:bg-white"
+                            }`}
                           >
                             👤 {person.name}
                           </div>
