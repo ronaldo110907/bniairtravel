@@ -36,6 +36,8 @@ type Departure = {
   id: string;
   product_id: string;
   departure_date: string;
+  course: string;
+  variant: string | null;
   price: number | null;
 };
 
@@ -806,7 +808,7 @@ function ReservationsContent() {
 
     const { data, error } = await supabase
       .from("departures")
-      .select("id, product_id, departure_date,price")
+      .select("id, product_id, departure_date, course, variant, price")
       .eq("product_id", productId)
       .order("departure_date");
 
@@ -825,7 +827,8 @@ function ReservationsContent() {
       !newReservation.name ||
       !newReservation.phone ||
       !newReservation.product ||
-      !newReservation.departure_date
+      !newReservation.departure_date ||
+      (!isCustomProduct && !newReservation.departure_id)
     ) {
       alert("필수 항목을 모두 입력해주세요.");
       return;
@@ -1901,7 +1904,8 @@ function ReservationsContent() {
                     {departures.map((departure) => (
                       <option key={departure.id} value={departure.id}>
                         {departure.departure_date} ·{" "}
-                        {Number(departure.price || 0).toLocaleString()}원
+                        {departure.variant || departure.course || "코스 미지정"}{" "}
+                        · {Number(departure.price || 0).toLocaleString()}원
                       </option>
                     ))}
                   </select>

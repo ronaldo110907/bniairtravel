@@ -13,6 +13,7 @@ type Departure = {
   id: string;
   product_id: string;
   departure_date: string;
+  variant: string | null;
   course: string;
   airline: string;
   price: number;
@@ -217,12 +218,15 @@ export default function DepartureAdminPage() {
 
     const { data: reservations } = await supabase
       .from("reservations")
-      .select("id, departure_id");
+      .select("id, departure_id, status");
 
     const reservationMap = new Map<string, string>();
 
     reservations?.forEach((reservation) => {
       if (!reservation.departure_id) return;
+
+      // 확정 예약만 좌석 차감
+      if (reservation.status !== "확정") return;
 
       reservationMap.set(reservation.id, reservation.departure_id);
     });
