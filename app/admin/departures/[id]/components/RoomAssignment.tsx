@@ -22,6 +22,7 @@ export default function RoomAssignment({ departureId }: Props) {
   const [roomMembers, setRoomMembers] = useState<any[]>([]);
   const [editRoomId, setEditRoomId] = useState<string | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [isAssignmentCollapsed, setIsAssignmentCollapsed] = useState(false);
   const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>([]);
 
   const [people, setPeople] = useState<any[]>([]);
@@ -292,6 +293,28 @@ export default function RoomAssignment({ departureId }: Props) {
     loadPeople();
   }, [departureId]);
 
+  const currentRoomIds = new Set(rooms.map((room) => room.id));
+
+  const assignedPersonIds = new Set(
+    roomMembers
+      .filter((member) => currentRoomIds.has(member.room_id))
+      .map((member) => member.reservation_person_id),
+  );
+
+  const assignedCount = people.filter((person) =>
+    assignedPersonIds.has(person.id),
+  ).length;
+
+  const assignmentComplete =
+    people.length > 0 &&
+    people.every((person) => assignedPersonIds.has(person.id));
+
+  useEffect(() => {
+    if (assignmentComplete) {
+      setIsAssignmentCollapsed(true);
+    }
+  }, [assignmentComplete]);
+
   async function deleteRoom(id: string) {
     const ok = confirm("이 객실을 삭제하시겠습니까?");
 
@@ -315,6 +338,24 @@ export default function RoomAssignment({ departureId }: Props) {
     setMemo(room.memo ?? "");
 
     setShowForm(true);
+  }
+
+  if (isAssignmentCollapsed && assignmentComplete) {
+    return (
+      <div className="rounded-xl border bg-white p-4">
+        <div className="flex items-center justify-between">
+          <div className="font-bold">🛏 객실 배정</div>
+
+          <button
+            type="button"
+            onClick={() => setIsAssignmentCollapsed(false)}
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"
+          >
+            ✅ 객실 배정완료 · {assignedCount}명
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
