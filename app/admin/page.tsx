@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import ExchangeRateCard from "@/components/admin/ExchangeRateCard";
 
 export default async function AdminPage() {
   const now = new Date();
@@ -109,7 +110,11 @@ export default async function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="mb-6 text-3xl font-bold">📊 관리자 메인 대시보드</h1>
+      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <h1 className="text-3xl font-bold">📊 관리자 메인 대시보드</h1>
+
+        <ExchangeRateCard today={today} />
+      </div>
 
       <div className="grid gap-6">
         <div className="rounded-xl bg-white p-6 shadow">
@@ -228,12 +233,22 @@ export default async function AdminPage() {
               ))}
             </div>
           </div>
-          <div className="overflow-hidden rounded-xl shadow-sm">
+          <div className="self-center overflow-hidden rounded-xl bg-white shadow-sm">
             <img
               src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/banners/banner-cheer.png"
               alt="오늘도 웃으며 시작하는 즐거운 하루!"
-              className="w-full h-full object-cover"
+              className="h-auto w-full object-contain"
             />
+
+            <div className="px-6 py-4 text-center">
+              <div className="text-lg font-bold text-gray-800">
+                ✈️ 오늘도 좋은 여행을 만들어 갑니다.
+              </div>
+
+              <div className="mt-2 text-sm text-gray-500">
+                정확한 확인 · 빠른 대응 · 즐거운 여행
+              </div>
+            </div>
           </div>
         </div>
         <Link href="/admin/departures">
