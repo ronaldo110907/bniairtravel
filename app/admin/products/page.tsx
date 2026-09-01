@@ -143,27 +143,6 @@ export default function ProductsPage() {
                           >
                             일정
                           </Link>
-
-                          <Link
-                            href={`/admin/products/${product.id}/gallery`}
-                            className="rounded bg-gray-100 px-2 py-1 text-xs"
-                          >
-                            갤러리
-                          </Link>
-
-                          <Link
-                            href={`/admin/products/${product.id}/hotels`}
-                            className="rounded bg-gray-100 px-2 py-1 text-xs"
-                          >
-                            호텔
-                          </Link>
-
-                          <Link
-                            href={`/admin/products/${product.id}/info`}
-                            className="rounded bg-gray-100 px-2 py-1 text-xs"
-                          >
-                            상세
-                          </Link>
                         </div>
 
                         <button
