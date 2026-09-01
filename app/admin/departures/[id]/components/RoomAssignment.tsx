@@ -94,10 +94,40 @@ export default function RoomAssignment({ departureId }: Props) {
   }
 
   async function loadPeople() {
-    const { data } = await supabase
+    // 현재 출발일에 속한 예약만 조회
+    const { data: reservations, error: reservationError } = await supabase
+      .from("reservations")
+      .select("id")
+      .eq("departure_id", departureId);
+
+    if (reservationError) {
+      console.error("LOAD DEPARTURE RESERVATIONS ERROR", reservationError);
+      setPeople([]);
+      return;
+    }
+
+    const reservationIds = (reservations ?? []).map(
+      (reservation) => reservation.id,
+    );
+
+    // 현재 출발일에 예약이 없으면 예약자도 없음
+    if (reservationIds.length === 0) {
+      setPeople([]);
+      return;
+    }
+
+    // 위 예약들에 소속된 예약자만 조회
+    const { data, error } = await supabase
       .from("reservation_people")
       .select("id, reservation_id, name")
+      .in("reservation_id", reservationIds)
       .order("name");
+
+    if (error) {
+      console.error("LOAD DEPARTURE PEOPLE ERROR", error);
+      setPeople([]);
+      return;
+    }
 
     setPeople(data ?? []);
   }
@@ -136,7 +166,7 @@ export default function RoomAssignment({ departureId }: Props) {
     loadRooms();
     loadRoomMembers();
     loadPeople();
-  }, []);
+  }, [departureId]);
 
   async function deleteRoom(id: string) {
     const ok = confirm("이 객실을 삭제하시겠습니까?");
