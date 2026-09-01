@@ -17,6 +17,8 @@ function getTravelDays(course: string | null) {
   return null;
 }
 
+const TRAVEL_DOCUMENT_RETENTION_DAYS = 20;
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -187,6 +189,23 @@ export async function POST(request: Request) {
     const departureMap = new Map(
       (departures ?? []).map((departure) => [departure.id, departure]),
     );
+    // 전자입국신고서 / Q-CODE가 등록된 예약 조회
+    const { data: travelDocumentReservations, error: travelDocumentError } =
+      await supabaseAdmin
+        .from("reservations")
+        .select(
+          `
+        id,
+        departure_id,
+        entry_declaration_file,
+        qcode_file
+      `,
+        )
+        .or("entry_declaration_file.not.is.null,qcode_file.not.is.null");
+
+    if (travelDocumentError) {
+      throw travelDocumentError;
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -282,17 +301,112 @@ export async function POST(request: Request) {
         });
       }
     }
+    // ======================================================
+    // 전자입국신고서 / Q-CODE 자동 파기
+    // 기준: 출발일 + 20일
+    // ======================================================
 
+    const travelDocumentTargets = (travelDocumentReservations ?? []).filter(
+      (reservation: any) => {
+        if (!reservation.departure_id) {
+          return false;
+        }
+
+        const departure = departureMap.get(reservation.departure_id);
+
+        if (!departure?.departure_date) {
+          return false;
+        }
+
+        const departureDate = new Date(`${departure.departure_date}T00:00:00`);
+
+        const purgeDate = new Date(departureDate);
+
+        purgeDate.setDate(purgeDate.getDate() + TRAVEL_DOCUMENT_RETENTION_DAYS);
+
+        const hasTravelDocument =
+          reservation.entry_declaration_file || reservation.qcode_file;
+
+        return Boolean(hasTravelDocument && purgeDate <= today);
+      },
+    );
+
+    const travelDocumentResults = [];
+
+    for (const reservation of travelDocumentTargets) {
+      try {
+        const filesToDelete = [
+          reservation.entry_declaration_file,
+          reservation.qcode_file,
+        ].filter((file): file is string => Boolean(file));
+
+        if (filesToDelete.length > 0) {
+          const { error: storageError } = await supabaseAdmin.storage
+            .from("travel-documents")
+            .remove(filesToDelete);
+
+          if (storageError) {
+            throw new Error(
+              `여행서류 Storage 삭제 실패: ${storageError.message}`,
+            );
+          }
+        }
+
+        const { error: updateError } = await supabaseAdmin
+          .from("reservations")
+          .update({
+            entry_declaration_file: null,
+            qcode_file: null,
+          })
+          .eq("id", reservation.id);
+
+        if (updateError) {
+          throw new Error(`여행서류 DB 파기 실패: ${updateError.message}`);
+        }
+
+        travelDocumentResults.push({
+          reservationId: reservation.id,
+          success: true,
+          deletedFiles: filesToDelete.length,
+        });
+      } catch (error: any) {
+        console.error("TRAVEL DOCUMENT PURGE ERROR", reservation.id, error);
+
+        travelDocumentResults.push({
+          reservationId: reservation.id,
+          success: false,
+          error: error?.message ?? "Unknown error",
+        });
+      }
+    }
     const successCount = results.filter((result) => result.success).length;
 
     const failedCount = results.length - successCount;
 
+    const travelDocumentSuccessCount = travelDocumentResults.filter(
+      (result) => result.success,
+    ).length;
+
+    const travelDocumentFailedCount =
+      travelDocumentResults.length - travelDocumentSuccessCount;
+
     return NextResponse.json({
-      success: failedCount === 0,
-      targetCount: targets.length,
-      purgedCount: successCount,
-      failedCount,
-      results,
+      success: failedCount === 0 && travelDocumentFailedCount === 0,
+
+      passport: {
+        targetCount: targets.length,
+        purgedCount: successCount,
+        failedCount,
+        results,
+      },
+
+      travelDocuments: {
+        retentionDays: TRAVEL_DOCUMENT_RETENTION_DAYS,
+        targetCount: travelDocumentTargets.length,
+        purgedCount: travelDocumentSuccessCount,
+        failedCount: travelDocumentFailedCount,
+        results: travelDocumentResults,
+      },
     });
   } catch (error: any) {
     console.error("PASSPORT CLEANUP ERROR", error);

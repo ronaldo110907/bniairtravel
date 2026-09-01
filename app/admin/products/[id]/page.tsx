@@ -22,6 +22,10 @@ type ProductForm = {
   is_visible: boolean;
   hero_visible: boolean;
   sort: string;
+  requires_entry_declaration: boolean;
+  entry_declaration_url: string;
+  requires_qcode: boolean;
+  qcode_url: string;
 };
 
 export default function EditProductPage() {
@@ -49,6 +53,10 @@ export default function EditProductPage() {
     is_visible: true,
     hero_visible: false,
     sort: "0",
+    requires_entry_declaration: false,
+    entry_declaration_url: "",
+    requires_qcode: false,
+    qcode_url: "",
   });
 
   useEffect(() => {
@@ -85,6 +93,11 @@ export default function EditProductPage() {
         is_visible: Boolean(data.is_visible),
         hero_visible: Boolean(data.hero_visible),
         sort: String(data.sort ?? 0),
+
+        requires_entry_declaration: Boolean(data.requires_entry_declaration),
+        entry_declaration_url: data.entry_declaration_url ?? "",
+        requires_qcode: Boolean(data.requires_qcode),
+        qcode_url: data.qcode_url ?? "",
       });
 
       setLoading(false);
@@ -172,6 +185,16 @@ export default function EditProductPage() {
       return;
     }
 
+    if (form.requires_entry_declaration && !form.entry_declaration_url.trim()) {
+      alert("전자입국신고서 공식 홈페이지 주소를 입력해주세요.");
+      return;
+    }
+
+    if (form.requires_qcode && !form.qcode_url.trim()) {
+      alert("Q-CODE 공식 홈페이지 주소를 입력해주세요.");
+      return;
+    }
+
     if (uploading) {
       alert("이미지 업로드가 끝날 때까지 기다려주세요.");
       return;
@@ -202,6 +225,15 @@ export default function EditProductPage() {
         is_visible: form.is_visible,
         hero_visible: form.hero_visible,
         sort: form.sort ? Number(form.sort) : 0,
+
+        requires_entry_declaration: form.requires_entry_declaration,
+        entry_declaration_url: form.requires_entry_declaration
+          ? form.entry_declaration_url.trim()
+          : null,
+
+        requires_qcode: form.requires_qcode,
+        qcode_url: form.requires_qcode ? form.qcode_url.trim() : null,
+
         updated_at: new Date().toISOString(),
       })
       .eq("id", id);
@@ -446,6 +478,76 @@ export default function EditProductPage() {
             </div>
           </div>
 
+          <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-5">
+            <div className="mb-4">
+              <h2 className="font-bold text-gray-900">🛂 출입국 업무 설정</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                해당 상품에서 필요한 출입국 업무만 선택하세요.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <div className="rounded-xl border bg-white p-4">
+                <label className="flex items-center gap-3 font-semibold">
+                  <input
+                    type="checkbox"
+                    name="requires_entry_declaration"
+                    checked={form.requires_entry_declaration}
+                    onChange={handleChange}
+                    className="h-4 w-4"
+                  />
+                  전자입국신고서 필요
+                </label>
+
+                {form.requires_entry_declaration && (
+                  <div className="mt-4">
+                    <label className="mb-2 block text-sm font-medium text-gray-600">
+                      공식 홈페이지 주소
+                    </label>
+
+                    <input
+                      type="url"
+                      name="entry_declaration_url"
+                      value={form.entry_declaration_url}
+                      onChange={handleChange}
+                      placeholder="https://..."
+                      className="w-full rounded-lg border px-4 py-3"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-xl border bg-white p-4">
+                <label className="flex items-center gap-3 font-semibold">
+                  <input
+                    type="checkbox"
+                    name="requires_qcode"
+                    checked={form.requires_qcode}
+                    onChange={handleChange}
+                    className="h-4 w-4"
+                  />
+                  Q-CODE 필요
+                </label>
+
+                {form.requires_qcode && (
+                  <div className="mt-4">
+                    <label className="mb-2 block text-sm font-medium text-gray-600">
+                      공식 홈페이지 주소
+                    </label>
+
+                    <input
+                      type="url"
+                      name="qcode_url"
+                      value={form.qcode_url}
+                      onChange={handleChange}
+                      placeholder="https://..."
+                      className="w-full rounded-lg border px-4 py-3"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-6 rounded-xl bg-gray-50 p-5">
             <label className="flex items-center gap-3">
               <input

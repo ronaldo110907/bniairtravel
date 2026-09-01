@@ -27,6 +27,11 @@ export default function NewProductPage() {
     is_best: false,
     is_visible: true,
     sort: "0",
+
+    requires_entry_declaration: false,
+    entry_declaration_url: "",
+    requires_qcode: false,
+    qcode_url: "",
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -65,9 +70,7 @@ export default function NewProductPage() {
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from("gallery")
-        .getPublicUrl(filePath);
+      const { data } = supabase.storage.from("gallery").getPublicUrl(filePath);
 
       setForm((prev) => ({
         ...prev,
@@ -103,12 +106,95 @@ export default function NewProductPage() {
       return;
     }
 
+    if (form.requires_entry_declaration && !form.entry_declaration_url.trim()) {
+      alert("전자입국신고서 공식 홈페이지 주소를 입력해주세요.");
+      return;
+    }
+
+    if (form.requires_qcode && !form.qcode_url.trim()) {
+      alert("Q-CODE 공식 홈페이지 주소를 입력해주세요.");
+      return;
+    }
+
     if (uploading) {
       alert("이미지 업로드가 끝날 때까지 기다려주세요.");
       return;
     }
 
     setSaving(true);
+
+    <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-5">
+      <div className="mb-4">
+        <h2 className="font-bold text-gray-900">🛂 출입국 업무 설정</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          해당 상품에서 필요한 출입국 업무만 선택하세요.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        {/* 전자입국신고서 */}
+        <div className="rounded-xl border bg-white p-4">
+          <label className="flex items-center gap-3 font-semibold">
+            <input
+              type="checkbox"
+              name="requires_entry_declaration"
+              checked={form.requires_entry_declaration}
+              onChange={handleChange}
+              className="h-4 w-4"
+            />
+            전자입국신고서 필요
+          </label>
+
+          {form.requires_entry_declaration && (
+            <div className="mt-4">
+              <label className="mb-2 block text-sm font-medium text-gray-600">
+                공식 홈페이지 주소
+              </label>
+
+              <input
+                type="url"
+                name="entry_declaration_url"
+                value={form.entry_declaration_url}
+                onChange={handleChange}
+                placeholder="https://..."
+                className="w-full rounded-lg border px-4 py-3"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Q-CODE */}
+        <div className="rounded-xl border bg-white p-4">
+          <label className="flex items-center gap-3 font-semibold">
+            <input
+              type="checkbox"
+              name="requires_qcode"
+              checked={form.requires_qcode}
+              onChange={handleChange}
+              className="h-4 w-4"
+            />
+            Q-CODE 필요
+          </label>
+
+          {form.requires_qcode && (
+            <div className="mt-4">
+              <label className="mb-2 block text-sm font-medium text-gray-600">
+                공식 홈페이지 주소
+              </label>
+
+              <input
+                type="url"
+                name="qcode_url"
+                value={form.qcode_url}
+                onChange={handleChange}
+                placeholder="https://..."
+                className="w-full rounded-lg border px-4 py-3"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>;
 
     const { error } = await supabase.from("products").insert({
       slug: form.slug.trim(),
@@ -218,7 +304,9 @@ export default function NewProductPage() {
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
             <div>
-              <label className="mb-2 block text-sm font-semibold">숙박일수</label>
+              <label className="mb-2 block text-sm font-semibold">
+                숙박일수
+              </label>
               <input
                 type="number"
                 min="0"
@@ -230,7 +318,9 @@ export default function NewProductPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold">여행일수</label>
+              <label className="mb-2 block text-sm font-semibold">
+                여행일수
+              </label>
               <input
                 type="number"
                 min="1"
@@ -254,7 +344,9 @@ export default function NewProductPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold">정렬순서</label>
+              <label className="mb-2 block text-sm font-semibold">
+                정렬순서
+              </label>
               <input
                 type="number"
                 name="sort"

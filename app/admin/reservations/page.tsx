@@ -30,6 +30,12 @@ type ReservationPeople = {
 type Product = {
   id: string;
   title: string;
+
+  requires_entry_declaration?: boolean;
+  entry_declaration_url?: string | null;
+
+  requires_qcode?: boolean;
+  qcode_url?: string | null;
 };
 
 type Departure = {
@@ -65,6 +71,9 @@ type Reservation = {
 
   people?: ReservationPeople[];
   itinerary_file?: string | null;
+
+  entry_declaration_file?: string | null;
+  qcode_file?: string | null;
 };
 const STATUS_OPTIONS = ["대기", "확정", "취소"];
 const PAGE_SIZE = 20;
@@ -227,9 +236,29 @@ function ReservationsContent() {
   const [isCustomProduct, setIsCustomProduct] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
 
+  const [travelDocumentModal, setTravelDocumentModal] = useState<
+    "entry" | "qcode" | null
+  >(null);
+  const [travelDocumentUploading, setTravelDocumentUploading] = useState(false);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [departures, setDepartures] = useState<Departure[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+  const selectedProduct = useMemo(() => {
+    if (!selected) return null;
+
+    return (
+      products.find((product) => product.title === selected.product) ?? null
+    );
+  }, [selected, products]);
+
+  const activeTravelDocumentFile =
+    travelDocumentModal === "entry"
+      ? selected?.entry_declaration_file
+      : travelDocumentModal === "qcode"
+        ? selected?.qcode_file
+        : null;
 
   const [itineraryFile, setItineraryFile] = useState<File | null>(null);
 
@@ -893,6 +922,222 @@ function ReservationsContent() {
       alert("예약 목록을 불러오지 못했습니다.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function uploadTravelDocument(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file || !selected || !travelDocumentModal) {
+      event.target.value = "";
+      return;
+    }
+
+    const isImage = file.type.startsWith("image/");
+    const isPdf = file.type === "application/pdf";
+
+    if (!isImage && !isPdf) {
+      alert("이미지 또는 PDF 파일만 등록할 수 있습니다.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 30 * 1024 * 1024) {
+      alert("파일 크기는 30MB 이하만 가능합니다.");
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setTravelDocumentUploading(true);
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        alert("관리자 로그인을 다시 해주세요.");
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append("reservationId", selected.id);
+      formData.append("documentType", travelDocumentModal);
+      formData.append("file", file);
+
+      const response = await fetch("/api/admin/travel-documents", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "파일 등록에 실패했습니다.");
+      }
+
+      if (travelDocumentModal === "entry") {
+        patchReservation(selected.id, {
+          entry_declaration_file: result.path,
+        });
+      } else {
+        patchReservation(selected.id, {
+          qcode_file: result.path,
+        });
+      }
+
+      alert("파일이 등록되었습니다.");
+
+      setTravelDocumentModal(null);
+    } catch (error) {
+      console.error("TRAVEL DOCUMENT UPLOAD ERROR", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "파일 등록 중 오류가 발생했습니다.",
+      );
+    } finally {
+      setTravelDocumentUploading(false);
+      event.target.value = "";
+    }
+  }
+
+  async function viewTravelDocument(documentType: "entry" | "qcode") {
+    if (!selected) return;
+
+    // 클릭 순간 새 창을 먼저 열어둠
+    // → fetch 끝난 뒤 window.open 하면 팝업 차단될 수 있어서 이렇게 합니다.
+    const previewWindow = window.open("", "_blank");
+
+    if (!previewWindow) {
+      alert("팝업 차단을 해제해주세요.");
+      return;
+    }
+
+    previewWindow.document.write(
+      "<p style='font-family:sans-serif;padding:20px;'>파일을 불러오는 중입니다...</p>",
+    );
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        previewWindow.close();
+        alert("관리자 로그인을 다시 해주세요.");
+        return;
+      }
+
+      const params = new URLSearchParams({
+        reservationId: selected.id,
+        documentType,
+      });
+
+      const response = await fetch(
+        `/api/admin/travel-documents?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "파일을 불러오지 못했습니다.");
+      }
+
+      if (!result.url) {
+        throw new Error("파일 주소를 생성하지 못했습니다.");
+      }
+
+      previewWindow.location.href = result.url;
+    } catch (error) {
+      previewWindow.close();
+
+      console.error("TRAVEL DOCUMENT VIEW ERROR", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "파일을 불러오는 중 오류가 발생했습니다.",
+      );
+    }
+  }
+
+  async function deleteTravelDocument(documentType: "entry" | "qcode") {
+    if (!selected) return;
+
+    const documentName = documentType === "entry" ? "전자입국신고서" : "Q-CODE";
+
+    const confirmed = window.confirm(
+      `${documentName} 파일을 삭제하시겠습니까?`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        alert("관리자 로그인을 다시 해주세요.");
+        return;
+      }
+
+      const response = await fetch("/api/admin/travel-documents", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          reservationId: selected.id,
+          documentType,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "파일 삭제에 실패했습니다.");
+      }
+
+      if (documentType === "entry") {
+        patchReservation(selected.id, {
+          entry_declaration_file: null,
+        });
+      } else {
+        patchReservation(selected.id, {
+          qcode_file: null,
+        });
+      }
+
+      setTravelDocumentModal(null);
+
+      alert(`${documentName} 파일이 삭제되었습니다.`);
+    } catch (error) {
+      console.error("TRAVEL DOCUMENT DELETE ERROR", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "파일 삭제 중 오류가 발생했습니다.",
+      );
     }
   }
 
@@ -2149,20 +2394,60 @@ function ReservationsContent() {
                   </div>
                 )}
 
-                <div className="mt-5 flex gap-3">
+                <div className="mt-5 flex flex-wrap gap-3">
                   <a
                     href={`tel:${selected.phone}`}
                     className="
-                    rounded-xl
-                    bg-green-600
-                    px-5 py-3
-                    text-sm
-                    font-bold
-                    text-white
-                    "
+      rounded-xl
+      bg-green-600
+      px-5 py-3
+      text-sm
+      font-bold
+      text-white
+    "
                   >
                     📞 전화하기
                   </a>
+
+                  {selectedProduct?.requires_entry_declaration && (
+                    <button
+                      type="button"
+                      onClick={() => setTravelDocumentModal("entry")}
+                      className="
+        rounded-xl
+        bg-indigo-600
+        px-5 py-3
+        text-sm
+        font-bold
+        text-white
+        hover:bg-indigo-700
+      "
+                    >
+                      {selected.entry_declaration_file
+                        ? "🛂 전자입국신고서 보기"
+                        : "🛂 전자입국신고서 등록"}
+                    </button>
+                  )}
+
+                  {selectedProduct?.requires_qcode && (
+                    <button
+                      type="button"
+                      onClick={() => setTravelDocumentModal("qcode")}
+                      className="
+        rounded-xl
+        bg-cyan-600
+        px-5 py-3
+        text-sm
+        font-bold
+        text-white
+        hover:bg-cyan-700
+      "
+                    >
+                      {selected.qcode_file
+                        ? "🩺 Q-CODE 보기"
+                        : "🩺 Q-CODE 등록"}
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="mt-6 rounded-xl border p-5">
@@ -2748,11 +3033,140 @@ h-[50px]
           </div>
         </div>
       )}
+
+      {/* 전자입국신고서 / Q-CODE 업무창 */}
+      {travelDocumentModal && selected && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black">
+                {travelDocumentModal === "entry"
+                  ? "🛂 전자입국신고서"
+                  : "🩺 Q-CODE"}
+              </h2>
+
+              <button
+                type="button"
+                onClick={() => setTravelDocumentModal(null)}
+                className="text-xl text-gray-400 hover:text-black"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="mt-3 text-sm text-gray-500">
+              공식 홈페이지에서 작성을 완료한 뒤 결과 파일을 등록하세요.
+            </p>
+
+            <div className="mt-6 space-y-3">
+              {/* 공식 홈페이지 */}
+              <button
+                type="button"
+                onClick={() => {
+                  const url =
+                    travelDocumentModal === "entry"
+                      ? selectedProduct?.entry_declaration_url
+                      : selectedProduct?.qcode_url;
+
+                  if (!url) {
+                    alert("등록된 공식 홈페이지 주소가 없습니다.");
+                    return;
+                  }
+
+                  window.open(url, "_blank", "noopener,noreferrer");
+                }}
+                className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 font-bold text-blue-700 hover:bg-blue-100"
+              >
+                🌐 작성 홈페이지 열기 ↗
+              </button>
+
+              {activeTravelDocumentFile ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void viewTravelDocument(travelDocumentModal)}
+                    className="w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700"
+                  >
+                    📄 등록 파일 보기
+                  </button>
+
+                  <label
+                    className={`
+          block w-full cursor-pointer
+          rounded-xl bg-gray-900
+          px-4 py-3
+          text-center font-bold text-white
+          hover:bg-black
+          ${travelDocumentUploading ? "pointer-events-none opacity-50" : ""}
+        `}
+                  >
+                    {travelDocumentUploading
+                      ? "🔄 파일 변경 중..."
+                      : "🔄 파일 변경"}
+
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={(event) => void uploadTravelDocument(event)}
+                      disabled={travelDocumentUploading}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    disabled={travelDocumentUploading}
+                    onClick={() =>
+                      void deleteTravelDocument(travelDocumentModal)
+                    }
+                    className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-bold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                  >
+                    🗑 파일 삭제
+                  </button>
+                </>
+              ) : (
+                <label
+                  className={`
+        block w-full cursor-pointer
+        rounded-xl bg-gray-900
+        px-4 py-3
+        text-center font-bold text-white
+        hover:bg-black
+        ${travelDocumentUploading ? "pointer-events-none opacity-50" : ""}
+      `}
+                >
+                  {travelDocumentUploading
+                    ? "📎 파일 등록 중..."
+                    : "📎 완료 파일 등록"}
+
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={(event) => void uploadTravelDocument(event)}
+                    disabled={travelDocumentUploading}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setTravelDocumentModal(null)}
+              className="mt-4 w-full rounded-xl border px-4 py-3 font-semibold text-gray-600 hover:bg-gray-50"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+
       <InvoiceModal
         open={showInvoiceModal}
         onClose={() => setShowInvoiceModal(false)}
         reservation={selected}
       />
+
       <TravelContractModal
         open={showContractModal}
         onClose={() => setShowContractModal(false)}
