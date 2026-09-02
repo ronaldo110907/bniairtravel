@@ -299,6 +299,12 @@ export default async function AdminPage() {
               📆 출발 달력
             </Link>
             <Link
+              href="/admin/estimate"
+              className="col-span-2 rounded-lg bg-slate-700 p-4 text-center font-bold text-white hover:bg-slate-800"
+            >
+              📄 견적서 만들기
+            </Link>
+            <Link
               href="/admin/special"
               className="col-span-2 rounded-lg bg-red-600 p-4 text-center font-bold text-white"
             >
