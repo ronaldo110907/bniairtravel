@@ -17,8 +17,13 @@ export default function LoginPage() {
 
     setLoading(true);
 
+    const loginEmail =
+      email.trim().toLowerCase() === "cjjbni"
+        ? "cjjbni@cjjbni.com"
+        : email.trim();
+
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: loginEmail,
       password,
     });
 
@@ -72,8 +77,8 @@ export default function LoginPage() {
         <h1 className="mb-8 text-center text-3xl font-bold">관리자 로그인</h1>
 
         <input
-          type="email"
-          placeholder="이메일"
+          type="text"
+          placeholder="아이디 또는 이메일"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="mb-4 w-full rounded-lg border p-4"
