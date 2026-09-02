@@ -83,9 +83,30 @@ export default function Settlement({ reservations, departure }: Props) {
     Record<string, any[]>
   >({});
 
+  const [withdrawalOpenId, setWithdrawalOpenId] = useState<string | null>(null);
+
+  const [withdrawalDates, setWithdrawalDates] = useState<
+    Record<string, string>
+  >({});
+
+  const [withdrawalTypes, setWithdrawalTypes] = useState<
+    Record<string, string>
+  >({});
+
+  const [withdrawalAmounts, setWithdrawalAmounts] = useState<
+    Record<string, number>
+  >({});
+
+  const [withdrawalMemos, setWithdrawalMemos] = useState<
+    Record<string, string>
+  >({});
+
+  const [withdrawals, setWithdrawals] = useState<Record<string, any[]>>({});
+
   useEffect(() => {
     loadSettlements();
     loadPayments();
+    loadWithdrawals();
     loadSettlementFiles();
   }, [reservations]);
 
@@ -429,6 +450,110 @@ export default function Settlement({ reservations, departure }: Props) {
     }));
 
     setPaymentOpenId(null);
+  }
+
+  async function loadWithdrawals() {
+    if (reservations.length === 0) return;
+
+    const reservationIds = reservations.map((reservation) => reservation.id);
+
+    const { data, error } = await supabase
+      .from("reservation_withdrawals")
+      .select("*")
+      .in("reservation_id", reservationIds)
+      .order("withdrawal_date", { ascending: true })
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("WITHDRAWAL LOAD ERROR:", error);
+      return;
+    }
+
+    const withdrawalMap: Record<string, any[]> = {};
+
+    (data || []).forEach((withdrawal) => {
+      if (!withdrawalMap[withdrawal.reservation_id]) {
+        withdrawalMap[withdrawal.reservation_id] = [];
+      }
+
+      withdrawalMap[withdrawal.reservation_id].push(withdrawal);
+    });
+
+    setWithdrawals(withdrawalMap);
+  }
+
+  async function deleteWithdrawal(withdrawalId: number) {
+    if (!confirm("이 출금내역을 삭제하시겠습니까?")) return;
+
+    const { error } = await supabase
+      .from("reservation_withdrawals")
+      .delete()
+      .eq("id", withdrawalId);
+
+    if (error) {
+      console.error("WITHDRAWAL DELETE ERROR:", error);
+      alert("출금내역 삭제 중 오류가 발생했습니다.");
+      return;
+    }
+
+    await loadWithdrawals();
+  }
+
+  async function saveWithdrawal(reservationId: string) {
+    const withdrawalDate = withdrawalDates[reservationId];
+    const withdrawalType = withdrawalTypes[reservationId] || "항공료";
+    const amount = withdrawalAmounts[reservationId] || 0;
+    const memo = withdrawalMemos[reservationId] || "";
+
+    if (!withdrawalDate) {
+      alert("출금일을 선택해주세요.");
+      return;
+    }
+
+    if (amount <= 0) {
+      alert("출금액을 입력해주세요.");
+      return;
+    }
+
+    const { error } = await supabase.from("reservation_withdrawals").insert({
+      reservation_id: reservationId,
+      withdrawal_date: withdrawalDate,
+      withdrawal_type: withdrawalType,
+      amount,
+      memo,
+    });
+
+    if (error) {
+      console.error("WITHDRAWAL SAVE ERROR:", error);
+      alert("출금내역 저장 중 오류가 발생했습니다.");
+      return;
+    }
+
+    alert("출금내역이 저장되었습니다.");
+
+    await loadWithdrawals();
+
+    setWithdrawalDates((prev) => ({
+      ...prev,
+      [reservationId]: "",
+    }));
+
+    setWithdrawalTypes((prev) => ({
+      ...prev,
+      [reservationId]: "항공료",
+    }));
+
+    setWithdrawalAmounts((prev) => ({
+      ...prev,
+      [reservationId]: 0,
+    }));
+
+    setWithdrawalMemos((prev) => ({
+      ...prev,
+      [reservationId]: "",
+    }));
+
+    setWithdrawalOpenId(null);
   }
 
   async function toggleCompleted(reservation: any) {
@@ -904,6 +1029,188 @@ export default function Settlement({ reservations, departure }: Props) {
                               원
                             </span>
                           </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 출금내역 */}
+                  <div className="mt-6">
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="font-bold text-gray-800">
+                        💸 출금내역
+                        <span className="ml-2 text-xs font-normal text-gray-400">
+                          내부 확인용
+                        </span>
+                      </h3>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setWithdrawalOpenId(
+                            withdrawalOpenId === reservation.id
+                              ? null
+                              : reservation.id,
+                          )
+                        }
+                        className="rounded-lg bg-orange-600 px-3 py-2 text-sm font-bold text-white hover:bg-orange-700"
+                      >
+                        + 출금 추가
+                      </button>
+                    </div>
+
+                    {withdrawalOpenId === reservation.id && (
+                      <div className="mb-3 grid gap-3 rounded-xl border bg-white p-4 sm:grid-cols-4">
+                        {/* 출금일 */}
+                        <div>
+                          <div className="mb-1 text-xs text-gray-500">
+                            출금일
+                          </div>
+
+                          <input
+                            type="date"
+                            className="w-full rounded-lg border px-3 py-2"
+                            value={withdrawalDates[reservation.id] || ""}
+                            min="1900-01-01"
+                            max="9999-12-31"
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const year = value.split("-")[0];
+
+                              if (year.length > 4) return;
+
+                              setWithdrawalDates((prev) => ({
+                                ...prev,
+                                [reservation.id]: value,
+                              }));
+                            }}
+                          />
+                        </div>
+
+                        {/* 구분 */}
+                        <div>
+                          <div className="mb-1 text-xs text-gray-500">구분</div>
+
+                          <select
+                            className="w-full rounded-lg border px-3 py-2"
+                            value={withdrawalTypes[reservation.id] || "항공료"}
+                            onChange={(e) =>
+                              setWithdrawalTypes((prev) => ({
+                                ...prev,
+                                [reservation.id]: e.target.value,
+                              }))
+                            }
+                          >
+                            <option value="항공료">항공료</option>
+                            <option value="랜드비">랜드비</option>
+                            <option value="기타">기타</option>
+                          </select>
+                        </div>
+
+                        {/* 출금액 */}
+                        <div>
+                          <div className="mb-1 text-xs text-gray-500">
+                            출금액
+                          </div>
+
+                          <input
+                            type="number"
+                            placeholder="0"
+                            className="w-full rounded-lg border px-3 py-2 text-right"
+                            value={withdrawalAmounts[reservation.id] || ""}
+                            onChange={(e) =>
+                              setWithdrawalAmounts((prev) => ({
+                                ...prev,
+                                [reservation.id]: Number(e.target.value),
+                              }))
+                            }
+                          />
+                        </div>
+
+                        {/* 메모 */}
+                        <div>
+                          <div className="mb-1 text-xs text-gray-500">메모</div>
+
+                          <input
+                            type="text"
+                            placeholder="메모"
+                            className="w-full rounded-lg border px-3 py-2"
+                            value={withdrawalMemos[reservation.id] || ""}
+                            onChange={(e) =>
+                              setWithdrawalMemos((prev) => ({
+                                ...prev,
+                                [reservation.id]: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div className="flex justify-end sm:col-span-4">
+                          <button
+                            type="button"
+                            onClick={() => saveWithdrawal(reservation.id)}
+                            className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700"
+                          >
+                            출금 저장
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {(withdrawals[reservation.id]?.length || 0) === 0 ? (
+                      <div className="rounded-lg bg-gray-50 p-4 text-center text-sm text-gray-400">
+                        등록된 출금내역이 없습니다.
+                      </div>
+                    ) : (
+                      <div className="overflow-hidden rounded-lg border">
+                        {withdrawals[reservation.id].map((withdrawal) => (
+                          <div
+                            key={withdrawal.id}
+                            className="grid grid-cols-[120px_100px_1fr_1fr_60px] items-center gap-3 border-b px-4 py-3 text-sm last:border-b-0"
+                          >
+                            <div className="text-gray-500">
+                              {withdrawal.withdrawal_date}
+                            </div>
+
+                            <div className="font-semibold">
+                              {withdrawal.withdrawal_type}
+                            </div>
+
+                            <div className="text-right font-bold">
+                              {Number(withdrawal.amount).toLocaleString()}원
+                            </div>
+
+                            <div className="text-gray-500">
+                              {withdrawal.memo || "-"}
+                            </div>
+
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => deleteWithdrawal(withdrawal.id)}
+                                className="rounded-lg bg-red-600 px-3 py-1 text-sm font-bold text-white hover:bg-red-700"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        <div className="flex justify-between bg-orange-50 px-4 py-3">
+                          <span className="font-semibold text-gray-700">
+                            총 출금액
+                          </span>
+
+                          <span className="font-bold text-orange-700">
+                            {(
+                              withdrawals[reservation.id]?.reduce(
+                                (sum, withdrawal) =>
+                                  sum + Number(withdrawal.amount || 0),
+                                0,
+                              ) || 0
+                            ).toLocaleString()}
+                            원
+                          </span>
                         </div>
                       </div>
                     )}
