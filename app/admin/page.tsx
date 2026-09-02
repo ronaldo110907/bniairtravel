@@ -320,7 +320,11 @@ export default async function AdminPage() {
           <p className="mt-2 text-xs text-gray-400">
             BNI 개발팀의 실제 작전 기록 ㅋㅋㅋ
           </p>
-
+          <p className="mt-3 text-sm font-semibold text-gray-600">
+            "일이 생겨서 웹툰을 만드는 건지, 웹툰 만들려고 일이 생기는 건지"
+            <br />
+            이제 그 경계가 애매합니다. 🤣
+          </p>
           {/* 웹툰 미리보기 */}
           <div className="mx-auto mt-5 grid max-w-4xl grid-cols-5 gap-3">
             {[
