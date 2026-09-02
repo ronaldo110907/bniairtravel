@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ExchangeRateCard from "@/components/admin/ExchangeRateCard";
+import { cookies } from "next/headers";
 
 export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const adminEmail = decodeURIComponent(
+    cookieStore.get("admin_email")?.value ?? "",
+  );
+
+  const isOfficeAccount = adminEmail === "cjjbni@cjjbni.com";
   const now = new Date();
 
   const today = new Intl.DateTimeFormat("en-CA", {
@@ -348,13 +355,15 @@ export default async function AdminPage() {
             전체 개발작전일지 보기 →
           </Link>
         </div>
-        <div className="overflow-hidden rounded-xl border bg-white shadow">
-          <img
-            src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/ai5.png"
-            alt="민우 & 지원 & 수정 개발팀"
-            className="h-auto w-full object-cover"
-          />
-        </div>
+        {!isOfficeAccount && (
+          <div className="overflow-hidden rounded-xl border bg-white shadow">
+            <img
+              src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/products/ai5.png"
+              alt="민우 & 지원 & 수정 개발팀"
+              className="h-auto w-full object-cover"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

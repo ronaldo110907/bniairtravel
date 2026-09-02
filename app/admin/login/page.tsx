@@ -34,6 +34,7 @@ export default function LoginPage() {
     }
 
     document.cookie = "admin_user=true; path=/";
+    document.cookie = `admin_email=${encodeURIComponent(loginEmail)}; path=/`;
 
     setLoading(false);
     setPreparing(true);
