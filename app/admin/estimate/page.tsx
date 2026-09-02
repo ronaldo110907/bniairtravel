@@ -1167,7 +1167,7 @@ thead {
 
                   {/* 포함 / 불포함 */}
                   {(form.includes || form.excludes) && (
-                    <div className="mb-[2mm] grid grid-cols-2 gap-[2mm] text-[7.5px] leading-[1.35]">
+                    <div className="mb-[2mm] grid grid-cols-2 gap-[2mm] text-[10px] leading-[1.35]">
                       {/* 포함사항 */}
                       <div className="border border-gray-400">
                         <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
