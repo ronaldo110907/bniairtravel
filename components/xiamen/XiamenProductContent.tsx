@@ -253,6 +253,20 @@ export default function XiamenProductContent() {
                       {item.description}
                     </p>
 
+                    {/* 상세 일정 */}
+
+                    {item.schedule && (
+                      <div className="mt-6 rounded-2xl border border-[#E8DCC4] bg-[#FCFAF7] p-5">
+                        <p className="mb-3 text-sm font-bold text-[#B88A44]">
+                          상세 일정
+                        </p>
+
+                        <div className="whitespace-pre-line text-[15px] leading-7 text-gray-700">
+                          {item.schedule}
+                        </div>
+                      </div>
+                    )}
+
                     {/* 관광지 */}
 
                     {item.places && item.places.length > 0 && (

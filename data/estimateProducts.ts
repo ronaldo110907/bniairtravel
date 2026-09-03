@@ -119,18 +119,18 @@ function itineraryToDays(
         ? item.places.map((place) => `▶ ${place}`).join("\n")
         : "";
 
-    const schedule = [item.title, item.description, places]
+    const fallbackSchedule = [item.title, item.description, places]
       .filter(Boolean)
       .join("\n");
+
+    const schedule = item.schedule?.trim() || fallbackSchedule;
 
     return {
       id: `${key}-day-${index + 1}`,
 
-      // 원본 데이터에 별도 필드가 없으므로 임의로 만들지 않음
-      region: "",
-      transport: "",
-
-      time: item.duration ?? "",
+      region: item.region ?? "",
+      transport: item.transport ?? "",
+      time: item.time ?? item.duration ?? "",
       schedule,
 
       breakfast: item.meals?.breakfast ?? "",

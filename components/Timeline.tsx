@@ -259,7 +259,17 @@ export default function Timeline({
                 <p className="mt-4 leading-7 text-gray-500">
                   {item.description}
                 </p>
+                {item.schedule && (
+                  <div className="mt-6 rounded-2xl border border-[#E8DCC4] bg-[#FCFAF7] p-5">
+                    <p className="mb-3 text-sm font-bold text-[#B88A44]">
+                      상세 일정
+                    </p>
 
+                    <div className="whitespace-pre-line text-[15px] leading-7 text-gray-700">
+                      {item.schedule}
+                    </div>
+                  </div>
+                )}
                 <div className="mt-6 flex flex-wrap gap-2">
                   {item.places.map((place: string) => (
                     <span
