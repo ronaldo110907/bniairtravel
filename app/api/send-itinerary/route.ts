@@ -7,6 +7,8 @@ import {
   includes,
   excludes,
   flightInfo,
+  mealBaseUrl as zhangjiajieMealBaseUrl,
+  mealImages as zhangjiajieMealImages,
 } from "@/data/zhangjiajie";
 
 import {
@@ -16,6 +18,8 @@ import {
   hotels as baekduHotels,
   includes as baekduIncludes,
   excludes as baekduExcludes,
+  mealBaseUrl as baekduMealBaseUrl,
+  mealImages as baekduMealImages,
 } from "@/data/baekdu";
 
 import {
@@ -76,6 +80,108 @@ import {
 } from "@/data/xiamen";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const zhangjiajieHotelBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/zhangjiajie/";
+const baekduHotelBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/baekdu/";
+
+type EmailMeals = {
+  breakfast?: string;
+  lunch?: string;
+  dinner?: string;
+};
+
+function renderMealImages(
+  meals: EmailMeals | undefined,
+  baseUrl?: string,
+  images?: Record<string, string>,
+) {
+  if (!meals || !baseUrl || !images) return "";
+
+  const mealItems = [
+    { label: "조식", name: meals.breakfast },
+    { label: "중식", name: meals.lunch },
+    { label: "석식", name: meals.dinner },
+  ].flatMap(({ label, name }) => {
+    const imageFile = name ? images[name] : undefined;
+
+    if (!name || !imageFile) return [];
+
+    return [
+      {
+        label,
+        name,
+        image: imageFile.startsWith("http")
+          ? imageFile
+          : `${baseUrl}${imageFile}`,
+      },
+    ];
+  });
+
+  if (mealItems.length === 0) return "";
+
+  return `
+    <table
+      role="presentation"
+      align="center"
+      width="${mealItems.length * 220}"
+      cellpadding="0"
+      cellspacing="0"
+      style="
+        max-width: 100%;
+        margin: 0 auto 16px;
+        table-layout: fixed;
+        border-collapse: collapse;
+      "
+    >
+      <tr>
+        ${mealItems
+          .map(
+            (meal) => `
+              <td
+                width="220"
+                valign="top"
+                style="
+                  padding: 4px;
+                  vertical-align: top;
+                "
+              >
+                <img
+                  src="${meal.image}"
+                  alt="${meal.name}"
+                  width="210"
+                  style="
+                    display: block;
+                    width: 100%;
+                    max-width: 210px;
+                    height: 150px;
+                    margin: 0 auto;
+                    border: 0;
+                    border-radius: 8px;
+                    object-fit: cover;
+                  "
+                />
+
+                <div
+                  style="
+                    margin-top: 6px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    line-height: 1.4;
+                    text-align: center;
+                    color: #4b5563;
+                  "
+                >
+                  ${meal.label} · ${meal.name}
+                </div>
+              </td>
+            `,
+          )
+          .join("")}
+      </tr>
+    </table>
+  `;
+}
 
 export async function POST(request: Request) {
   try {
@@ -102,7 +208,12 @@ export async function POST(request: Request) {
         poster:
           "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie.png",
         flightInfo,
-        hotels,
+        hotels: hotels.map((hotel) => ({
+          ...hotel,
+          image: hotel.image.startsWith("http")
+            ? hotel.image
+            : `${zhangjiajieHotelBaseUrl}${hotel.image}`,
+        })),
         includes,
         excludes,
         itinerary3: itinerary3N4D,
@@ -114,7 +225,12 @@ export async function POST(request: Request) {
         poster:
           "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/baekdu.png",
         flightInfo: baekduFlightInfo,
-        hotels: baekduHotels,
+        hotels: baekduHotels.map((hotel) => ({
+          ...hotel,
+          image: hotel.image.startsWith("http")
+            ? hotel.image
+            : `${baekduHotelBaseUrl}${hotel.image}`,
+        })),
         includes: baekduIncludes,
         excludes: baekduExcludes,
         itinerary3: baekduItinerary3N4D,
@@ -307,6 +423,19 @@ export async function POST(request: Request) {
     const isGuilin = product === "guilin";
     const isXiamen = product === "xiamen";
 
+    const mealImageConfig =
+      product === "zhangjiajie"
+        ? {
+            baseUrl: zhangjiajieMealBaseUrl,
+            images: zhangjiajieMealImages,
+          }
+        : product === "baekdu"
+          ? {
+              baseUrl: baekduMealBaseUrl,
+              images: baekduMealImages,
+            }
+          : undefined;
+
     const displayCourse = isPhuquoc
       ? "3박5일"
       : isGuilin
@@ -387,6 +516,7 @@ export async function POST(request: Request) {
     </div>
   </div>
 `;
+
     type EmailItineraryItem = (typeof itinerary)[number] & {
       spotImages?: {
         name: string;
@@ -503,6 +633,12 @@ export async function POST(request: Request) {
             `
             : ""
         }
+        
+                ${renderMealImages(
+                  item.meals,
+                  mealImageConfig?.baseUrl,
+                  mealImageConfig?.images,
+                )}
 
         <table
           style="
@@ -651,7 +787,10 @@ export async function POST(request: Request) {
           ${hotel.grade}
         </div>
                 ${
-                  hotel.image || hotel.roomImage
+                  (isXiamen ||
+                    product === "zhangjiajie" ||
+                    product === "baekdu") &&
+                  (hotel.image || hotel.roomImage)
                     ? `
               <table
                 role="presentation"
@@ -677,16 +816,21 @@ export async function POST(request: Request) {
                             vertical-align: top;
                           "
                         >
-                          <img
+                                                    <img
                             src="${hotel.image}"
                             alt="${hotel.name} 전경"
                             style="
                               display: block;
                               width: 100%;
-                              height: 200px;
+                              height: ${hotel.roomImage ? "200px" : "300px"};
+                              margin: 0 auto;
                               border: 0;
                               border-radius: 10px;
-                              object-fit: cover;
+                              background-color: #f8fafc;
+                              object-fit: ${
+                                hotel.roomImage ? "cover" : "contain"
+                              };
+                              object-position: center;
                             "
                           />
 
