@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { estimateProducts } from "@/data/estimateProducts";
 
@@ -34,6 +34,42 @@ export default function EstimatePage() {
   const estimateRef = useRef<HTMLDivElement>(null);
 
   const [showPreview, setShowPreview] = useState(false);
+
+  const previewHistoryPushedRef = useRef(false);
+
+  useEffect(() => {
+    if (!showPreview) return;
+
+    const handleBack = () => {
+      previewHistoryPushedRef.current = false;
+      setShowPreview(false);
+    };
+
+    window.addEventListener("popstate", handleBack);
+
+    if (!previewHistoryPushedRef.current) {
+      window.history.pushState(
+        { estimatePreview: true },
+        "",
+        window.location.href,
+      );
+
+      previewHistoryPushedRef.current = true;
+    }
+
+    return () => {
+      window.removeEventListener("popstate", handleBack);
+    };
+  }, [showPreview]);
+
+  function closePreview() {
+    if (previewHistoryPushedRef.current) {
+      window.history.back();
+      return;
+    }
+
+    setShowPreview(false);
+  }
 
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedStay, setSelectedStay] = useState("");
@@ -173,6 +209,9 @@ export default function EstimatePage() {
     contentRef: estimateRef,
 
     documentTitle: `BNI_견적서_${form.productName || "Estimate"}`,
+    onAfterPrint: () => {
+      closePreview();
+    },
 
     pageStyle: `
     @page {
@@ -844,14 +883,17 @@ thead {
                           지역
                         </label>
 
-                        <input
-                          type="text"
+                        <textarea
                           value={day.region}
                           onChange={(e) =>
                             updateDay(day.id, "region", e.target.value)
                           }
-                          placeholder="예: 연길 / 용정 / 이도백하"
-                          className="w-full rounded-lg border bg-white px-3 py-3"
+                          placeholder={`예:
+연길
+용정
+이도백하`}
+                          rows={3}
+                          className="min-h-[96px] w-full resize-y whitespace-pre-wrap rounded-lg border bg-white px-3 py-3 leading-6"
                         />
                       </div>
 
@@ -860,14 +902,16 @@ thead {
                           교통
                         </label>
 
-                        <input
-                          type="text"
+                        <textarea
                           value={day.transport}
                           onChange={(e) =>
                             updateDay(day.id, "transport", e.target.value)
                           }
-                          placeholder="예: 전용버스 / 항공"
-                          className="w-full rounded-lg border bg-white px-3 py-3"
+                          placeholder={`예:
+전용버스
+항공`}
+                          rows={3}
+                          className="min-h-[96px] w-full resize-y whitespace-pre-wrap rounded-lg border bg-white px-3 py-3 leading-6"
                         />
                       </div>
 
@@ -876,14 +920,16 @@ thead {
                           시간
                         </label>
 
-                        <input
-                          type="text"
+                        <textarea
                           value={day.time}
                           onChange={(e) =>
                             updateDay(day.id, "time", e.target.value)
                           }
-                          placeholder="예: 전일 / 10:30"
-                          className="w-full rounded-lg border bg-white px-3 py-3"
+                          placeholder={`예:
+10:30
+전일`}
+                          rows={3}
+                          className="min-h-[96px] w-full resize-y whitespace-pre-wrap rounded-lg border bg-white px-3 py-3 leading-6"
                         />
                       </div>
                     </div>
@@ -1013,10 +1059,10 @@ thead {
 
                   <button
                     type="button"
-                    onClick={() => setShowPreview(false)}
+                    onClick={closePreview}
                     className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-gray-800 shadow-lg"
                   >
-                    ✕ 미리보기 닫기
+                    ✕ 내용 수정하기
                   </button>
                 </div>
 
@@ -1240,8 +1286,12 @@ thead {
                             지역
                           </th>
 
-                          <th className="w-[16mm] border border-gray-500 px-[1mm] py-[1mm]">
-                            교통/시간
+                          <th className="w-[17mm] border border-gray-500 px-[1mm] py-[1mm]">
+                            교통
+                          </th>
+
+                          <th className="w-[15mm] border border-gray-500 px-[1mm] py-[1mm]">
+                            시간
                           </th>
 
                           <th className="border border-gray-500 px-[1mm] py-[1mm]">
@@ -1270,19 +1320,18 @@ thead {
                               </td>
 
                               {/* 지역 */}
-                              <td className="w-[15mm] whitespace-pre-line border border-gray-400 px-[1mm] py-[1.2mm] align-top">
+                              <td className="w-[15mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
                                 {day.region || "-"}
                               </td>
 
-                              {/* 교통 / 시간 */}
-                              <td className="w-[16mm] border border-gray-400 px-[1mm] py-[1.2mm] align-top">
-                                {day.transport && <div>{day.transport}</div>}
+                              {/* 교통 */}
+                              <td className="w-[17mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
+                                {day.transport || "-"}
+                              </td>
 
-                                {day.time && (
-                                  <div className="mt-[0.5mm]">{day.time}</div>
-                                )}
-
-                                {!day.transport && !day.time && "-"}
+                              {/* 시간 */}
+                              <td className="w-[15mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
+                                {day.time || "-"}
                               </td>
 
                               {/* 상세일정 */}
@@ -1324,7 +1373,7 @@ thead {
                             {day.hotel && (
                               <tr>
                                 <td
-                                  colSpan={4}
+                                  colSpan={5}
                                   className="border border-gray-400 bg-gray-50 px-[2mm] py-[1.2mm]"
                                 >
                                   <span className="mr-[2mm] font-bold">
