@@ -57,7 +57,9 @@ export interface Hotel {
 export const mealBaseUrl =
   "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/meals/guilin/";
 
-export const mealImages: Record<string, string> = {
+export const mealImages: Record<string, string> = {};
+{
+  /*
   호텔식: "breakfast.jpg",
   현지식: "local.png",
   "이강폭포 딤섬특식": "gimseo.png",
@@ -72,6 +74,8 @@ export const mealImages: Record<string, string> = {
   "연어 회정식": "salmon.png",
   해물전골: "seafood-hotpot.png",
 };
+  */
+}
 
 export const flightInfo = {
   outbound: {

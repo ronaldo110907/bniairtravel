@@ -623,8 +623,8 @@ export async function POST(request: Request) {
             line-height: 1.7;
           "
         >
-                    <strong>주요 관광지</strong><br />
-        $${item.places?.join(" · ") ?? "-----"}
+                              <strong>주요 관광지</strong><br />
+          ${item.places?.join(" · ") ?? "-----"}
         </div>
 
         ${
@@ -661,9 +661,12 @@ export async function POST(request: Request) {
                               display: block;
                               width: 100%;
                               height: 180px;
+                              margin: 0 auto;
                               border: 0;
                               border-radius: 8px;
-                              object-fit: cover;
+                              background-color: #f8fafc;
+                              object-fit: contain;
+                              object-position: center;
                             "
                           />
 
@@ -861,7 +864,7 @@ export async function POST(request: Request) {
                   border-collapse: collapse;
                 "
               >
-                <tr>
+                                <tr>
                   ${
                     hotel.image
                       ? `
@@ -873,20 +876,18 @@ export async function POST(request: Request) {
                             vertical-align: top;
                           "
                         >
-                                                    <img
+                          <img
                             src="${hotel.image}"
                             alt="${hotel.name} 전경"
                             style="
                               display: block;
                               width: 100%;
-                              height: ${hotel.roomImage ? "200px" : "300px"};
+                              height: 300px;
                               margin: 0 auto;
                               border: 0;
                               border-radius: 10px;
                               background-color: #f8fafc;
-                              object-fit: ${
-                                hotel.roomImage ? "cover" : "contain"
-                              };
+                              object-fit: contain;
                               object-position: center;
                             "
                           />
@@ -914,7 +915,7 @@ export async function POST(request: Request) {
                           valign="top"
                           style="
                             padding: 4px;
-                            vertical-align: top;
+                            vertical-align-align: top;
                           "
                         >
                           <img
@@ -923,10 +924,13 @@ export async function POST(request: Request) {
                             style="
                               display: block;
                               width: 100%;
-                              height: 200px;
+                              height: 300px;
+                              margin: 0 auto;
                               border: 0;
                               border-radius: 10px;
-                              object-fit: cover;
+                              background-color: #f8fafc;
+                              object-fit: contain;
+                              object-position: center;
                             "
                           />
 
