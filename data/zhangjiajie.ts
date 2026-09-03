@@ -10,14 +10,12 @@ export interface Departure {
   status: DepartureStatus;
 }
 
-
 export interface Shopping {
   id: number;
   title: string;
   image: string;
   desc: string;
 }
-
 
 export interface Review {
   id: number;
@@ -27,7 +25,6 @@ export interface Review {
   rating: number;
   text: string;
 }
-
 
 export interface FAQ {
   id: number;
@@ -186,7 +183,8 @@ export const faqs: FAQ[] = [
   {
     id: 3,
     question: "환전은 얼마나 해야 하나요?",
-    answer: "개인경비와 선택사항을 고려하여 위안화를 준비하시는 것을 권장합니다.",
+    answer:
+      "개인경비와 선택사항을 고려하여 위안화를 준비하시는 것을 권장합니다.",
   },
   {
     id: 4,
@@ -202,14 +200,17 @@ export const faqs: FAQ[] = [
     id: 6,
     question: "여행지 날씨는 어디에서 확인할 수 있나요?",
     answer: "출발 전 최신 날씨는 아래 사이트에서 확인하실 수 있습니다.",
-    link: "https://www.windy.com/29.118/110.474?28.521,110.474,8"
+    link: "https://www.windy.com/29.118/110.474?28.521,110.474,8",
   },
 ];
 
 export const includes: IncludedItem[] = [
   { id: 1, text: "왕복 항공권,유류할증료 및 공항세" },
   { id: 2, text: "전 일정 호텔(2인 1실)" },
-  { id: 3, text: "특식5회(오리모듬,버섯샤브샤브,소고기특식,삼겹살무제한,누룽지닭백숙)" },
+  {
+    id: 3,
+    text: "특식5회(오리모듬,버섯샤브샤브,소고기특식,삼겹살무제한,누룽지닭백숙)",
+  },
   { id: 4, text: "전용 차량(리무진)&한국어 가이드&기사/가이드팁" },
   { id: 5, text: "천자산, 보봉호(VIP+유람선),황룡동굴(VIP), " },
   { id: 6, text: "천문산(귀곡잔도+천문산사+유리잔도)" },
@@ -220,7 +221,7 @@ export const includes: IncludedItem[] = [
 export const excludes: IncludedItem[] = [
   { id: 1, text: "개인경비 및 매너팁" },
   { id: 2, text: "일정 외 선택 관광" },
-];  
+];
 
 export const hotels: Hotel[] = [
   {
@@ -247,20 +248,24 @@ export const hotels: Hotel[] = [
 ];
 
 export interface ItineraryItem {
-    day: string;
-    icon: string;
-    title: string;
-    description: string;
-    image: string;
-    places: string[];
-    duration: string;
-    meals: {
+  day: string;
+  icon: string;
+  title: string;
+  description: string;
+  region?: string;
+  transport?: string;
+  time?: string;
+  schedule?: string;
+  image: string;
+  places: string[];
+  duration: string;
+  meals: {
     breakfast: string;
     lunch: string;
     dinner: string;
   };
-    hotel: string;
-  };
+  hotel: string;
+}
 
 export const itinerary4N5D: ItineraryItem[] = [
   {
@@ -269,6 +274,21 @@ export const itinerary4N5D: ItineraryItem[] = [
     title: "청주공항 출발 · 장가계 도착",
     description:
       "청주공항 출발 후 장가계에 도착하여 칠성산 관광과 호텔 체크인을 진행합니다.",
+    region: `청주
+장가계`,
+
+    transport: `ZE751
+전용차량`,
+
+    time: `08:30
+11:00
+13:30`,
+
+    schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사미팅 데스크 미팅
+청주 국제공항 출발 (약 3시간 10분 소요) - 이스타항공 탑승
+장가계 공항 도착 후 가이드 미팅
+▶ 장가계의 새로운 랜드마크 관광지 칠성산(케이블카+유리전망대+잔도)
+석식 후 호텔 투숙 및 휴식`,
     image: "/images/zhangjiajie/7sungsan.jpg",
     places: ["청주공항", "장가계공항", "칠성산", "유리전망대", "잔도"],
     duration: "약 6~7시간",
@@ -285,6 +305,18 @@ export const itinerary4N5D: ItineraryItem[] = [
     title: "황룡동굴 · 대협곡",
     description:
       "황룡동굴을 둘러보고 대협곡 유리다리, 트레킹, 유람선 코스를 체험합니다.",
+    region: `장가계`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 중국 10대 용암동굴 중 하나로 총길이 7.5KM인 황룡동굴(VIP)
+▶ 수직높이 400m, 69개의 폭포로 구성된 대협곡 관광
+▶ 대협곡 B코스(유리다리 편도+대협곡 편도+유람선)
+▶ 여행의 피로를 풀어주는 중국 전통 발+전신마사지 체험(90분)-팁 별도
+석식 후 호텔 투숙 및 휴식`,
     image: "/images/zhangjiajie/detail-3.jpg",
     places: ["황룡동굴", "대협곡 유리다리", "트레킹", "유람선"],
     duration: "전일 관광",
@@ -301,8 +333,34 @@ export const itinerary4N5D: ItineraryItem[] = [
     title: "천자산 · 원가계",
     description:
       "천자산 케이블카와 백룡엘리베이터를 이용해 원가계의 대표 절경을 감상합니다.",
+    region: `장가계`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 산세가 높아 기이하고 수려한 천자산 등정(케이블카 편도)
+- 봉우리가 마치 붓을 꽂아 놓은 듯한 어필봉
+- 중국의 10대 원수 하룡장군의 동상이 있는 하룡공원
+- 봉우리의 모양이 마치 선녀와 같은 선녀헌화
+- 수천 개의 봉우리가 바다를 이루는 서해운무
+▶ 천하제일의 경관을 자랑하는 원가계로 이동
+- 아찔한 절벽을 연결하는 자연교각 천하제일교
+- 아름다운 절경에 정신을 잃는다는 미혼대
+▶ 세계 최고의 높이 338M 백룡엘리베이터 하산
+▶ 백장협 차창 관광
+▶ 그림 같은 절경이 십리(十里)나 펼쳐져 있는 십리화랑(모노레일)
+석식 후 호텔 투숙 및 휴식`,
     image: "/images/zhangjiajie/chunjasan.jpg",
-    places: ["천자산", "원가계", "백룡엘리베이터", "천하제일교", "미혼대", "십리화랑"],
+    places: [
+      "천자산",
+      "원가계",
+      "백룡엘리베이터",
+      "천하제일교",
+      "미혼대",
+      "십리화랑",
+    ],
     duration: "전일 관광",
     meals: {
       breakfast: "호텔식",
@@ -317,8 +375,29 @@ export const itinerary4N5D: ItineraryItem[] = [
     title: "보봉호수 · 천문산 · 천문호선쇼",
     description:
       "보봉호수와 천문산 핵심 코스를 둘러보고 저녁에는 천문호선쇼를 관람합니다.",
+    region: `장가계`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 반자연, 반인공의 거대한 호수 보봉호 유람(VIP코스)
+▶ 장가계의 혼 천문산+천문동(케이블카 상행-엘리베이터-케이블카 하행)
+▶ 귀곡잔도+천문산사+유리잔도+리프트
+▶ 여우선녀와 나무꾼의 애틋한 사랑 이야기 [천문호선쇼]
+▶ 장가계 최고의 야경 스팟 72기루(외부 관광)
+석식 후 호텔 투숙 및 휴식`,
     image: "/images/zhangjiajie/detail-2.jpg",
-    places: ["보봉호수", "천문산", "천문동", "귀곡잔도", "유리잔도", "천문호선쇼", "72기루"],
+    places: [
+      "보봉호수",
+      "천문산",
+      "천문동",
+      "귀곡잔도",
+      "유리잔도",
+      "천문호선쇼",
+      "72기루",
+    ],
     duration: "전일 관광",
     meals: {
       breakfast: "호텔식",
@@ -333,6 +412,20 @@ export const itinerary4N5D: ItineraryItem[] = [
     title: "군성사석화 · 청주공항 도착",
     description:
       "군성사석화 관람 후 장가계공항으로 이동하여 청주행 항공편에 탑승합니다.",
+    region: `장가계
+청주`,
+
+    transport: `전용차량
+ZE752`,
+
+    time: `오전
+14:30
+18:30`,
+
+    schedule: `호텔 조식 후
+▶ 30년간 특수접착제를 발라 돌가루로 그린 그림 군성사석화 관광
+장가계 국제공항 출발 - 이스타항공 탑승
+청주 국제공항 도착 후 해산`,
     image: "/images/zhangjiajie/gunsung.jpg",
     places: ["군성사석화", "장가계공항", "청주공항"],
     duration: "약 5~6시간",
@@ -342,71 +435,151 @@ export const itinerary4N5D: ItineraryItem[] = [
       dinner: "-----",
     },
     hotel: "해당 없음",
-    },
-  ];  
+  },
+];
 export const itinerary3N4D: ItineraryItem[] = [
-    {
-      day: "DAY 1",
-      icon: "✈️",
-      title: "청주공항 출발 · 장가계 도착",
-      description:
-        "청주공항 출발 후 장가계에 도착하여 대협곡 유리다리 코스를 관광합니다.",
-      image: "/images/zhangjiajie/detail-3.jpg",
-      places: ["청주공항", "장가계공항", "대협곡", "유리다리"],
-      duration: "약 6~7시간",
-      meals: {
-        breakfast: "-----",
-        lunch: "김밥+생수",
-        dinner: "오리모듬",
-      },
-      hotel: "화천국제호텔 또는 동급",
+  {
+    day: "DAY 1",
+    icon: "✈️",
+    title: "청주공항 출발 · 장가계 도착",
+    description:
+      "청주공항 출발 후 장가계에 도착하여 대협곡 유리다리 코스를 관광합니다.",
+    region: `청주
+장가계`,
+
+    transport: `ZE751
+전용차량`,
+
+    time: `08:30
+11:00
+13:30`,
+
+    schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사미팅 데스크 미팅
+청주 국제공항 출발 (약 3시간 10분 소요) - 이스타항공 탑승
+장가계 공항 도착 후 가이드 미팅
+▶ 수직높이 400m, 69개의 폭포로 구성된 대협곡 관광
+▶ 대협곡 B코스(유리다리 편도+대협곡 편도+유람선)
+석식 후 호텔 투숙 및 휴식`,
+    image: "/images/zhangjiajie/detail-3.jpg",
+    places: ["청주공항", "장가계공항", "대협곡", "유리다리"],
+    duration: "약 6~7시간",
+    meals: {
+      breakfast: "-----",
+      lunch: "김밥+생수",
+      dinner: "오리모듬",
     },
-    {
-      day: "DAY 2",
-      icon: "🏔️",
-      title: "황룡동굴 · 천자산 · 원가계",
-      description:
-        "황룡동굴과 천자산, 원가계 핵심 절경을 하루 동안 집중적으로 둘러봅니다.",
-      image: "/images/zhangjiajie/chunjasan.jpg",
-      places: ["황룡동굴", "천자산", "원가계", "천하제일교", "미혼대", "백룡엘리베이터", "십리화랑", "72기루"],
-      duration: "전일 관광",
-      meals: {
-        breakfast: "호텔식",
-        lunch: "산채비빔밥",
-        dinner: "삼겹살 무제한",
-      },
-      hotel: "화천국제호텔 또는 동급",
+    hotel: "화천국제호텔 또는 동급",
+  },
+  {
+    day: "DAY 2",
+    icon: "🏔️",
+    title: "황룡동굴 · 천자산 · 원가계",
+    description:
+      "황룡동굴과 천자산, 원가계 핵심 절경을 하루 동안 집중적으로 둘러봅니다.",
+    region: `장가계`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 중국 10대 용암동굴 중 하나로 총길이 7.5KM인 황룡동굴(VIP)
+▶ 산세가 높아 기이하고 수려한 천자산 등정(케이블카 편도)
+- 봉우리가 마치 붓을 꽂아 놓은 듯한 어필봉
+- 중국의 10대 원수 하룡장군의 동상이 있는 하룡공원
+- 봉우리의 모양이 마치 선녀와 같은 선녀헌화
+- 수천 개의 봉우리가 바다를 이루는 서해운무
+▶ 천하제일의 경관을 자랑하는 원가계로 이동
+- 아찔한 절벽을 연결하는 자연교각 천하제일교
+- 아름다운 절경에 정신을 잃는다는 미혼대
+▶ 세계 최고의 높이 338M 백룡엘리베이터 하산
+▶ 백장협 차창 관광
+▶ 그림 같은 절경이 십리(十里)나 펼쳐져 있는 십리화랑(모노레일)
+▶ 여행의 피로를 풀어주는 중국 전통 발+전신마사지 체험(90분)-팁 별도
+▶ 장가계 최고의 야경 스팟 72기루(외부 관광)
+석식 후 호텔 투숙 및 휴식`,
+    image: "/images/zhangjiajie/chunjasan.jpg",
+    places: [
+      "황룡동굴",
+      "천자산",
+      "원가계",
+      "천하제일교",
+      "미혼대",
+      "백룡엘리베이터",
+      "십리화랑",
+      "72기루",
+    ],
+    duration: "전일 관광",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "산채비빔밥",
+      dinner: "삼겹살 무제한",
     },
-    {
-      day: "DAY 3",
-      icon: "🌄",
-      title: "보봉호수 · 천문산 · 천문호선쇼",
-      description:
-        "보봉호수 VIP 코스와 천문산 핵심 코스를 관광하고 천문호선쇼를 관람합니다.",
-      image: "/images/zhangjiajie/detail-2.jpg",
-      places: ["보봉호수", "천문산", "귀곡잔도", "유리잔도", "천문동", "천문호선쇼"],
-      duration: "전일 관광",
-      meals: {
-        breakfast: "호텔식",
-        lunch: "소고기 특식",
-        dinner: "누룽지 닭백숙",
-      },
-      hotel: "화천국제호텔 또는 동급",
+    hotel: "화천국제호텔 또는 동급",
+  },
+  {
+    day: "DAY 3",
+    icon: "🌄",
+    title: "보봉호수 · 천문산 · 천문호선쇼",
+    description:
+      "보봉호수 VIP 코스와 천문산 핵심 코스를 관광하고 천문호선쇼를 관람합니다.",
+    region: `장가계`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 반자연, 반인공의 거대한 호수 보봉호 유람(VIP코스)
+▶ 장가계의 혼 천문산+천문동(케이블카 상행-엘리베이터-케이블카 하행)
+▶ 귀곡잔도+천문산사+유리잔도+리프트
+▶ 여우선녀와 나무꾼의 애틋한 사랑 이야기 [천문호선쇼]
+석식 후 호텔 투숙 및 휴식`,
+    image: "/images/zhangjiajie/detail-2.jpg",
+    places: [
+      "보봉호수",
+      "천문산",
+      "귀곡잔도",
+      "유리잔도",
+      "천문동",
+      "천문호선쇼",
+    ],
+    duration: "전일 관광",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "소고기 특식",
+      dinner: "누룽지 닭백숙",
     },
-    {
-      day: "DAY 4",
-      icon: "🛬",
-      title: "군성사석화 · 청주공항 도착",
-      description:
-        "군성사석화 관람 후 장가계공항으로 이동하여 청주행 항공편에 탑승합니다.",
-      image: "/images/zhangjiajie/gunsung.jpg",
-      places: ["군성사석화", "장가계공항", "청주공항"],
-      duration: "약 5~6시간",
-      meals: {
-        breakfast: "호텔식",
-        lunch: "버섯 샤브샤브",
-        dinner: "-----",
-      },
-      hotel: "해당 없음",
+    hotel: "화천국제호텔 또는 동급",
+  },
+  {
+    day: "DAY 4",
+    icon: "🛬",
+    title: "군성사석화 · 청주공항 도착",
+    description:
+      "군성사석화 관람 후 장가계공항으로 이동하여 청주행 항공편에 탑승합니다.",
+    region: `장가계
+청주`,
+
+    transport: `전용차량
+ZE752`,
+
+    time: `오전
+14:30
+18:30`,
+
+    schedule: `호텔 조식 후
+▶ 30년간 특수접착제를 발라 돌가루로 그린 그림 군성사석화 관광
+장가계 국제공항 출발 - 이스타항공 탑승
+청주 국제공항 도착 후 해산`,
+    image: "/images/zhangjiajie/gunsung.jpg",
+    places: ["군성사석화", "장가계공항", "청주공항"],
+    duration: "약 5~6시간",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "버섯 샤브샤브",
+      dinner: "-----",
     },
-];  
+    hotel: "해당 없음",
+  },
+];

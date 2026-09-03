@@ -307,6 +307,10 @@ export interface ItineraryItem {
   icon: string;
   title: string;
   description: string;
+  region?: string;
+  transport?: string;
+  time?: string;
+  schedule?: string;
   image: string;
   imagePosition?: string;
   spotImages?: {
@@ -330,6 +334,22 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
     title: "청주공항 출발 · 계림공항 도착",
     description:
       "청주공항에서 티웨이항공 TW9613편으로 출발하여 계림공항 도착 후 가이드 미팅, 호텔 투숙 및 휴식합니다.",
+    region: `청주
+계림`,
+
+    transport: `TW9613
+전용차량`,
+
+    time: `20:00
+22:00
+00:45
+(+1)`,
+
+    schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅데스크 미팅
+청주 국제공항 출발
+계림 국제공항 도착 (한국보다 1시간 늦은 시차)
+가이드 미팅 후 전용차량 탑승
+호텔 체크인 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/GuilinAirport.jpg",
     imagePosition: "center 70%",
@@ -349,6 +369,20 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
     title: "요산 · 산수간쇼 · 상비산 · 노적암동굴 · 마사지",
     description:
       "계림 시내를 한눈에 볼 수 있는 요산을 케이블카로 관광하고, 계림의 산수와 문화를 환상적으로 표현한 산수간쇼를 관람합니다. 코끼리가 물을마시는듯한 형상을 한 상비산과 천연 종유석 동굴인 노적암동굴을 둘러본 후 발&전신마사지 90분 체험을 합니다.",
+    region: `계림`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 코끼리가 물을 마시는 형상의 경관 상비산
+▶ 비단이 켜켜이 포개진 형태의 첩채산 조망
+▶ 계림 시내를 한눈에 볼 수 있는 요산(케이블카)
+▶ 계림의 산수와 문화를 환상적으로 표현한 산수간쇼
+▶ 계림 서북쪽의 천연 종유석 동굴 노적암동굴
+▶ 발+전신마사지 90분(팁 별도)
+호텔 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yosan.jpg",
     imagePosition: "center 70%",
@@ -385,6 +419,21 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
     title: "이강유람 · 여의봉 · 서가시장 · 인상유삼저",
     description:
       "호텔 조식 후 양삭으로 이동하여 계림산수의 하이라이트인 유람선을 탑승합니다. 여의봉 케이블카와 잔도·출렁다리·드론영상 체험을 즐긴 후 서가시장에서 자유시간을 가진 뒤 인상유삼저 공연을 관람합니다.",
+    region: `계림
+양삭`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 양삭으로 이동
+▶ 계림산수의 하이라이트 이강유람선(호화 4성급 / 1시간 기준)
+▶ 양삭여행의 최고봉 여의봉
+- 여의봉(케이블카+유리잔도) 등정 및 드론영상 포함
+▶ 중국과 서양이 만나 이국적인 풍경을 이루는 서가재래시장
+▶ 장예모 감독이 연출한 인상유삼저(VIP) 관람
+※ 기상악화 시 천고정쇼로 대체
+석식 후 호텔 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
     imagePosition: "center 70%",
@@ -422,6 +471,23 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
       "세외도원 · 상공산 · 월량산 · 동서향 정양가 보행거리 · 양강사호 유람선",
     description:
       "호텔 조식 후 각 민족의 풍습과 전통을 볼수 있는 세외도원에서 뗏목투어를 합니다. 이후 상공산 전망대에 올라 계림 산수의 절경을 또한번 감사합니다. 계림시내로 이동하여 보행자 거리와 양강사호 야간유람선을 탑승한 후 공항으로 이동합니다.",
+    region: `양삭
+계림`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 각 민족의 풍습과 수공예품을 볼 수 있는 세외도원(뱃놀이)
+▶ 계림 이강의 절경을 볼 수 있는 상공산 전망대
+▶ 양삭의 백미 양삭 십리화랑(차창 관광)
+▶ 천년 묵은 대용수(차창 관광)
+▶ 초승달 모양의 월량산(차창 관광)
+계림으로 이동
+▶ 계림의 명동으로 불리는 동서향·정양가보행거리
+▶ 삼호의 금탑과 은탑의 환상적인 야경을 감상하는 양강사호유람
+공항으로 이동 후 국제선 탑승 수속`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
     imagePosition: "center 70%",
@@ -458,6 +524,16 @@ export const itineraryGuilin3N5D: ItineraryItem[] = [
     title: "계림공항 출발 · 청주공항 도착",
     description:
       "계림공항에서 티웨이항공 TW9614편으로 출발하여 청주공항 도착 후 일정을 마칩니다.",
+    region: `계림
+청주`,
+
+    transport: `TW9614`,
+
+    time: `02:00
+06:15`,
+
+    schedule: `계림 국제공항 출발
+청주 국제공항 도착`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/phuquoc/cjj.jpg",
     imagePosition: "center 70%",
@@ -479,6 +555,22 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
     title: "청주공항 출발 · 계림공항 도착",
     description:
       "청주 국제공항에서 티웨이항공 TW9613편으로 출발하여 계림 국제공항 도착 후 가이드 미팅, 호텔 투숙 및 휴식합니다.",
+    region: `청주
+계림`,
+
+    transport: `TW9613
+전용차량`,
+
+    time: `20:00
+22:00
+00:45
+(+1)`,
+
+    schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅데스크 미팅
+청주 국제공항 출발
+계림 국제공항 도착 (한국보다 1시간 늦은 시차)
+가이드 미팅 후 전용차량 탑승
+호텔 체크인 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/GuilinAirport.jpg",
     imagePosition: "center 70%",
@@ -498,6 +590,20 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
     title: "상비산 · 요산 · 산수간쇼 · 노적암동굴 · 발&전신마사지 90분",
     description:
       "코끼리가 물을 마시는 형상을 한 상비산과 계림 시내를 한눈에 볼 수 있는 요산을 케이블카로 관광하고, 계림의 산수와 문화를 표현한 산수간쇼를 관람합니다. 이후 천연 종유석 동굴인 노적암동굴을 관람 후 발&전신마사지 체험후 호텔로 이동합니다.",
+    region: `계림`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 코끼리가 물을 마시는 형상의 경관 상비산
+▶ 비단이 켜켜이 포개진 형태의 첩채산 조망
+▶ 계림 시내를 한눈에 볼 수 있는 요산(케이블카)
+▶ 계림의 산수와 문화를 환상적으로 표현한 산수간쇼
+▶ 계림 서북쪽의 천연 종유석 동굴 노적암동굴
+▶ 발+전신마사지 90분(팁 별도)
+호텔 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yosan.jpg",
     imagePosition: "center 70%",
@@ -534,6 +640,18 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
     title: "용승 · 용척제전 · 칠성반일 · 온천욕",
     description:
       "용승으로 이동하여 다랭이논으로 유명한 용척제전을 둘러본 후 케이블카를 탑승하여 칠성반일 전망대로 올라갑니다. 호텔 체크인 후 온천욕을 즐깁니다.",
+    region: `계림
+용승`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 용승으로 이동(약 2시간 소요)
+▶ 다랭이논으로 유명한 용척제전(셔틀버스)
+▶ 온천욕 체험
+※ 수영복 또는 래시가드 필수 지참 / 대여 불가
+석식 후 호텔 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/qisungbanil.jpg",
     imagePosition: "center 70%",
@@ -570,6 +688,21 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
     title: "이강유람 · 여의봉 · 서가시장 · 인상유삼저",
     description:
       "호텔 조식 후 양삭으로 이동하여 계림산수의 하이라이트인 유람선을 탑승합니다. 여의봉 케이블카와 잔도·출렁다리·드론영상 체험을 즐긴 후 서가시장에서 자유시간을 가진 뒤 인상유삼저 공연을 관람합니다.",
+    region: `용승
+양삭`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 계림산수의 하이라이트 이강유람선(호화 4성급 / 1시간 기준)
+▶ 양삭여행의 최고봉 여의봉
+- 여의봉(케이블카+유리잔도) 등정 및 드론영상 포함
+▶ 중국과 서양이 만나 이국적인 풍경을 이루는 서가재래시장
+▶ 장예모 감독이 연출한 인상유삼저(VIP) 관람
+※ 기상악화 시 천고정쇼로 대체
+석식 후 호텔 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/lijiang.jpg",
     imagePosition: "center 70%",
@@ -607,6 +740,23 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
       "세외도원 · 상공산 · 월량산 · 동서향 정양가 보행거리 · 양강사호 유람선",
     description:
       "호텔 조식 후 각 민족의 풍습과 전통을 볼수 있는 세외도원에서 뗏목투어를 합니다. 이후 상공산 전망대에 올라 계림 산수의 절경을 또한번 감사합니다. 계림시내로 이동하여 보행자 거리와 양강사호 야간유람선을 탑승한 후 공항으로 이동합니다.",
+    region: `양삭
+계림`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 각 민족의 풍습과 수공예품을 볼 수 있는 세외도원(뱃놀이)
+▶ 계림 이강의 절경을 볼 수 있는 상공산 전망대
+▶ 양삭의 백미 양삭 십리화랑(차창 관광)
+▶ 천년 묵은 대용수(차창 관광)
+▶ 초승달 모양의 월량산(차창 관광)
+계림으로 이동
+▶ 계림의 명동으로 불리는 동서향·정양가보행거리
+▶ 삼호의 금탑과 은탑의 환상적인 야경을 감상하는 양강사호유람
+공항으로 이동 후 국제선 탑승 수속`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/sewoi.jpg",
     imagePosition: "center 70%",
@@ -643,6 +793,16 @@ export const itineraryGuilin4N6D: ItineraryItem[] = [
     title: "계림공항 출발 · 청주공항 도착",
     description:
       "계림 국제공항에서 티웨이항공 TW9614편으로 출발하여 청주 국제공항 도착 후 일정을 마칩니다.",
+    region: `계림
+청주`,
+
+    transport: `TW9614`,
+
+    time: `02:00
+06:15`,
+
+    schedule: `계림 국제공항 출발
+청주 국제공항 도착`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/GuilinAirport.jpg",
     imagePosition: "center 70%",
@@ -821,6 +981,22 @@ export const itineraryChenzhou4N6D: ItineraryItem[] = [
     title: "청주공항 출발 · 계림공항 도착",
     description:
       "청주공항에서 티웨이항공 TW9613편으로 출발하여 계림공항 도착 후 가이드 미팅, 호텔 투숙 및 휴식합니다.",
+    region: `청주
+계림`,
+
+    transport: `TW9613
+전용차량`,
+
+    time: `20:00
+22:30
+01:30
+(+1)`,
+
+    schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅데스크 미팅
+청주 국제공항 출발
+계림 국제공항 도착 (한국보다 1시간 늦은 시차)
+가이드 미팅 후 전용차량 탑승
+호텔 체크인 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/GuilinAirport.jpg",
     imagePosition: "center 70%",
@@ -840,6 +1016,18 @@ export const itineraryChenzhou4N6D: ItineraryItem[] = [
     title: "천저우 · 소선령 · 마황구 대협곡 · 비천산",
     description:
       "호텔 조식 후 천저우로 이동하여 천저우 시내를 내려다볼 수 있는 소선령을 케이블카로 관광합니다. 이동 중 마황구대협곡을 차창으로 관광하고, 절경이 장강삼협과 비견되는 비천산을 유람선으로 관광합니다.",
+    region: `계림
+천저우`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 천저우로 이동(약 4시간 소요)
+▶ 천저우 시내와 남산사를 볼 수 있는 소선령(케이블카)
+▶ 이동 중 마황구대협곡 차창 관광
+▶ 절경이 장강삼협과 비견되고 장례문화를 볼 수 있는 비천산(유람선)
+호텔 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/gaoyiling.jpg",
     imagePosition: "center 70%",
@@ -882,6 +1070,21 @@ export const itineraryChenzhou4N6D: ItineraryItem[] = [
     title: "망산 · 오지봉 · 유후가거리",
     description:
       "호텔 조식 후 망산으로 이동하여 절경의 운해를 감상할 수 있는 망산 오지봉을 관광합니다. 오지봉 케이블카와 전망대, 에스컬레이터, 주요 협곡과 봉우리 등을 둘러보고 하산합니다. 이후 천저우를 대표하는 야경 명소 유후가거리에서 자유시간을 갖습니다.",
+    region: `천저우
+망산
+천저우`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 망산으로 이동(약 2시간 20분 소요)
+▶ 절경의 운해를 감상할 수 있는 망산투어 오지봉(케이블카) 등정
+▶ 코스: 전망대-에스컬레이터-도경지-팔괘대-오지봉관망대-안심대-협곡식당폭포-도해관음-후루와-성삭-미천령(엘리베이터)-금편대협곡-금편신주-불광대-칠성애-소천대(엘리베이터)-케이블카 하산
+천저우로 이동(약 2시간 20분 소요)
+▶ 발+전신마사지 90분(팁 별도)
+▶ 천저우를 대표하는 야경 명소 유후가거리 야경
+석식 후 호텔 투숙 및 휴식`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/mangsan.JPG",
     imagePosition: "center 70%",
@@ -929,6 +1132,22 @@ export const itineraryChenzhou4N6D: ItineraryItem[] = [
     title: "소동강 · 동강호 · 도솔영암 · 고의령",
     description:
       "호텔 조식 후 소동강으로 이동하여 안개가 모여드는 맑고 청명한 소동강을 셔틀버스와 도보로 관광합니다. 아름다운 동강호 풍경구를 유람선으로 둘러보고, 웅장하고 화려한 동굴 도솔영암과 절묘하고 아찔한 단하지모 경관의 고의령 풍경구를 관광합니다.",
+    region: `천저우
+소동강
+고의령
+천저우`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 소동강으로 이동(약 40분 소요)
+▶ 안개가 모여드는 맑고 청명한 강 소동강(셔틀버스+도보)
+▶ 아름다운 동강호 풍경구 유람(유람선 포함)
+▶ 웅장하고 화려한 동굴 도솔영암+용경협곡
+▶ 높은 의자 같은 거대한 언덕 고의령 풍경구
+천저우로 이동(약 1시간 30분 소요)
+호텔 투숙 및 휴식`,
     image: "/images/guilin/chenzhou4-day4.jpg",
     imagePosition: "center 70%",
     places: [
@@ -953,6 +1172,20 @@ export const itineraryChenzhou4N6D: ItineraryItem[] = [
     title: "계림 · 산수간쇼 · 우산공원 · 일월쌍탑 · 동서항 · 양강사호",
     description:
       "호텔 조식 후 계림으로 이동하여 계림의 산수와 문화를 환상적으로 표현한 산수간쇼를 관람합니다. 아름다운 꽃과 조경을 감상할 수 있는 우산공원과 계림의 상징인 일월쌍탑을 관광하고, 계림의 명동으로 불리는 동서항 정양보행가를 둘러봅니다. 이후 양강사호 야간유람을 즐긴 뒤 공항으로 이동합니다.",
+    region: `천저우
+계림`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 계림으로 이동(약 4시간 소요)
+▶ 계림의 산수와 문화를 환상적으로 표현한 산수간쇼
+▶ 계림의 아름다움과 꽃, 조경을 감상할 수 있는 우산공원
+▶ 삼호의 상징인 아름다운 탑 일월쌍탑
+▶ 계림의 명동으로 불리는 동서향·정양가보행거리
+▶ 삼호의 금탑과 은탑의 환상적인 야경을 감상하는 양강사호유람
+공항으로 이동 후 국제선 탑승 수속`,
     image: "/images/guilin/chenzhou4-day5.jpg",
     imagePosition: "center 70%",
     places: [
@@ -989,6 +1222,16 @@ export const itineraryChenzhou4N6D: ItineraryItem[] = [
     title: "계림공항 출발 · 청주공항 도착",
     description:
       "계림공항에서 티웨이항공 TW9614편으로 출발하여 청주공항 도착 후 일정을 마칩니다.",
+    region: `계림
+청주`,
+
+    transport: `TW9614`,
+
+    time: `02:00
+06:15`,
+
+    schedule: `계림 국제공항 출발
+청주 국제공항 도착`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/GuilinAirport.jpg",
     imagePosition: "center 70%",
