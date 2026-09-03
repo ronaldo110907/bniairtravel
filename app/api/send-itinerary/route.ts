@@ -40,6 +40,8 @@ import {
   excludesQuality as phuquocExcludesQuality,
   excludesValue as phuquocExcludesValue,
   excludesGolf as phuquocExcludesGolf,
+  mealBaseUrl as phuquocMealBaseUrl,
+  mealImages as phuquocMealImages,
 } from "@/data/phuquoc";
 
 import {
@@ -53,6 +55,8 @@ import {
   excludesGuilin as guilinExcludes,
   includesChenzhou as chenzhouIncludes,
   excludesChenzhou as chenzhouExcludes,
+  mealBaseUrl as guilinMealBaseUrl,
+  mealImages as guilinMealImages,
 } from "@/data/guilin";
 
 import {
@@ -85,11 +89,35 @@ const zhangjiajieHotelBaseUrl =
 const baekduHotelBaseUrl =
   "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/baekdu/";
 
+const phuquocHotelBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/phuquoc/";
+const guilinHotelBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/guilin/";
+
 type EmailMeals = {
   breakfast?: string;
   lunch?: string;
   dinner?: string;
 };
+
+function resolveHotelImageUrls<
+  T extends {
+    image: string;
+    roomImage?: string;
+  },
+>(hotels: T[], baseUrl: string) {
+  return hotels.map((hotel) => ({
+    ...hotel,
+    image: hotel.image.startsWith("http")
+      ? hotel.image
+      : `${baseUrl}${hotel.image}`,
+    roomImage: hotel.roomImage
+      ? hotel.roomImage.startsWith("http")
+        ? hotel.roomImage
+        : `${baseUrl}${hotel.roomImage}`
+      : undefined,
+  }));
+}
 
 function renderMealImages(
   meals: EmailMeals | undefined,
@@ -202,6 +230,11 @@ export async function POST(request: Request) {
     console.log("GUILIN COURSE:", guilinCourse);
     console.log("XIAMEN COURSE:", xiamenCourse);
 
+    const guilinEmailHotels = resolveHotelImageUrls(
+      guilinHotels,
+      guilinHotelBaseUrl,
+    );
+
     const productData = {
       zhangjiajie: {
         name: "장가계",
@@ -248,7 +281,10 @@ export async function POST(request: Request) {
           premium: {
             name: "고품격",
             itinerary: phuquocItineraryPremium,
-            hotels: phuquocHotelsPremium,
+            hotels: resolveHotelImageUrls(
+              phuquocHotelsPremium,
+              phuquocHotelBaseUrl,
+            ),
             includes: phuquocIncludesPremium,
             excludes: phuquocExcludesPremium,
           },
@@ -256,7 +292,10 @@ export async function POST(request: Request) {
           quality: {
             name: "품격",
             itinerary: phuquocItineraryQuality,
-            hotels: phuquocHotelsQuality,
+            hotels: resolveHotelImageUrls(
+              phuquocHotelsQuality,
+              phuquocHotelBaseUrl,
+            ),
             includes: phuquocIncludesQuality,
             excludes: phuquocExcludesQuality,
           },
@@ -264,7 +303,10 @@ export async function POST(request: Request) {
           value: {
             name: "실속",
             itinerary: phuquocItineraryValue,
-            hotels: phuquocHotelsValue,
+            hotels: resolveHotelImageUrls(
+              phuquocHotelsValue,
+              phuquocHotelBaseUrl,
+            ),
             includes: phuquocIncludesValue,
             excludes: phuquocExcludesValue,
           },
@@ -272,7 +314,10 @@ export async function POST(request: Request) {
           golf: {
             name: "골프",
             itinerary: phuquocItineraryGolf,
-            hotels: phuquocHotelsGolf,
+            hotels: resolveHotelImageUrls(
+              phuquocHotelsGolf,
+              phuquocHotelBaseUrl,
+            ),
             includes: phuquocIncludesGolf,
             excludes: phuquocExcludesGolf,
           },
@@ -289,7 +334,7 @@ export async function POST(request: Request) {
           guilin3N5D: {
             name: "계림 3박5일",
             itinerary: guilinItinerary3N5D,
-            hotels: guilinHotels,
+            hotels: guilinEmailHotels,
             includes: guilinIncludes,
             excludes: guilinExcludes,
           },
@@ -297,7 +342,7 @@ export async function POST(request: Request) {
           guilin4N6D: {
             name: "계림 4박6일",
             itinerary: guilinItinerary4N6D,
-            hotels: guilinHotels,
+            hotels: guilinEmailHotels,
             includes: guilinIncludes,
             excludes: guilinExcludes,
           },
@@ -305,7 +350,7 @@ export async function POST(request: Request) {
           chenzhou3N5D: {
             name: "천저우 3박5일",
             itinerary: chenzhouItinerary3N5D,
-            hotels: guilinHotels,
+            hotels: guilinEmailHotels,
             includes: chenzhouIncludes,
             excludes: chenzhouExcludes,
           },
@@ -313,7 +358,7 @@ export async function POST(request: Request) {
           chenzhou4N6D: {
             name: "천저우 4박6일",
             itinerary: chenzhouItinerary4N6D,
-            hotels: guilinHotels,
+            hotels: guilinEmailHotels,
             includes: chenzhouIncludes,
             excludes: chenzhouExcludes,
           },
@@ -434,7 +479,17 @@ export async function POST(request: Request) {
               baseUrl: baekduMealBaseUrl,
               images: baekduMealImages,
             }
-          : undefined;
+          : product === "phuquoc"
+            ? {
+                baseUrl: phuquocMealBaseUrl,
+                images: phuquocMealImages,
+              }
+            : product === "guilin"
+              ? {
+                  baseUrl: guilinMealBaseUrl,
+                  images: guilinMealImages,
+                }
+              : undefined;
 
     const displayCourse = isPhuquoc
       ? "3박5일"
@@ -573,7 +628,7 @@ export async function POST(request: Request) {
         </div>
 
         ${
-          isXiamen && item.spotImages?.length
+          (isXiamen || isPhuquoc || isGuilin) && item.spotImages?.length
             ? `
               <table
                 role="presentation"
@@ -788,6 +843,8 @@ export async function POST(request: Request) {
         </div>
                 ${
                   (isXiamen ||
+                    isPhuquoc ||
+                    isGuilin ||
                     product === "zhangjiajie" ||
                     product === "baekdu") &&
                   (hotel.image || hotel.roomImage)

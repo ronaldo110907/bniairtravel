@@ -958,6 +958,18 @@ export const itineraryChenzhou4N6D: ItineraryItem[] = [
       "동서항 정양보행가",
       "양강사호 야간유람",
     ],
+    spotImages: [
+      {
+        name: "산수간쇼",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/shanshuijian.jpg",
+      },
+      {
+        name: "양강사호 유람",
+        image:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/guilin/yangjiang.JPG",
+      },
+    ],
     duration: "전일 관광 후 공항 이동",
     meals: {
       breakfast: "호텔식",
