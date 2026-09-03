@@ -71,6 +71,8 @@ import {
   excludesGolf3 as xiamenExcludesGolf3,
   includesGolf4 as xiamenIncludesGolf4,
   excludesGolf4 as xiamenExcludesGolf4,
+  xiamenHotels,
+  wuyishanHotels as xiamenWuyishanHotels,
 } from "@/data/xiamen";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -212,6 +214,7 @@ export async function POST(request: Request) {
           value3: {
             name: "실속 3박5일",
             itinerary: xiamenItineraryValue3N5D,
+            hotels: xiamenHotels,
             includes: xiamenIncludesValue3,
             excludes: xiamenExcludesValue3,
           },
@@ -219,6 +222,7 @@ export async function POST(request: Request) {
           premium3: {
             name: "고품격 3박5일",
             itinerary: xiamenItineraryPremium3N5D,
+            hotels: xiamenHotels,
             includes: xiamenIncludesPremium3,
             excludes: xiamenExcludesPremium3,
           },
@@ -226,6 +230,7 @@ export async function POST(request: Request) {
           premium4: {
             name: "고품격 4박6일",
             itinerary: xiamenItineraryPremium4N6D,
+            hotels: xiamenHotels,
             includes: xiamenIncludesPremium4,
             excludes: xiamenExcludesPremium4,
           },
@@ -233,6 +238,7 @@ export async function POST(request: Request) {
           wuyishan4: {
             name: "무이산 4박6일",
             itinerary: xiamenItineraryWuyishan4N6D,
+            hotels: xiamenWuyishanHotels,
             includes: xiamenIncludesWuyishan4,
             excludes: xiamenExcludesWuyishan4,
           },
@@ -240,6 +246,7 @@ export async function POST(request: Request) {
           golf3: {
             name: "골프 3박5일",
             itinerary: xiamenItineraryGolf3N5D,
+            hotels: xiamenHotels,
             includes: xiamenIncludesGolf3,
             excludes: xiamenExcludesGolf3,
           },
@@ -247,6 +254,7 @@ export async function POST(request: Request) {
           golf4: {
             name: "골프 4박6일",
             itinerary: xiamenItineraryGolf4N6D,
+            hotels: xiamenHotels,
             includes: xiamenIncludesGolf4,
             excludes: xiamenExcludesGolf4,
           },
@@ -379,7 +387,16 @@ export async function POST(request: Request) {
     </div>
   </div>
 `;
-    const itineraryHtml = itinerary
+    type EmailItineraryItem = (typeof itinerary)[number] & {
+      spotImages?: {
+        name: string;
+        image: string;
+      }[];
+    };
+
+    const emailItinerary = itinerary as EmailItineraryItem[];
+
+    const itineraryHtml = emailItinerary
       .map(
         (item) => `
       <div
@@ -402,16 +419,6 @@ export async function POST(request: Request) {
           ${item.day}
         </div>
 
-        <h3
-          style="
-            margin: 0 0 12px;
-            font-size: 20px;
-            color: #111827;
-          "
-        >
-          ${item.icon} ${item.title}
-        </h3>
-
         <p
           style="
             margin: 0 0 18px;
@@ -431,9 +438,71 @@ export async function POST(request: Request) {
             line-height: 1.7;
           "
         >
-          <strong>주요 관광지</strong><br />
-          $${item.places?.join(" · ") ?? "-----"}
+                    <strong>주요 관광지</strong><br />
+        $${item.places?.join(" · ") ?? "-----"}
         </div>
+
+        ${
+          isXiamen && item.spotImages?.length
+            ? `
+              <table
+                role="presentation"
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  width: 100%;
+                  margin: 0 0 16px;
+                  table-layout: fixed;
+                  border-collapse: collapse;
+                "
+              >
+                <tr>
+                  ${item.spotImages
+                    .map(
+                      (spot) => `
+                        <td
+                          width="${Math.floor(100 / item.spotImages!.length)}%"
+                          valign="top"
+                          style="
+                            padding: 4px;
+                            vertical-align: top;
+                          "
+                        >
+                          <img
+                            src="${spot.image}"
+                            alt="${spot.name}"
+                            style="
+                              display: block;
+                              width: 100%;
+                              height: 180px;
+                              border: 0;
+                              border-radius: 8px;
+                              object-fit: cover;
+                            "
+                          />
+
+                          <div
+                            style="
+                              margin-top: 6px;
+                              font-size: 12px;
+                              font-weight: 700;
+                              line-height: 1.4;
+                              text-align: center;
+                              color: #4b5563;
+                            "
+                          >
+                            ${spot.name}
+                          </div>
+                        </td>
+                      `,
+                    )
+                    .join("")}
+                </tr>
+              </table>
+            `
+            : ""
+        }
 
         <table
           style="
@@ -535,16 +604,25 @@ export async function POST(request: Request) {
       )
       .join("");
 
-    const hotelsHtml = isXiamen
-      ? ""
-      : (isPhuquoc
-          ? selectedPhuquocCourse.hotels
-          : isGuilin
-            ? selectedGuilinCourse.hotels
-            : selectedProduct.hotels
-        )
-          .map(
-            (hotel) => `
+    const selectedHotels = isPhuquoc
+      ? selectedPhuquocCourse.hotels
+      : isGuilin
+        ? selectedGuilinCourse.hotels
+        : isXiamen
+          ? selectedXiamenCourse.hotels
+          : selectedProduct.hotels;
+
+    type EmailHotel = {
+      name: string;
+      grade?: string;
+      desc?: string;
+      image?: string;
+      roomImage?: string;
+    };
+
+    const hotelsHtml = (selectedHotels as EmailHotel[])
+      .map(
+        (hotel) => `
       <div
         style="
           margin-bottom: 12px;
@@ -572,7 +650,104 @@ export async function POST(request: Request) {
         >
           ${hotel.grade}
         </div>
+                ${
+                  hotel.image || hotel.roomImage
+                    ? `
+              <table
+                role="presentation"
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  width: 100%;
+                  margin-top: 14px;
+                  table-layout: fixed;
+                  border-collapse: collapse;
+                "
+              >
+                <tr>
+                  ${
+                    hotel.image
+                      ? `
+                        <td
+                          width="${hotel.roomImage ? "50%" : "100%"}"
+                          valign="top"
+                          style="
+                            padding: 4px;
+                            vertical-align: top;
+                          "
+                        >
+                          <img
+                            src="${hotel.image}"
+                            alt="${hotel.name} 전경"
+                            style="
+                              display: block;
+                              width: 100%;
+                              height: 200px;
+                              border: 0;
+                              border-radius: 10px;
+                              object-fit: cover;
+                            "
+                          />
 
+                          <div
+                            style="
+                              margin-top: 6px;
+                              font-size: 12px;
+                              text-align: center;
+                              color: #6b7280;
+                            "
+                          >
+                            호텔 전경
+                          </div>
+                        </td>
+                      `
+                      : ""
+                  }
+
+                  ${
+                    hotel.roomImage
+                      ? `
+                        <td
+                          width="${hotel.image ? "50%" : "100%"}"
+                          valign="top"
+                          style="
+                            padding: 4px;
+                            vertical-align: top;
+                          "
+                        >
+                          <img
+                            src="${hotel.roomImage}"
+                            alt="${hotel.name} 객실"
+                            style="
+                              display: block;
+                              width: 100%;
+                              height: 200px;
+                              border: 0;
+                              border-radius: 10px;
+                              object-fit: cover;
+                            "
+                          />
+
+                          <div
+                            style="
+                              margin-top: 6px;
+                              font-size: 12px;
+                              text-align: center;
+                              color: #6b7280;
+                            "
+                          >
+                            객실
+                          </div>
+                        </td>
+                      `
+                      : ""
+                  }
+                </tr>
+              </table>
+            `
+                    : ""
+                }
         <div
           style="
             margin-top: 8px;
@@ -584,8 +759,8 @@ export async function POST(request: Request) {
         </div>
       </div>
     `,
-          )
-          .join("");
+      )
+      .join("");
 
     const includesHtml = (
       isPhuquoc
@@ -842,14 +1017,8 @@ export async function POST(request: Request) {
 
 ${itineraryHtml}
 
-${
-  isXiamen
-    ? ""
-    : `
-      <h2 style="margin-top: 40px;">이용 예정 호텔</h2>
-      ${hotelsHtml}
-    `
-}
+<h2 style="margin-top: 40px;">이용 예정 호텔</h2>
+${hotelsHtml}
 
 <h2 style="margin-top: 40px;">포함사항</h2>
 
