@@ -31,6 +31,37 @@ import {
   wuyishanHotels,
 } from "@/data/xiamen";
 
+const golfBaseUrl =
+  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/golf/";
+
+const golfImageMap: Record<
+  string,
+  {
+    courseGuide?: string;
+    photos?: string[];
+  }
+> = {
+  "남태무 CC": {
+    courseGuide: `${golfBaseUrl}namtaemu.png`,
+    photos: [`${golfBaseUrl}namtaemu1.png`],
+  },
+
+  "동방 골프장": {
+    courseGuide: `${golfBaseUrl}dongbang.png`,
+    photos: [`${golfBaseUrl}dongbang1.jpg`],
+  },
+
+  "해서 골프장": {
+    courseGuide: `${golfBaseUrl}haeseo.png`,
+    photos: [`${golfBaseUrl}haeseo1.jpg`, `${golfBaseUrl}haeseo2.jpg`],
+  },
+
+  "천주 골프장": {
+    courseGuide: `${golfBaseUrl}cheonju.png`,
+    photos: [`${golfBaseUrl}cheonju1.jpg`],
+  },
+};
+
 const itineraryMap: Record<XiamenProductType, ItineraryItem[]> = {
   value3: itineraryValue3N5D,
   premium3: itineraryPremium3N5D,
@@ -60,6 +91,8 @@ const excludesMap: Record<XiamenProductType, { id: number; text: string }[]> = {
 
 export default function XiamenProductContent() {
   const [activeType, setActiveType] = useState<XiamenProductType>("value3");
+
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const itinerary = itineraryMap[activeType];
 
@@ -185,167 +218,243 @@ export default function XiamenProductContent() {
           <div className="absolute left-10 top-0 hidden h-full w-[2px] bg-[#E8DCC4] md:block" />
 
           <div className="space-y-8 md:space-y-12">
-            {itinerary.map((item) => (
-              <article
-                key={`${activeType}-${item.day}`}
-                className="group relative flex gap-5 md:gap-8"
-              >
-                {/* DAY 아이콘 */}
+            {itinerary.map((item) => {
+              const golfKey = item.places?.find((place) => {
+                return (
+                  place.includes("남태무") ||
+                  place.includes("동방") ||
+                  place.includes("해서") ||
+                  place.includes("천주")
+                );
+              });
 
-                <div className="relative z-10 hidden h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-[#F6F1E8] bg-[#C8A15A] text-3xl shadow-lg transition duration-300 group-hover:scale-110 md:flex">
-                  {item.icon}
-                </div>
+              const golfImages = golfKey?.includes("남태무")
+                ? golfImageMap["남태무 CC"]
+                : golfKey?.includes("동방")
+                  ? golfImageMap["동방 골프장"]
+                  : golfKey?.includes("해서")
+                    ? golfImageMap["해서 골프장"]
+                    : golfKey?.includes("천주")
+                      ? golfImageMap["천주 골프장"]
+                      : undefined;
 
-                {/* 일정 카드 */}
+              const golfPlace = golfKey;
 
-                <div className="min-w-0 flex-1 overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white shadow-sm transition duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
-                  {/* 이미지가 생기면 자동 노출 */}
+              return (
+                <article
+                  key={`${activeType}-${item.day}`}
+                  className="group relative flex gap-5 md:gap-8"
+                >
+                  {/* DAY 아이콘 */}
 
-                  {item.image && (
-                    <div className="relative h-[240px] overflow-hidden md:h-[320px]">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                        style={{
-                          objectPosition: item.imagePosition || "center",
-                        }}
-                      />
+                  <div className="relative z-10 hidden h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-[#F6F1E8] bg-[#C8A15A] text-3xl shadow-lg transition duration-300 group-hover:scale-110 md:flex">
+                    {item.icon}
+                  </div>
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  {/* 일정 카드 */}
 
-                      <div className="absolute bottom-5 left-5 text-4xl">
-                        {item.icon}
-                      </div>
-                    </div>
-                  )}
+                  <div className="min-w-0 flex-1 overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white shadow-sm transition duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
+                    {/* 이미지가 생기면 자동 노출 */}
 
-                  <div className="p-6 md:p-8">
-                    {/* DAY */}
+                    {item.image && (
+                      <div className="relative h-[240px] overflow-hidden md:h-[320px]">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                          style={{
+                            objectPosition: item.imagePosition || "center",
+                          }}
+                        />
 
-                    <div className="mb-4 flex flex-wrap items-center gap-3">
-                      <span className="rounded-full bg-[#F6F1E8] px-4 py-2 text-sm font-bold text-[#B88A44]">
-                        {item.day}
-                      </span>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-                      {item.duration && (
-                        <span className="text-sm font-medium text-gray-400">
-                          {item.duration}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* 제목 */}
-
-                    <div className="flex items-center gap-3">
-                      {!item.image && (
-                        <span className="text-3xl">{item.icon}</span>
-                      )}
-
-                      <h3 className="text-xl font-bold leading-snug text-[#1f1f1f] md:text-2xl">
-                        {item.title}
-                      </h3>
-                    </div>
-
-                    {/* 설명 */}
-
-                    <p className="mt-5 whitespace-pre-line leading-8 text-gray-500">
-                      {item.description}
-                    </p>
-
-                    {/* 상세 일정 */}
-
-                    {item.schedule && (
-                      <div className="mt-6 rounded-2xl border border-[#E8DCC4] bg-[#FCFAF7] p-5">
-                        <p className="mb-3 text-sm font-bold text-[#B88A44]">
-                          상세 일정
-                        </p>
-
-                        <div className="whitespace-pre-line text-[15px] leading-7 text-gray-700">
-                          {item.schedule}
+                        <div className="absolute bottom-5 left-5 text-4xl">
+                          {item.icon}
                         </div>
                       </div>
                     )}
 
-                    {/* 관광지 */}
+                    <div className="p-6 md:p-8">
+                      {/* DAY */}
 
-                    {item.places && item.places.length > 0 && (
-                      <div className="mt-7">
-                        <p className="mb-3 text-sm font-bold text-[#B88A44]">
-                          주요 일정
-                        </p>
+                      <div className="mb-4 flex flex-wrap items-center gap-3">
+                        <span className="rounded-full bg-[#F6F1E8] px-4 py-2 text-sm font-bold text-[#B88A44]">
+                          {item.day}
+                        </span>
 
-                        <div className="flex flex-wrap gap-2">
-                          {item.places.map((place) => (
-                            <span
-                              key={place}
-                              className="rounded-full border border-[#E8DCC4] bg-[#FAF8F4] px-4 py-2 text-sm font-medium text-gray-600"
+                        {item.duration && (
+                          <span className="text-sm font-medium text-gray-400">
+                            {item.duration}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* 제목 */}
+
+                      <div className="flex items-center gap-3">
+                        {!item.image && (
+                          <span className="text-3xl">{item.icon}</span>
+                        )}
+
+                        <h3 className="text-xl font-bold leading-snug text-[#1f1f1f] md:text-2xl">
+                          {item.title}
+                        </h3>
+                      </div>
+
+                      {/* 설명 */}
+
+                      <p className="mt-5 whitespace-pre-line leading-8 text-gray-500">
+                        {item.description}
+                      </p>
+
+                      {/* 상세 일정 */}
+
+                      {item.schedule && (
+                        <div className="mt-6 rounded-2xl border border-[#E8DCC4] bg-[#FCFAF7] p-5">
+                          <p className="mb-3 text-sm font-bold text-[#B88A44]">
+                            상세 일정
+                          </p>
+
+                          <div className="whitespace-pre-line text-[15px] leading-7 text-gray-700">
+                            {item.schedule}
+                          </div>
+
+                          {golfImages?.courseGuide && (
+                            <div className="mt-5">
+                              <p className="mb-3 text-sm font-bold text-[#B88A44]">
+                                코스 안내도
+                              </p>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setZoomImage(golfImages.courseGuide!)
+                                }
+                                className="block w-full overflow-hidden rounded-2xl border border-[#E8DCC4] bg-white"
+                              >
+                                <img
+                                  src={golfImages.courseGuide}
+                                  alt={`${golfPlace} 코스 안내도`}
+                                  className="w-full transition duration-300 hover:scale-[1.01]"
+                                />
+                              </button>
+
+                              <p className="mt-2 text-center text-xs text-gray-400">
+                                이미지를 클릭하면 크게 볼 수 있습니다.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 관광지 */}
+
+                      {item.places && item.places.length > 0 && (
+                        <div className="mt-7">
+                          <p className="mb-3 text-sm font-bold text-[#B88A44]">
+                            주요 일정
+                          </p>
+
+                          <div className="flex flex-wrap gap-2">
+                            {item.places.map((place) => (
+                              <span
+                                key={place}
+                                className="rounded-full border border-[#E8DCC4] bg-[#FAF8F4] px-4 py-2 text-sm font-medium text-gray-600"
+                              >
+                                {place}
+                              </span>
+                            ))}
+                          </div>
+                          {golfImages?.photos &&
+                            golfImages.photos.length > 0 && (
+                              <div
+                                className={[
+                                  "mt-5 grid gap-4",
+                                  golfImages.photos.length === 1
+                                    ? "grid-cols-1"
+                                    : "sm:grid-cols-2",
+                                ].join(" ")}
+                              >
+                                {golfImages.photos.map((image, index) => (
+                                  <div
+                                    key={image}
+                                    className="overflow-hidden rounded-2xl bg-[#FAF8F4]"
+                                  >
+                                    <img
+                                      src={image}
+                                      alt={`${golfPlace} ${index + 1}`}
+                                      className="h-56 w-full object-cover md:h-64"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                        </div>
+                      )}
+
+                      {/* 세부 관광 사진 */}
+
+                      {item.spotImages && item.spotImages.length > 0 && (
+                        <div className="mt-7 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                          {item.spotImages.map((spot) => (
+                            <div
+                              key={spot.name}
+                              className="overflow-hidden rounded-2xl bg-[#FAF8F4]"
                             >
-                              {place}
-                            </span>
+                              <img
+                                src={spot.image}
+                                alt={spot.name}
+                                className="h-40 w-full object-cover"
+                              />
+
+                              <p className="p-3 text-center text-sm font-bold">
+                                {spot.name}
+                              </p>
+                            </div>
                           ))}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* 세부 관광 사진 */}
+                      {/* 식사 */}
 
-                    {item.spotImages && item.spotImages.length > 0 && (
-                      <div className="mt-7 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                        {item.spotImages.map((spot) => (
-                          <div
-                            key={spot.name}
-                            className="overflow-hidden rounded-2xl bg-[#FAF8F4]"
-                          >
-                            <img
-                              src={spot.image}
-                              alt={spot.name}
-                              className="h-40 w-full object-cover"
+                      {item.meals && (
+                        <div className="mt-8 rounded-2xl bg-[#FAF8F4] p-5">
+                          <p className="mb-4 text-sm font-bold text-[#B88A44]">
+                            🍽️ MEAL
+                          </p>
+
+                          <div className="grid gap-3 text-sm md:grid-cols-3">
+                            <MealItem
+                              label="조식"
+                              value={item.meals.breakfast}
                             />
 
-                            <p className="p-3 text-center text-sm font-bold">
-                              {spot.name}
-                            </p>
+                            <MealItem label="중식" value={item.meals.lunch} />
+
+                            <MealItem label="석식" value={item.meals.dinner} />
                           </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 식사 */}
-
-                    {item.meals && (
-                      <div className="mt-8 rounded-2xl bg-[#FAF8F4] p-5">
-                        <p className="mb-4 text-sm font-bold text-[#B88A44]">
-                          🍽️ MEAL
-                        </p>
-
-                        <div className="grid gap-3 text-sm md:grid-cols-3">
-                          <MealItem label="조식" value={item.meals.breakfast} />
-
-                          <MealItem label="중식" value={item.meals.lunch} />
-
-                          <MealItem label="석식" value={item.meals.dinner} />
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* 호텔 */}
+                      {/* 호텔 */}
 
-                    {item.hotel && (
-                      <div className="mt-4 rounded-2xl border border-[#E8DCC4] bg-white p-5">
-                        <p className="text-sm font-bold text-[#B88A44]">
-                          🏨 HOTEL
-                        </p>
+                      {item.hotel && (
+                        <div className="mt-4 rounded-2xl border border-[#E8DCC4] bg-white p-5">
+                          <p className="text-sm font-bold text-[#B88A44]">
+                            🏨 HOTEL
+                          </p>
 
-                        <p className="mt-2 text-sm font-semibold leading-6 text-gray-700">
-                          {item.hotel}
-                        </p>
-                      </div>
-                    )}
+                          <p className="mt-2 text-sm font-semibold leading-6 text-gray-700">
+                            {item.hotel}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </div>
 
@@ -436,6 +545,27 @@ export default function XiamenProductContent() {
           noticeText={shoppingNotice}
         />
       </div>
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setZoomImage(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setZoomImage(null)}
+            className="absolute right-5 top-5 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-black shadow-lg"
+          >
+            ✕ 닫기
+          </button>
+
+          <img
+            src={zoomImage}
+            alt="골프 코스 안내도 확대"
+            className="max-h-[90vh] max-w-[95vw] rounded-2xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </section>
   );
 }
