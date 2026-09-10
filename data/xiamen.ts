@@ -43,12 +43,17 @@ export const productTabs = [
   },
   {
     id: "premium3" as const,
-    label: "고품격 3박5일",
+    label: "품격 3박5일",
     description: "노옵션 프리미엄 관광",
   },
   {
+    id: "value4" as const,
+    label: "실속 4박6일",
+    description: "알찬 샤먼 핵심 관광",
+  },
+  {
     id: "premium4" as const,
-    label: "고품격 4박6일",
+    label: "품격 4박6일",
     description: "샤먼을 여유롭게 즐기는 일정",
   },
   {
@@ -83,7 +88,7 @@ export const flightInfo = {
     flight: "ZE828",
     from: "샤먼",
     to: "청주",
-    departure: "02:00",
+    departure: "02:20",
     arrival: "06:20",
   },
 };
@@ -117,7 +122,7 @@ export const xiamenHotels = [
     grade: "★★★★★",
     image: `${xiamenHotelBaseUrl}hualex.jpg`,
     roomImage: `${xiamenHotelBaseUrl}hualexroom.jpg`,
-    desc: "샤먼 일정 중 이용하는 5성급 호텔입니다.",
+    desc: "샤먼 일정 중 이용하는 정5성급 호텔입니다.",
   },
   {
     id: 2,
@@ -125,16 +130,24 @@ export const xiamenHotels = [
     grade: "★★★★★",
     image: `${xiamenHotelBaseUrl}hilton.jpg`,
     roomImage: `${xiamenHotelBaseUrl}hiltonroom.jpg`,
-    desc: "편안한 객실과 안정적인 숙박 환경을 갖춘 5성급 호텔입니다.",
+    desc: "편안한 객실과 안정적인 숙박 환경을 갖춘 정5성급 호텔입니다.",
+  },
+  {
+    id: 3,
+    name: "코트야드 메리어트 샤먼",
+    grade: "★★★★☆",
+    image: `${xiamenHotelBaseUrl}marriot.jpg`,
+    roomImage: `${xiamenHotelBaseUrl}marriotroom.jpg`,
+    desc: "편안한 객실과 안정적인 숙박 환경을 갖춘 준5성급 호텔입니다.",
   },
 ];
 
 export const wuyishanHotels = [
   ...xiamenHotels,
   {
-    id: 3,
+    id: 4,
     name: "무이산 윈덤 호텔",
-    grade: "준5성급",
+    grade: "★★★★☆",
     image: `${xiamenHotelBaseUrl}whindom.jpg`,
     roomImage: `${xiamenHotelBaseUrl}whindomroom.jpg`,
     desc: "무이산 일정 중 이용하는 호텔로 편안한 휴식을 제공합니다.",
@@ -251,15 +264,15 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
   },
 
   {
     day: "DAY 2",
     icon: "🌴",
-    title: "원림식물원 · 중산로",
+    title: "남보타사 · 중산로",
     description:
-      "호텔 조식 후 오전 자유시간을 즐기고 중식 후 원림식물원과 샤먼의 대표 보행자 거리인 중산로를 관광합니다.",
+      "호텔 조식 후 오전 자유시간을 즐기고 중식 후 남보타사와 샤먼의 대표 보행자 거리인 중산로를 관광합니다.",
     region: `하문`,
 
     transport: `전용차량`,
@@ -268,24 +281,19 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
 
     schedule: `호텔 조식 후 오전 자유일정 및 휴식
 중식 후
-▶ 150만평 규모의 거대한 열대·아열대 식물원인 원림식물원
+▶ 당나라 시대에 창건된 1,000년이 넘는 역사를 가진 남보타사
 ▶ 하문의 명동거리로 불리는 보행자 전용 중산로 관광
 선택관광(추천): 중구산 케이블카 $50/인(70세 이상 불가)
 석식 후 호텔 이동 및 투숙`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/zhongshan.jpg",
     imagePosition: "center 70%",
-    places: [
-      "오전 자유일정",
-      "원림식물원",
-      "중산로",
-      "중구산 케이블카 선택관광",
-    ],
+    places: ["오전 자유일정", "남보타사", "중산로", "중구산 케이블카 선택관광"],
     spotImages: [
       {
-        name: "원림식물원",
+        name: "남보타사",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/wonlim.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/nambotasa.jpg",
       },
       {
         name: "중산로 관광",
@@ -299,7 +307,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "현지식",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
   },
 
   {
@@ -358,7 +366,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "현지식",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
   },
 
   {
@@ -434,7 +442,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:00
+    time: `02:20
 06:20`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
@@ -454,7 +462,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
 ]);
 
 // ======================================================
-// 고품격 3박 5일
+// 품격 3박 5일
 // ======================================================
 
 export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
@@ -604,7 +612,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:00
+    time: `02:20
 06:20`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
@@ -622,7 +630,214 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
 ]);
 
 // ======================================================
-// 고품격 4박 6일
+// 실속 4박 6일
+// ======================================================
+
+export const itineraryV4N6D: ItineraryItem[] = attachXiamenImages([
+  {
+    day: "DAY 1",
+    icon: "✈️",
+    title: "청주공항 출발 · 샤먼 도착",
+    description:
+      "청주 국제공항을 출발하여 샤먼 국제공항에 도착합니다. 가이드 미팅 후 호텔로 이동하여 투숙 및 휴식합니다.",
+    region: `청주
+하문`,
+
+    transport: `ZE827
+전용차량`,
+
+    time: `20:00
+23:00
+01:20+1`,
+
+    schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅 데스크 미팅
+청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+하문 공항 도착 후 가이드 미팅
+호텔 투숙 및 휴식`,
+    places: ["청주 국제공항", "샤먼 국제공항"],
+    duration: "샤먼 도착 후 호텔 이동",
+    meals: {
+      breakfast: "-----",
+      lunch: "-----",
+      dinner: "-----",
+    },
+    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+  },
+
+  {
+    day: "DAY 2",
+    icon: "🛕",
+    title: "남보타사 · 중산로",
+    description:
+      "오전 자유일정 후 남보타사 관광 후 하문의 명동거리 중산로를 관광합니다.",
+    region: `하문`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 오전 자유일정 및 휴식
+중식 후
+▶ 당나라 시대에 창건된 1,000년이 넘는 역사를 가진 남보타사
+▶ 하문의 명동거리로 불리는 보행자 전용 중산로 관광
+선택관광(추천)
+1. 중구산 케이블카($50/1인)-70세이상 불가
+2. 원림식물원($40/1인)
+3. 링링서커스($50/1인)
+석식 후 호텔 이동 및 투숙`,
+    places: [
+      "남보타사",
+      "중산로",
+      "중구산 케이블카",
+      "원림식물원",
+      "링링서커스",
+    ],
+    duration: "오후 샤먼 관광",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "현지식",
+      dinner: "현지식",
+    },
+    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+  },
+
+  {
+    day: "DAY 3",
+    icon: "🏝️",
+    title: "고랑서 · 숙장화원 · 일광암 · 증조안 미식거리",
+    description:
+      "고랑서에서 숙장화원과 일광암을 관광한 후 증조안 미식거리를 방문합니다.",
+    region: `하문`,
+    transport: `전용차량`,
+    time: `전일`,
+    schedule: `호텔 조식 후 고랑서 부두로 이동(약 20분 소요)
+▶ 해상의 화원이라 불리는 작은 섬인 고랑서 관광
+- 바다를 끼고 만들어진 아름다운 전통 정원인 숙장화원
+- 해발 93m의 고랑서에서 가장 높은 봉우리 일광암
+중식 후
+▶ 다양한 현지 먹거리와 아기자기한 상점이 모여있는 증조안 미식거리
+선택관광(추천)
+1. 민남전기쇼($50/1인)
+2. 발+전신마사지90분($60/1인)
+3. 요트체험($50/1인)
+석식 후 호텔 투숙 및 휴식`,
+    places: ["고랑서", "숙장화원", "일광암", "증조안 미식거리"],
+    duration: "전일 관광",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "현지식",
+      dinner: "현지식",
+    },
+    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+  },
+
+  {
+    day: "DAY 4",
+    icon: "🌃",
+    title: "남정토루 · 중산로 · 야경유람선",
+    description:
+      "전라갱토루와 탑하촌, 유창루를 관광한 후 샤먼으로 돌아와 중산로와 루장강 나이트크루즈를 즐깁니다.",
+    region: `하문
+남정토루
+하문`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후 남정토루로 이동(약 2시간 소요)
+▶ 중국 토루 문화지역 중 가장 유명한 전라갱 지역의 전라갱토루
+▶ 장씨 집성촌이며 장수마을로 알려진 탑하촌 토루마을
+▶ 600~700년의 역사를 가진 원형토루인 유창루
+중식 후 하문으로 이동
+선택관광(추천)
+1. 일월곡 온천욕($60/1인)
+2. 야경유람선($50/1인)
+석식 후 호텔 투숙 및 휴식`,
+    places: [
+      "전라갱토루",
+      "탑하촌 토루마을",
+      "유창루",
+      "중산로",
+      "루장강 나이트크루즈(선택관광)",
+    ],
+    duration: "전일 관광",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "객가요리",
+      dinner: "항주요리",
+    },
+    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+  },
+
+  {
+    day: "DAY 5",
+    icon: "♨️",
+    title: "해상명주탑 · 백성해변 · 호리산포대",
+    description:
+      "해상명주탑 전망대와 백성해변 그리고 호리산 포대를 관람 후 공항으로 이동합니다.",
+    region: `하문`,
+
+    transport: `전용차량`,
+
+    time: `전일`,
+
+    schedule: `호텔 조식 후
+▶ 하문의 랜드마크인 해상명주탑 전망대
+▶ 하문에서 가장 활기찬 해벼가인 백성해변
+▶ 19세기 청나라 시대에 만들어진 군사 요새인 호리산포대
+중식 후
+선택관광(추천)
+1. 위젠민난($50/1인)
+2. 해물요리($50/1인)
+3. 발+전신마사지90분($60/1인)
+자유일정 진행 후 23시 공항으로 이동`,
+    places: [
+      "해상명주탑 전망대",
+      "백성해변",
+      "호리산포대",
+      "원림식물원",
+      "공항 이동",
+    ],
+    duration: "전일 관광 후 공항 이동",
+    meals: {
+      breakfast: "호텔식",
+      lunch: "현지식",
+      dinner: "현지식",
+    },
+    hotel: "기내 숙박",
+  },
+
+  {
+    day: "DAY 6",
+    icon: "🛬",
+    title: "샤먼 출발 · 청주공항 도착",
+    description:
+      "샤먼 국제공항을 출발하여 청주 국제공항에 도착한 후 여행을 마무리합니다.",
+    region: `하문
+청주`,
+
+    transport: `ZE828`,
+
+    time: `02:20
+06:20`,
+
+    schedule: `하문 국제공항 출발 - 이스타항공 탑승
+청주 국제공항 도착 후 해산
+♣ 즐거운 여행되세요. 감사합니다. ♣`,
+    places: ["샤먼 국제공항", "청주 국제공항"],
+    duration: "귀국",
+    meals: {
+      breakfast: "-----",
+      lunch: "-----",
+      dinner: "-----",
+    },
+    hotel: "해당없음",
+  },
+]);
+
+// ======================================================
+// 품격 4박 6일
 // ======================================================
 
 export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
@@ -806,7 +1021,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:00
+    time: `02:20
 06:20`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
@@ -824,7 +1039,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
 ]);
 
 // ======================================================
-// 무이산 고품격 4박 6일
+// 무이산 품격 4박 6일
 // ======================================================
 
 export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
@@ -924,7 +1139,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "동북요리",
       dinner: "버섯요리",
     },
-    hotel: "무이산 윈덤 호텔 또는 동급 ★★★★★",
+    hotel: "무이산 윈덤 호텔 또는 동급 ★★★★☆",
   },
 
   {
@@ -1142,6 +1357,7 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
 
     schedule: `호텔 조식 후 오전
 동방 골프장으로 이동(약 10분 소요)
+※ 골프복장으로 출발!! 라운딩 종료 후 호텔로 복귀하여 샤워 후 체크아웃 진행합니다. ※
 ▶ 동방CC 18홀 라운딩
 - 1995년에 오픈한 로널드 프림이 설계한 27홀 규모의 명문 골프장
 - 10,665야드, 27홀, 파 108 규모의 골프장입니다.
@@ -1169,7 +1385,7 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
 
     transport: `ZE828`,
 
-    time: `02:00
+    time: `02:20
 06:20`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
@@ -1321,6 +1537,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
 
     schedule: `호텔 조식 후 오전
 동방 골프장으로 이동(약 10분 소요)
+※ 골프복장으로 출발!! 라운딩 종료 후 호텔로 복귀하여 샤워 후 체크아웃 진행합니다. ※
 ▶ 동방CC 18홀 라운딩
 - 1995년에 오픈한 로널드 프림이 설계한 27홀 규모의 명문 골프장
 - 10,665야드, 27홀, 파 108 규모의 골프장입니다.
@@ -1348,7 +1565,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
 
     transport: `ZE828`,
 
-    time: `02:00
+    time: `02:20
 06:20`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
@@ -1371,23 +1588,22 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
 
 export const includesValue3 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
-  { id: 2, text: "5성급 호텔 2인 1실" },
-  { id: 3, text: "현지 일정상 식사" },
+  { id: 2, text: "준5성급 호텔 2인 1실" },
+  { id: 3, text: "전 일정 식사" },
   { id: 4, text: "전용차량" },
-  { id: 5, text: "관광지 입장료" },
-  { id: 6, text: "여행자보험" },
+  { id: 5, text: "관광지 입장료, 여행자보험(1억원)" },
+  { id: 6, text: "기사 · 가이드 팁" },
 ];
 
 export const excludesValue3 = [
-  { id: 1, text: "기사 · 가이드팁 400위안 / 1인" },
-  { id: 2, text: "선택관광 비용" },
-  { id: 3, text: "매너팁 및 기타 개인경비" },
-  { id: 4, text: "싱글차지 +$101 / 1인(3박)" },
+  { id: 1, text: "선택관광 비용" },
+  { id: 2, text: "매너팁 및 기타 개인경비" },
+  { id: 3, text: "싱글차지 110,000원 / 1인(3박)" },
 ];
 
 export const includesPremium3 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
-  { id: 2, text: "5성급 호텔 2인 1실" },
+  { id: 2, text: "정5성급 호텔 2인 1실" },
   {
     id: 3,
     text: "전 일정 식사 · 특식6회(딤섬, 호남요리, 동북요리, 삼겹살 무제한, 객가요리, 항주요리)",
@@ -1404,12 +1620,27 @@ export const includesPremium3 = [
 export const excludesPremium3 = [
   { id: 1, text: "마사지 매너팁" },
   { id: 2, text: "기타 개인경비" },
-  { id: 3, text: "싱글차지 +$101 / 1인(3박)" },
+  { id: 3, text: "싱글차지 150,000 / 1인(3박)" },
+];
+
+export const includesValue4 = [
+  { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
+  { id: 2, text: "준5성급 호텔 2인 1실" },
+  { id: 3, text: "전 일정 식사" },
+  { id: 4, text: "전용차량" },
+  { id: 5, text: "관광지 입장료 · 여행자보험(1억원)" },
+  { id: 6, text: "기사 · 가이드팁" },
+];
+
+export const excludesValue4 = [
+  { id: 1, text: "마사지 매너팁" },
+  { id: 2, text: "기타 개인경비" },
+  { id: 3, text: "싱글차지 150,000원 / 1인(4박)" },
 ];
 
 export const includesPremium4 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
-  { id: 2, text: "5성급 호텔 2인 1실" },
+  { id: 2, text: "정5성급 호텔 2인 1실" },
   {
     id: 3,
     text: "전 일정 식사 · 특식8회(딤섬, 호남요리, 동북요리, 삼겹살 무제한, 객가요리, 항주요리, 한식, 샤브샤브무제한)",
@@ -1426,14 +1657,14 @@ export const includesPremium4 = [
 export const excludesPremium4 = [
   { id: 1, text: "마사지 매너팁" },
   { id: 2, text: "기타 개인경비" },
-  { id: 3, text: "싱글차지 +$135 / 1인(4박)" },
+  { id: 3, text: "싱글차지 150,000원 / 1인(4박)" },
 ];
 
 export const includesWuyishan4 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
   {
     id: 2,
-    text: "샤먼 5성급 3박 + 무이산 준5성급 1박(2인 1실)",
+    text: "하문 정5성급 3박 + 무이산 준5성급 1박(2인 1실)",
   },
   {
     id: 3,
@@ -1451,12 +1682,12 @@ export const includesWuyishan4 = [
 export const excludesWuyishan4 = [
   { id: 1, text: "마사지 매너팁" },
   { id: 2, text: "기타 개인경비" },
-  { id: 3, text: "싱글차지 +$125 / 1인(4박)" },
+  { id: 3, text: "싱글차지 180,000원 / 1인(4박)" },
 ];
 
 export const includesGolf3 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
-  { id: 2, text: "5성급 호텔 2인 1실" },
+  { id: 2, text: "정5성급 호텔 2인 1실" },
   { id: 3, text: "전용차량" },
   { id: 4, text: "조식+석식" },
   { id: 5, text: "여행자보험" },
@@ -1471,12 +1702,12 @@ export const excludesGolf3 = [
     text: "캐디팁(2인 1캐디) 18홀 150위안 / 1인",
   },
   { id: 3, text: "기타 개인경비" },
-  { id: 4, text: "싱글차지 +$101 / 1인(3박)" },
+  { id: 4, text: "싱글차지 150,000원 / 1인(3박)" },
 ];
 
 export const includesGolf4 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
-  { id: 2, text: "5성급 호텔 2인 1실" },
+  { id: 2, text: "정5성급 호텔 2인 1실" },
   { id: 3, text: "전용차량" },
   { id: 4, text: "석식" },
   { id: 5, text: "여행자보험" },
@@ -1491,7 +1722,7 @@ export const excludesGolf4 = [
     text: "캐디팁(2인 1캐디) 18홀 150위안 / 1인",
   },
   { id: 3, text: "기타 개인경비" },
-  { id: 4, text: "싱글차지 +$135 / 1인(4박)" },
+  { id: 4, text: "싱글차지 180,000원 / 1인(4박)" },
 ];
 
 // ============================================================
@@ -1559,7 +1790,7 @@ export const faqs = [
     id: 7,
     question: "싱글룸 이용 시 추가요금이 있나요?",
     answer:
-      "네. 3박5일은 상품에 따라 +$101/인, 일반 4박6일은 +$135/인, 하문+무이산 4박6일은 +$125/인 기준입니다.",
+      "네. 3박5일은 상품에 따라 150,000원/인, 일반 4박6일은 180,000원/인, 하문+무이산 4박6일은 180,000원/인 기준입니다.",
   },
   {
     id: 8,
