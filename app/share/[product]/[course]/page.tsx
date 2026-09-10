@@ -76,6 +76,7 @@ import {
   excludesGolf4,
   xiamenHotels,
   wuyishanHotels,
+  golfImageMap,
 } from "@/data/xiamen";
 
 type ShareItem = {
@@ -349,6 +350,7 @@ export default async function ShareItineraryPage({
 
   const productData = shareProducts[product];
   const courseData = productData?.courses[course];
+
   const selectedHotels = courseData.hotels;
   const selectedIncludes = courseData.includes;
   const selectedExcludes = courseData.excludes;
@@ -431,173 +433,218 @@ export default async function ShareItineraryPage({
         {/* ==================== 일정 ==================== */}
 
         <div className="space-y-8">
-          {courseData.itinerary.map((item, index) => (
-            <article
-              key={`${course}-${item.day ?? index}`}
-              className="overflow-hidden rounded-[30px] border border-[#ece7df] bg-white shadow-sm"
-            >
-              {/* 대표 이미지 */}
+          {courseData.itinerary.map((item, index) => {
+            const golfText = [
+              item.title ?? "",
+              ...(item.places ?? []),
+              item.schedule ?? "",
+            ].join(" ");
 
-              {item.image && (
-                <div className="overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title || item.day || "여행 일정"}
-                    className="h-[240px] w-full object-cover md:h-[330px]"
-                    style={{
-                      objectPosition: item.imagePosition || "center",
-                    }}
-                  />
-                </div>
-              )}
+            const golfImages = golfText.includes("남태무")
+              ? golfImageMap["남태무 CC"]
+              : golfText.includes("동방")
+                ? golfImageMap["동방 골프장"]
+                : golfText.includes("해서")
+                  ? golfImageMap["해서 골프장"]
+                  : golfText.includes("천주")
+                    ? golfImageMap["천주 골프장"]
+                    : undefined;
 
-              <div className="p-6 md:p-8">
-                {/* DAY */}
+            const golfPlace = golfText.includes("남태무")
+              ? "남태무 CC"
+              : golfText.includes("동방")
+                ? "동방 CC"
+                : golfText.includes("해서")
+                  ? "해서 CC"
+                  : golfText.includes("천주")
+                    ? "천주 CC"
+                    : "";
 
-                <div className="flex flex-wrap items-center gap-3">
-                  {item.day && (
-                    <span className="rounded-full bg-[#f6f1e8] px-4 py-2 text-sm font-bold text-[#b88a44]">
-                      {item.day}
-                    </span>
-                  )}
+            return (
+              <article
+                key={`${course}-${item.day ?? index}`}
+                className="overflow-hidden rounded-[30px] border border-[#ece7df] bg-white shadow-sm"
+              >
+                {/* 대표 이미지 */}
 
-                  {item.duration && (
-                    <span className="text-sm text-gray-400">
-                      {item.duration}
-                    </span>
-                  )}
-                </div>
-
-                {/* 제목 */}
-
-                {item.title && (
-                  <div className="mt-5 flex items-center gap-3">
-                    {item.icon && <span className="text-3xl">{item.icon}</span>}
-
-                    <h2 className="text-xl font-bold leading-snug text-[#1f1f1f] md:text-2xl">
-                      {item.title}
-                    </h2>
+                {item.image && (
+                  <div className="overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.title || item.day || "여행 일정"}
+                      className="h-[240px] w-full object-cover md:h-[330px]"
+                      style={{
+                        objectPosition: item.imagePosition || "center",
+                      }}
+                    />
                   </div>
                 )}
 
-                {/* 설명 */}
+                <div className="p-6 md:p-8">
+                  {/* DAY */}
 
-                {item.description && (
-                  <p className="mt-5 whitespace-pre-line leading-8 text-gray-600">
-                    {item.description}
-                  </p>
-                )}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {item.day && (
+                      <span className="rounded-full bg-[#f6f1e8] px-4 py-2 text-sm font-bold text-[#b88a44]">
+                        {item.day}
+                      </span>
+                    )}
 
-                {/* 상세 일정 */}
-
-                {item.schedule && (
-                  <div className="mt-6 rounded-2xl border border-[#e8dcc4] bg-[#fcfaf7] p-5">
-                    <div className="mb-3 text-sm font-bold text-[#b88a44]">
-                      상세 일정
-                    </div>
-
-                    <div className="whitespace-pre-line leading-7 text-gray-700">
-                      {item.schedule}
-                    </div>
+                    {item.duration && (
+                      <span className="text-sm text-gray-400">
+                        {item.duration}
+                      </span>
+                    )}
                   </div>
-                )}
 
-                {/* 주요 관광지 */}
+                  {/* 제목 */}
 
-                {item.places && item.places.length > 0 && (
-                  <div className="mt-7">
-                    <div className="mb-3 text-sm font-bold text-[#b88a44]">
-                      주요 일정
+                  {item.title && (
+                    <div className="mt-5 flex items-center gap-3">
+                      {item.icon && (
+                        <span className="text-3xl">{item.icon}</span>
+                      )}
+
+                      <h2 className="text-xl font-bold leading-snug text-[#1f1f1f] md:text-2xl">
+                        {item.title}
+                      </h2>
                     </div>
+                  )}
 
-                    <div className="flex flex-wrap gap-2">
-                      {item.places.map((place) => (
-                        <span
-                          key={place}
-                          className="rounded-full border border-[#e8dcc4] bg-[#faf8f4] px-4 py-2 text-sm font-medium text-gray-600"
+                  {/* 설명 */}
+
+                  {item.description && (
+                    <p className="mt-5 whitespace-pre-line leading-8 text-gray-600">
+                      {item.description}
+                    </p>
+                  )}
+
+                  {/* 상세 일정 */}
+
+                  {item.schedule && (
+                    <div className="mt-6 rounded-2xl border border-[#e8dcc4] bg-[#fcfaf7] p-5">
+                      <div className="mb-3 text-sm font-bold text-[#b88a44]">
+                        상세 일정
+                      </div>
+
+                      <div className="whitespace-pre-line leading-7 text-gray-700">
+                        {item.schedule}
+                      </div>
+                      {golfImages?.courseGuide && (
+                        <div className="mt-5">
+                          <div className="mb-3 text-sm font-bold text-[#b88a44]">
+                            ⛳ 코스 안내도
+                          </div>
+
+                          <div className="overflow-hidden rounded-2xl border border-[#e8dcc4] bg-white">
+                            <img
+                              src={golfImages.courseGuide}
+                              alt={`${golfPlace} 코스 안내도`}
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 주요 관광지 */}
+
+                  {item.places && item.places.length > 0 && (
+                    <div className="mt-7">
+                      <div className="mb-3 text-sm font-bold text-[#b88a44]">
+                        주요 일정
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {item.places.map((place) => (
+                          <span
+                            key={place}
+                            className="rounded-full border border-[#e8dcc4] bg-[#faf8f4] px-4 py-2 text-sm font-medium text-gray-600"
+                          >
+                            {place}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 관광지 사진 */}
+
+                  {item.spotImages && item.spotImages.length > 0 && (
+                    <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3">
+                      {item.spotImages.map((spot) => (
+                        <div
+                          key={spot.name}
+                          className="overflow-hidden rounded-2xl bg-[#faf8f4]"
                         >
-                          {place}
-                        </span>
+                          <img
+                            src={spot.image}
+                            alt={spot.name}
+                            className="h-36 w-full object-cover md:h-44"
+                          />
+
+                          <div className="p-3 text-center text-sm font-bold">
+                            {spot.name}
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 관광지 사진 */}
+                  {/* 식사 */}
 
-                {item.spotImages && item.spotImages.length > 0 && (
-                  <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3">
-                    {item.spotImages.map((spot) => (
-                      <div
-                        key={spot.name}
-                        className="overflow-hidden rounded-2xl bg-[#faf8f4]"
-                      >
-                        <img
-                          src={spot.image}
-                          alt={spot.name}
-                          className="h-36 w-full object-cover md:h-44"
-                        />
-
-                        <div className="p-3 text-center text-sm font-bold">
-                          {spot.name}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* 식사 */}
-
-                {item.meals && (
-                  <div className="mt-7 rounded-2xl bg-[#faf8f4] p-5">
-                    <div className="mb-4 text-sm font-bold text-[#b88a44]">
-                      🍽️ MEAL
-                    </div>
-
-                    <div className="grid gap-4 text-sm sm:grid-cols-3">
-                      <div>
-                        <span className="font-bold text-gray-400">조식</span>
-
-                        <div className="mt-1 font-semibold text-gray-700">
-                          {item.meals.breakfast || "-----"}
-                        </div>
+                  {item.meals && (
+                    <div className="mt-7 rounded-2xl bg-[#faf8f4] p-5">
+                      <div className="mb-4 text-sm font-bold text-[#b88a44]">
+                        🍽️ MEAL
                       </div>
 
-                      <div>
-                        <span className="font-bold text-gray-400">중식</span>
+                      <div className="grid gap-4 text-sm sm:grid-cols-3">
+                        <div>
+                          <span className="font-bold text-gray-400">조식</span>
 
-                        <div className="mt-1 font-semibold text-gray-700">
-                          {item.meals.lunch || "-----"}
+                          <div className="mt-1 font-semibold text-gray-700">
+                            {item.meals.breakfast || "-----"}
+                          </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <span className="font-bold text-gray-400">석식</span>
+                        <div>
+                          <span className="font-bold text-gray-400">중식</span>
 
-                        <div className="mt-1 font-semibold text-gray-700">
-                          {item.meals.dinner || "-----"}
+                          <div className="mt-1 font-semibold text-gray-700">
+                            {item.meals.lunch || "-----"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="font-bold text-gray-400">석식</span>
+
+                          <div className="mt-1 font-semibold text-gray-700">
+                            {item.meals.dinner || "-----"}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 호텔 */}
+                  {/* 호텔 */}
 
-                {item.hotel && (
-                  <div className="mt-4 rounded-2xl border border-[#e8dcc4] bg-white p-5">
-                    <div className="text-sm font-bold text-[#b88a44]">
-                      🏨 HOTEL
+                  {item.hotel && (
+                    <div className="mt-4 rounded-2xl border border-[#e8dcc4] bg-white p-5">
+                      <div className="text-sm font-bold text-[#b88a44]">
+                        🏨 HOTEL
+                      </div>
+
+                      <div className="mt-2 text-sm font-semibold leading-6 text-gray-700">
+                        {item.hotel}
+                      </div>
                     </div>
-
-                    <div className="mt-2 text-sm font-semibold leading-6 text-gray-700">
-                      {item.hotel}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </article>
-          ))}
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         <p className="mt-10 text-center text-xs leading-6 text-gray-400 md:text-sm">

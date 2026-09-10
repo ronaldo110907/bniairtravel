@@ -32,38 +32,8 @@ import {
   shoppingXiamen,
   xiamenHotels,
   wuyishanHotels,
+  golfImageMap,
 } from "@/data/xiamen";
-
-const golfBaseUrl =
-  "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/golf/";
-
-const golfImageMap: Record<
-  string,
-  {
-    courseGuide?: string;
-    photos?: string[];
-  }
-> = {
-  "남태무 CC": {
-    courseGuide: `${golfBaseUrl}namtaemu.png`,
-    photos: [`${golfBaseUrl}namtaemu1.png`],
-  },
-
-  "동방 골프장": {
-    courseGuide: `${golfBaseUrl}dongbang.png`,
-    photos: [`${golfBaseUrl}dongbang1.jpg`],
-  },
-
-  "해서 골프장": {
-    courseGuide: `${golfBaseUrl}haeseo.png`,
-    photos: [`${golfBaseUrl}haeseo1.jpg`, `${golfBaseUrl}haeseo2.jpg`],
-  },
-
-  "천주 골프장": {
-    courseGuide: `${golfBaseUrl}cheonju.png`,
-    photos: [`${golfBaseUrl}cheonju1.jpg`],
-  },
-};
 
 const itineraryMap: Record<XiamenProductType, ItineraryItem[]> = {
   value3: itineraryValue3N5D,

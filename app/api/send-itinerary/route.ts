@@ -84,6 +84,7 @@ import {
   excludesGolf4 as xiamenExcludesGolf4,
   xiamenHotels,
   wuyishanHotels as xiamenWuyishanHotels,
+  golfImageMap as xiamenGolfImageMap,
 } from "@/data/xiamen";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -214,6 +215,108 @@ function renderMealImages(
   `;
 }
 
+function renderXiamenGolfImages(places?: string[]) {
+  if (!places?.length) return "";
+
+  const golfKey = places.find(
+    (place) =>
+      place.includes("남태무") ||
+      place.includes("동방") ||
+      place.includes("해서") ||
+      place.includes("천주"),
+  );
+
+  if (!golfKey) return "";
+
+  const golfImages = golfKey.includes("남태무")
+    ? xiamenGolfImageMap["남태무 CC"]
+    : golfKey.includes("동방")
+      ? xiamenGolfImageMap["동방 골프장"]
+      : golfKey.includes("해서")
+        ? xiamenGolfImageMap["해서 골프장"]
+        : golfKey.includes("천주")
+          ? xiamenGolfImageMap["천주 골프장"]
+          : undefined;
+
+  if (!golfImages) return "";
+
+  const courseGuideHtml = golfImages.courseGuide
+    ? `
+      <div style="margin-top: 16px;">
+        <div
+          style="
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #b88a44;
+          "
+        >
+          ⛳ 코스 안내도
+        </div>
+
+        <img
+          src="${golfImages.courseGuide}"
+          alt="${golfKey} 코스 안내도"
+          style="
+            display: block;
+            width: 100%;
+            max-width: 720px;
+            height: auto;
+            margin: 0 auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+          "
+        />
+      </div>
+    `
+    : "";
+
+  const photosHtml = golfImages.photos?.length
+    ? `
+        <table
+          role="presentation"
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="
+            width: 100%;
+            margin-top: 14px;
+            table-layout: fixed;
+            border-collapse: collapse;
+          "
+        >
+          <tr>
+            ${golfImages.photos
+              .map(
+                (image, index) => `
+                  <td
+                    width="${Math.floor(100 / golfImages.photos!.length)}%"
+                    valign="top"
+                    style="padding: 4px;"
+                  >
+                    <img
+                      src="${image}"
+                      alt="${golfKey} ${index + 1}"
+                      style="
+                        display: block;
+                        width: 100%;
+                        height: 220px;
+                        border: 0;
+                        border-radius: 10px;
+                        object-fit: cover;
+                      "
+                    />
+                  </td>
+                `,
+              )
+              .join("")}
+          </tr>
+        </table>
+      `
+    : "";
+
+  return `${courseGuideHtml}${photosHtml}`;
+}
 export async function POST(request: Request) {
   try {
     const {
@@ -639,6 +742,7 @@ export async function POST(request: Request) {
                               <strong>주요 관광지</strong><br />
           ${item.places?.join(" · ") ?? "-----"}
         </div>
+        ${isXiamen ? renderXiamenGolfImages(item.places) : ""}
 
         ${
           (isXiamen || isPhuquoc || isGuilin) && item.spotImages?.length
