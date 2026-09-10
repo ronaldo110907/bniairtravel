@@ -120,6 +120,14 @@ export default function XiamenProductContent() {
 
   const hotels = activeType === "wuyishan4" ? wuyishanHotels : xiamenHotels;
 
+  const tabs3N5D = productTabs.filter((tab) =>
+    ["value3", "premium3", "golf3"].includes(tab.id),
+  );
+
+  const tabs4N6D = productTabs.filter((tab) =>
+    ["value4", "premium4", "wuyishan4", "golf4"].includes(tab.id),
+  );
+
   return (
     <section className="bg-[#faf8f4] px-4 py-24 md:px-6">
       <div className="mx-auto max-w-6xl">
@@ -142,37 +150,74 @@ export default function XiamenProductContent() {
 
         {/* ==================== 상품 탭 ==================== */}
 
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          {productTabs.map((tab) => {
-            const active = activeType === tab.id;
+        <div className="mb-6 space-y-3">
+          {/* 3박5일 */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {tabs3N5D.map((tab) => {
+              const active = activeType === tab.id;
 
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveType(tab.id)}
-                className={[
-                  "rounded-2xl border px-4 py-4 text-center transition-all duration-300",
-                  active
-                    ? "border-[#C8A15A] bg-[#C8A15A] text-white shadow-lg"
-                    : "border-[#E8DCC4] bg-white text-gray-600 hover:-translate-y-1 hover:border-[#C8A15A] hover:shadow-md",
-                ].join(" ")}
-              >
-                <div className="text-sm font-bold md:text-base">
-                  {tab.label}
-                </div>
-
-                <div
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveType(tab.id)}
                   className={[
-                    "mt-1 text-[11px] leading-4 md:text-xs",
-                    active ? "text-white/80" : "text-gray-400",
+                    "rounded-2xl border px-4 py-4 text-center transition-all duration-300",
+                    active
+                      ? "border-[#C8A15A] bg-[#C8A15A] text-white shadow-lg"
+                      : "border-[#E8DCC4] bg-white text-gray-600 hover:-translate-y-1 hover:border-[#C8A15A] hover:shadow-md",
                   ].join(" ")}
                 >
-                  {tab.description}
-                </div>
-              </button>
-            );
-          })}
+                  <div className="text-sm font-bold md:text-base">
+                    {tab.label}
+                  </div>
+
+                  <div
+                    className={[
+                      "mt-1 text-[11px] leading-4 md:text-xs",
+                      active ? "text-white/80" : "text-gray-400",
+                    ].join(" ")}
+                  >
+                    {tab.description}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 4박6일 */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {tabs4N6D.map((tab) => {
+              const active = activeType === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveType(tab.id)}
+                  className={[
+                    "rounded-2xl border px-4 py-4 text-center transition-all duration-300",
+                    active
+                      ? "border-[#C8A15A] bg-[#C8A15A] text-white shadow-lg"
+                      : "border-[#E8DCC4] bg-white text-gray-600 hover:-translate-y-1 hover:border-[#C8A15A] hover:shadow-md",
+                  ].join(" ")}
+                >
+                  <div className="text-sm font-bold md:text-base">
+                    {tab.label}
+                  </div>
+
+                  <div
+                    className={[
+                      "mt-1 text-[11px] leading-4 md:text-xs",
+                      active ? "text-white/80" : "text-gray-400",
+                    ].join(" ")}
+                  >
+                    {tab.description}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* ==================== 선택된 상품 안내 ==================== */}
