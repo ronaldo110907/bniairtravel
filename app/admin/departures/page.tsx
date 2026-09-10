@@ -53,6 +53,9 @@ export default function DepartureAdminPage() {
   const [bulkSeat, setBulkSeat] = useState("180");
   const [bulkStatus, setBulkStatus] = useState("예약가능");
   const [courseFilter, setCourseFilter] = useState("전체");
+  const [variantFilter, setVariantFilter] = useState("전체");
+  const [monthFilter, setMonthFilter] = useState("전체");
+
   const [showPastDepartures, setShowPastDepartures] = useState(false);
 
   const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
@@ -69,6 +72,22 @@ export default function DepartureAdminPage() {
   const filteredDepartures = departures.filter((departure) => {
     // 일정 필터
     if (courseFilter !== "전체" && departure.course !== courseFilter) {
+      return false;
+    }
+
+    // 상품 / 코스구분 필터
+    if (
+      variantFilter !== "전체" &&
+      (departure.variant ?? "") !== variantFilter
+    ) {
+      return false;
+    }
+
+    // 월 필터 (YYYY-MM)
+    if (
+      monthFilter !== "전체" &&
+      !departure.departure_date.startsWith(monthFilter)
+    ) {
       return false;
     }
 
@@ -90,7 +109,7 @@ export default function DepartureAdminPage() {
       return false;
     }
 
-    // 오늘 및 미래 출발일 → 표시
+    // 오늘 및 미래 출발일
     return true;
   });
 
@@ -650,15 +669,82 @@ export default function DepartureAdminPage() {
     ),
   ];
 
+  // 선택한 일정에 존재하는 상품구분만 자동 추출
+  const variantSourceDepartures = departures.filter((departure) => {
+    if (courseFilter === "전체") return true;
+    return departure.course === courseFilter;
+  });
+
+  const variantOptions = [
+    "전체",
+    ...Array.from(
+      new Set(
+        variantSourceDepartures
+          .map((departure) => departure.variant)
+          .filter((variant): variant is string => Boolean(variant)),
+      ),
+    ),
+  ];
+
+  // 일정 + 상품구분 조건에 존재하는 월만 자동 추출
+  const monthSourceDepartures = variantSourceDepartures.filter((departure) => {
+    if (variantFilter === "전체") return true;
+    return departure.variant === variantFilter;
+  });
+
+  const monthOptions = [
+    "전체",
+    ...Array.from(
+      new Set(
+        monthSourceDepartures
+          .map((departure) => departure.departure_date.slice(0, 7))
+          .filter(Boolean),
+      ),
+    ).sort(),
+  ];
+
+  function changeProductFilter(productId: string) {
+    clearSelection();
+
+    setCourseFilter("전체");
+    setVariantFilter("전체");
+    setMonthFilter("전체");
+
+    if (productId) {
+      localStorage.setItem("selectedProductId", productId);
+    } else {
+      localStorage.removeItem("selectedProductId");
+    }
+
+    setSelectedProductId(productId);
+  }
+
+  function changeCourseFilter(course: string) {
+    clearSelection();
+
+    setCourseFilter(course);
+    setVariantFilter("전체");
+    setMonthFilter("전체");
+  }
+
+  function changeVariantFilter(variant: string) {
+    clearSelection();
+
+    setVariantFilter(variant);
+    setMonthFilter("전체");
+  }
+
+  function changeMonthFilter(month: string) {
+    clearSelection();
+    setMonthFilter(month);
+  }
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold">출발일 관리</h1>
       <div className="mt-6 mb-6 flex flex-wrap gap-2">
         <button
-          onClick={() => {
-            localStorage.removeItem("selectedProductId");
-            setSelectedProductId("");
-          }}
+          onClick={() => changeProductFilter("")}
           className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
             selectedProductId === ""
               ? "bg-blue-600 text-white"
@@ -670,10 +756,7 @@ export default function DepartureAdminPage() {
         {products.map((product) => (
           <button
             key={product.id}
-            onClick={() => {
-              localStorage.setItem("selectedProductId", product.id);
-              setSelectedProductId(product.id);
-            }}
+            onClick={() => changeProductFilter(product.id)}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
               selectedProductId === product.id
                 ? "bg-blue-600 text-white"
@@ -734,6 +817,75 @@ export default function DepartureAdminPage() {
           >
             {showPastDepartures ? "📁 지난 출발일 접기" : "📂 지난 출발일 보기"}
           </button>
+        </div>
+      </div>
+      {/* ==================== 출발일 필터 ==================== */}
+
+      <div className="mt-4 space-y-3 rounded-xl border bg-gray-50 p-4">
+        {/* 일정 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-2 w-16 text-sm font-bold text-gray-500">
+            일정
+          </span>
+
+          {courseOptions.map((course) => (
+            <button
+              key={course}
+              type="button"
+              onClick={() => changeCourseFilter(course)}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                courseFilter === course
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {course}
+            </button>
+          ))}
+        </div>
+
+        {/* 상품구분 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-2 w-16 text-sm font-bold text-gray-500">
+            상품
+          </span>
+
+          {variantOptions.map((variant) => (
+            <button
+              key={variant}
+              type="button"
+              onClick={() => changeVariantFilter(variant)}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                variantFilter === variant
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {variant === "전체" ? "전체 상품" : variant}
+            </button>
+          ))}
+        </div>
+
+        {/* 월 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-2 w-16 text-sm font-bold text-gray-500">월</span>
+
+          {monthOptions.map((month) => (
+            <button
+              key={month}
+              type="button"
+              onClick={() => changeMonthFilter(month)}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                monthFilter === month
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {month === "전체"
+                ? "전체 월"
+                : `${month.slice(0, 4)}년 ${Number(month.slice(5, 7))}월`}
+            </button>
+          ))}
         </div>
       </div>
       {/*}
