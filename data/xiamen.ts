@@ -1,6 +1,7 @@
 export type XiamenProductType =
   | "value3"
   | "premium3"
+  | "value4"
   | "premium4"
   | "wuyishan4"
   | "golf3"
@@ -633,7 +634,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
 // 실속 4박 6일
 // ======================================================
 
-export const itineraryV4N6D: ItineraryItem[] = attachXiamenImages([
+export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
   {
     day: "DAY 1",
     icon: "✈️",
@@ -1635,7 +1636,7 @@ export const includesValue4 = [
 export const excludesValue4 = [
   { id: 1, text: "마사지 매너팁" },
   { id: 2, text: "기타 개인경비" },
-  { id: 3, text: "싱글차지 150,000원 / 1인(4박)" },
+  { id: 3, text: "싱글차지 200,000원 / 1인(4박)" },
 ];
 
 export const includesPremium4 = [
@@ -1657,7 +1658,7 @@ export const includesPremium4 = [
 export const excludesPremium4 = [
   { id: 1, text: "마사지 매너팁" },
   { id: 2, text: "기타 개인경비" },
-  { id: 3, text: "싱글차지 150,000원 / 1인(4박)" },
+  { id: 3, text: "싱글차지 200,000원 / 1인(4박)" },
 ];
 
 export const includesWuyishan4 = [
@@ -1722,7 +1723,7 @@ export const excludesGolf4 = [
     text: "캐디팁(2인 1캐디) 18홀 150위안 / 1인",
   },
   { id: 3, text: "기타 개인경비" },
-  { id: 4, text: "싱글차지 180,000원 / 1인(4박)" },
+  { id: 4, text: "싱글차지 200,000원 / 1인(4박)" },
 ];
 
 // ============================================================
