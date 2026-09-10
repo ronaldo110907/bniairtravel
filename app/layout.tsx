@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NoticePopup from "@/components/NoticePopup";
-import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,14 +51,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
-
-        <Link
-          href="/admin"
-          className="fixed bottom-6 right-6 z-[9999] rounded-xl bg-gray-900 px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-black"
-        >
-          🏠 관리자 메인
-        </Link>
-
         <NoticePopup />
       </body>
     </html>
