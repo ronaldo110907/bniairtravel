@@ -32,6 +32,7 @@ export default function EstimatePage() {
   const [mode, setMode] = useState<EstimateMode>(null);
   const [priceMode, setPriceMode] = useState<PriceMode>("split");
   const estimateRef = useRef<HTMLDivElement>(null);
+  const estimateContentRef = useRef<HTMLDivElement>(null);
 
   const [showPreview, setShowPreview] = useState(false);
 
@@ -205,11 +206,80 @@ export default function EstimatePage() {
     return formatted;
   }
 
+  function waitForLayout() {
+    return new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+  }
+
+  async function fitEstimateForPrint() {
+    const content = estimateContentRef.current;
+
+    if (!content) return;
+
+    // A4 297mm - 위아래 padding 6mm씩
+    const mmToPx = 96 / 25.4;
+    const availableHeight = (297 - 12) * mmToPx;
+
+    // 한 장에 맞추기 위해 시도할 축소율
+    const scales = [1, 0.95, 0.9, 0.85, 0.8];
+
+    // 항상 100% 상태에서 시작
+    content.style.zoom = "1";
+    content.style.width = "100%";
+
+    await waitForLayout();
+
+    let fitted = false;
+
+    for (const scale of scales) {
+      content.style.zoom = String(scale);
+
+      // 축소하면서 가로폭이 작아지지 않도록 보정
+      content.style.width = `${100 / scale}%`;
+
+      await waitForLayout();
+
+      const currentHeight = content.getBoundingClientRect().height;
+
+      if (currentHeight <= availableHeight) {
+        fitted = true;
+        break;
+      }
+    }
+
+    // 80%까지 줄여도 한 장에 안 들어가면
+    // 억지로 더 줄이지 않고 100%로 2페이지 출력
+    if (!fitted) {
+      content.style.zoom = "1";
+      content.style.width = "100%";
+
+      await waitForLayout();
+    }
+  }
+
+  function resetEstimatePrintScale() {
+    const content = estimateContentRef.current;
+
+    if (!content) return;
+
+    content.style.zoom = "1";
+    content.style.width = "100%";
+  }
+
   const handlePrint = useReactToPrint({
     contentRef: estimateRef,
 
     documentTitle: `BNI_견적서_${form.productName || "Estimate"}`,
+
+    onBeforePrint: async () => {
+      await fitEstimateForPrint();
+    },
+
     onAfterPrint: () => {
+      resetEstimatePrintScale();
       closePreview();
     },
 
@@ -1086,326 +1156,333 @@ thead {
     [&_th]:text-[10pt]
   "
                 >
-                  {/* BNI 머리말 */}
-                  <img
-                    src="/images/invoice/BNIheader.jpg"
-                    alt="BNI Header"
-                    className="mb-[3mm] block w-full"
-                  />
+                  <div
+                    ref={estimateContentRef}
+                    className="estimate-print-content"
+                  >
+                    {/* BNI 머리말 */}
+                    <img
+                      src="/images/invoice/BNIheader.jpg"
+                      alt="BNI Header"
+                      className="mb-[3mm] block w-full"
+                    />
 
-                  {/* 견적서 제목 */}
-                  <div className="mb-[3mm] border-b-2 border-gray-900 pb-[2mm] text-center">
-                    <h1 className="text-[24px] font-black tracking-[0.45em]">
-                      견 적 서
-                    </h1>
-                  </div>
-
-                  {/* 수신 / 발신 */}
-                  <div className="mb-[3mm] grid grid-cols-2 gap-[2mm] text-[11px]">
-                    <div className="rounded-sm border border-gray-300 px-[3mm] py-[2mm]">
-                      <span className="mr-2 font-bold">수신</span>
-                      <span>{form.recipient || "수신처를 입력해주세요."}</span>
+                    {/* 견적서 제목 */}
+                    <div className="mb-[3mm] border-b-2 border-gray-900 pb-[2mm] text-center">
+                      <h1 className="text-[24px] font-black tracking-[0.45em]">
+                        견 적 서
+                      </h1>
                     </div>
 
-                    <div className="rounded-sm border border-gray-300 px-[3mm] py-[2mm] text-right">
-                      <span className="mr-2 font-bold">발신</span>
-                      <span>
-                        {form.sender
-                          ? `BNI항공 ${form.sender}`
-                          : "발신자를 선택해주세요."}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 발송일 */}
-                  <div className="mb-[3mm] text-right text-[10px] text-gray-600">
-                    {formatEstimateDate(form.sentDate)}
-                  </div>
-
-                  {/* 견적 금액 */}
-                  <div className="mb-[3mm]">
-                    <div className="mb-[1.5mm] text-[12px] font-black">
-                      ■ 견적 금액
-                    </div>
-
-                    <table className="w-full table-fixed border-collapse text-[10px]">
-                      <tbody>
-                        {priceMode === "combined" && (
-                          <tr>
-                            <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
-                              입금가
-                            </th>
-
-                            <td className="border border-gray-400 px-[3mm] py-[2mm] text-right text-[12px] font-black">
-                              {form.combinedPrice
-                                ? formatMoney(
-                                    form.combinedPrice,
-                                    form.combinedCurrency,
-                                  )
-                                : "-"}
-                            </td>
-                          </tr>
-                        )}
-
-                        {priceMode === "split" && (
-                          <>
-                            {form.airfare && (
-                              <tr>
-                                <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
-                                  항공료
-                                </th>
-
-                                <td className="border border-gray-400 px-[3mm] py-[2mm] text-right font-bold">
-                                  {formatMoney(
-                                    form.airfare,
-                                    form.airfareCurrency,
-                                  )}
-                                </td>
-                              </tr>
-                            )}
-
-                            {form.landCost && (
-                              <tr>
-                                <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
-                                  지상비
-                                </th>
-
-                                <td className="border border-gray-400 px-[3mm] py-[2mm] text-right font-bold">
-                                  {formatMoney(
-                                    form.landCost,
-                                    form.landCurrency,
-                                  )}
-                                </td>
-                              </tr>
-                            )}
-
-                            {canShowSplitTotal && (
-                              <tr>
-                                <th className="border border-gray-500 bg-gray-800 px-[2mm] py-[2mm] text-center font-bold text-white">
-                                  총 입금가
-                                </th>
-
-                                <td className="border border-gray-500 bg-gray-50 px-[3mm] py-[2mm] text-right text-[12px] font-black">
-                                  {formatMoney(
-                                    String(splitTotal),
-                                    form.airfareCurrency,
-                                  )}
-                                </td>
-                              </tr>
-                            )}
-
-                            {!form.airfare && !form.landCost && (
-                              <tr>
-                                <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
-                                  입금가
-                                </th>
-
-                                <td className="border border-gray-400 px-[3mm] py-[2mm] text-right">
-                                  -
-                                </td>
-                              </tr>
-                            )}
-                          </>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* 포함 / 불포함 */}
-                  {(form.includes || form.excludes) && (
-                    <div className="mb-[2mm] grid grid-cols-2 gap-[2mm] text-[10px] leading-[1.35]">
-                      {/* 포함사항 */}
-                      <div className="border border-gray-400">
-                        <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
-                          포함사항
-                        </div>
-
-                        <div className="min-h-[12mm] whitespace-pre-line px-[2mm] py-[1.5mm]">
-                          {form.includes || "-"}
-                        </div>
+                    {/* 수신 / 발신 */}
+                    <div className="mb-[3mm] grid grid-cols-2 gap-[2mm] text-[11px]">
+                      <div className="rounded-sm border border-gray-300 px-[3mm] py-[2mm]">
+                        <span className="mr-2 font-bold">수신</span>
+                        <span>
+                          {form.recipient || "수신처를 입력해주세요."}
+                        </span>
                       </div>
 
-                      {/* 불포함사항 */}
-                      <div className="border border-gray-400">
-                        <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
-                          불포함사항
-                        </div>
-
-                        <div className="min-h-[12mm] whitespace-pre-line px-[2mm] py-[1.5mm]">
-                          {form.excludes || "-"}
-                        </div>
+                      <div className="rounded-sm border border-gray-300 px-[3mm] py-[2mm] text-right">
+                        <span className="mr-2 font-bold">발신</span>
+                        <span>
+                          {form.sender
+                            ? `BNI항공 ${form.sender}`
+                            : "발신자를 선택해주세요."}
+                        </span>
                       </div>
                     </div>
-                  )}
 
-                  {/* 쇼핑 / 옵션 */}
-                  {(form.shopping || form.options) && (
-                    <table className="mb-[2mm] w-full table-fixed border-collapse text-[7.5px]">
-                      <tbody>
-                        {form.shopping && (
-                          <tr>
-                            <th className="w-[22mm] border border-gray-400 bg-gray-100 px-[1.5mm] py-[1mm] text-center font-bold">
-                              쇼핑
-                            </th>
-
-                            <td className="border border-gray-400 px-[2mm] py-[1mm]">
-                              {form.shopping}
-                            </td>
-                          </tr>
-                        )}
-
-                        {form.options && (
-                          <tr>
-                            <th className="border border-gray-400 bg-gray-100 px-[1.5mm] py-[1mm] text-center font-bold">
-                              옵션
-                            </th>
-
-                            <td className="border border-gray-400 px-[2mm] py-[1mm]">
-                              {form.options}
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  )}
-
-                  {/* 상세 일정 */}
-                  <div className="mb-[2mm]">
-                    <div className="mb-[1mm] text-[10px] font-black">
-                      ■ 상세 일정
+                    {/* 발송일 */}
+                    <div className="mb-[3mm] text-right text-[10px] text-gray-600">
+                      {formatEstimateDate(form.sentDate)}
                     </div>
 
-                    <table className="w-full table-fixed border-collapse text-[10pt] leading-[1.25]">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="w-[13mm] border border-gray-500 px-[1mm] py-[1mm]">
-                            일자
-                          </th>
+                    {/* 견적 금액 */}
+                    <div className="mb-[3mm]">
+                      <div className="mb-[1.5mm] text-[12px] font-black">
+                        ■ 견적 금액
+                      </div>
 
-                          <th className="w-[15mm] border border-gray-500 px-[1mm] py-[1mm]">
-                            지역
-                          </th>
-
-                          <th className="w-[17mm] border border-gray-500 px-[1mm] py-[1mm]">
-                            교통
-                          </th>
-
-                          <th className="w-[15mm] border border-gray-500 px-[1mm] py-[1mm]">
-                            시간
-                          </th>
-
-                          <th className="border border-gray-500 px-[1mm] py-[1mm]">
-                            상세일정
-                          </th>
-
-                          <th className="w-[37mm] border border-gray-500 px-[1mm] py-[1mm] text-center">
-                            식사
-                          </th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {days.map((day, index) => (
-                          <Fragment key={day.id}>
-                            {/* DAY 일정 본문 */}
+                      <table className="w-full table-fixed border-collapse text-[10px]">
+                        <tbody>
+                          {priceMode === "combined" && (
                             <tr>
-                              {/* DAY */}
-                              <td
-                                rowSpan={day.hotel ? 2 : 1}
-                                className="w-[13mm] border border-gray-400 px-[1mm] py-[1.2mm] text-center align-top font-bold"
-                              >
-                                DAY
-                                <br />
-                                {index + 1}
-                              </td>
+                              <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
+                                입금가
+                              </th>
 
-                              {/* 지역 */}
-                              <td className="w-[15mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
-                                {day.region || "-"}
-                              </td>
-
-                              {/* 교통 */}
-                              <td className="w-[17mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
-                                {day.transport || "-"}
-                              </td>
-
-                              {/* 시간 */}
-                              <td className="w-[15mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
-                                {day.time || "-"}
-                              </td>
-
-                              {/* 상세일정 */}
-                              <td className="whitespace-pre-line border border-gray-400 px-[1.5mm] py-[1.2mm] align-top">
-                                {day.schedule || "-"}
-                              </td>
-
-                              {/* 식사 */}
-                              <td className="w-[37mm] border border-gray-400 px-[1mm] py-[1.2mm] text-center align-middle">
-                                {day.breakfast && (
-                                  <div>
-                                    <span className="font-bold">조</span>{" "}
-                                    {day.breakfast}
-                                  </div>
-                                )}
-
-                                {day.lunch && (
-                                  <div>
-                                    <span className="font-bold">중</span>{" "}
-                                    {day.lunch}
-                                  </div>
-                                )}
-
-                                {day.dinner && (
-                                  <div>
-                                    <span className="font-bold">석</span>{" "}
-                                    {day.dinner}
-                                  </div>
-                                )}
-
-                                {!day.breakfast &&
-                                  !day.lunch &&
-                                  !day.dinner &&
-                                  "-"}
+                              <td className="border border-gray-400 px-[3mm] py-[2mm] text-right text-[12px] font-black">
+                                {form.combinedPrice
+                                  ? formatMoney(
+                                      form.combinedPrice,
+                                      form.combinedCurrency,
+                                    )
+                                  : "-"}
                               </td>
                             </tr>
+                          )}
 
-                            {/* 호텔 - DAY 맨 아래 별도 줄 */}
-                            {day.hotel && (
+                          {priceMode === "split" && (
+                            <>
+                              {form.airfare && (
+                                <tr>
+                                  <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
+                                    항공료
+                                  </th>
+
+                                  <td className="border border-gray-400 px-[3mm] py-[2mm] text-right font-bold">
+                                    {formatMoney(
+                                      form.airfare,
+                                      form.airfareCurrency,
+                                    )}
+                                  </td>
+                                </tr>
+                              )}
+
+                              {form.landCost && (
+                                <tr>
+                                  <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
+                                    지상비
+                                  </th>
+
+                                  <td className="border border-gray-400 px-[3mm] py-[2mm] text-right font-bold">
+                                    {formatMoney(
+                                      form.landCost,
+                                      form.landCurrency,
+                                    )}
+                                  </td>
+                                </tr>
+                              )}
+
+                              {canShowSplitTotal && (
+                                <tr>
+                                  <th className="border border-gray-500 bg-gray-800 px-[2mm] py-[2mm] text-center font-bold text-white">
+                                    총 입금가
+                                  </th>
+
+                                  <td className="border border-gray-500 bg-gray-50 px-[3mm] py-[2mm] text-right text-[12px] font-black">
+                                    {formatMoney(
+                                      String(splitTotal),
+                                      form.airfareCurrency,
+                                    )}
+                                  </td>
+                                </tr>
+                              )}
+
+                              {!form.airfare && !form.landCost && (
+                                <tr>
+                                  <th className="w-[32mm] border border-gray-400 bg-gray-100 px-[2mm] py-[2mm] text-center font-bold">
+                                    입금가
+                                  </th>
+
+                                  <td className="border border-gray-400 px-[3mm] py-[2mm] text-right">
+                                    -
+                                  </td>
+                                </tr>
+                              )}
+                            </>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* 포함 / 불포함 */}
+                    {(form.includes || form.excludes) && (
+                      <div className="mb-[2mm] grid grid-cols-2 gap-[2mm] text-[10px] leading-[1.35]">
+                        {/* 포함사항 */}
+                        <div className="border border-gray-400">
+                          <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
+                            포함사항
+                          </div>
+
+                          <div className="min-h-[12mm] whitespace-pre-line px-[2mm] py-[1.5mm]">
+                            {form.includes || "-"}
+                          </div>
+                        </div>
+
+                        {/* 불포함사항 */}
+                        <div className="border border-gray-400">
+                          <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
+                            불포함사항
+                          </div>
+
+                          <div className="min-h-[12mm] whitespace-pre-line px-[2mm] py-[1.5mm]">
+                            {form.excludes || "-"}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 쇼핑 / 옵션 */}
+                    {(form.shopping || form.options) && (
+                      <table className="mb-[2mm] w-full table-fixed border-collapse text-[7.5px]">
+                        <tbody>
+                          {form.shopping && (
+                            <tr>
+                              <th className="w-[22mm] border border-gray-400 bg-gray-100 px-[1.5mm] py-[1mm] text-center font-bold">
+                                쇼핑
+                              </th>
+
+                              <td className="border border-gray-400 px-[2mm] py-[1mm]">
+                                {form.shopping}
+                              </td>
+                            </tr>
+                          )}
+
+                          {form.options && (
+                            <tr>
+                              <th className="border border-gray-400 bg-gray-100 px-[1.5mm] py-[1mm] text-center font-bold">
+                                옵션
+                              </th>
+
+                              <td className="border border-gray-400 px-[2mm] py-[1mm]">
+                                {form.options}
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+
+                    {/* 상세 일정 */}
+                    <div className="mb-[2mm]">
+                      <div className="mb-[1mm] text-[10px] font-black">
+                        ■ 상세 일정
+                      </div>
+
+                      <table className="w-full table-fixed border-collapse text-[10pt] leading-[1.25]">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="w-[13mm] border border-gray-500 px-[1mm] py-[1mm]">
+                              일자
+                            </th>
+
+                            <th className="w-[15mm] border border-gray-500 px-[1mm] py-[1mm]">
+                              지역
+                            </th>
+
+                            <th className="w-[17mm] border border-gray-500 px-[1mm] py-[1mm]">
+                              교통
+                            </th>
+
+                            <th className="w-[15mm] border border-gray-500 px-[1mm] py-[1mm]">
+                              시간
+                            </th>
+
+                            <th className="border border-gray-500 px-[1mm] py-[1mm]">
+                              상세일정
+                            </th>
+
+                            <th className="w-[37mm] border border-gray-500 px-[1mm] py-[1mm] text-center">
+                              식사
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {days.map((day, index) => (
+                            <Fragment key={day.id}>
+                              {/* DAY 일정 본문 */}
                               <tr>
+                                {/* DAY */}
                                 <td
-                                  colSpan={5}
-                                  className="border border-gray-400 bg-gray-50 px-[2mm] py-[1.2mm]"
+                                  rowSpan={day.hotel ? 2 : 1}
+                                  className="w-[13mm] border border-gray-400 px-[1mm] py-[1.2mm] text-center align-top font-bold"
                                 >
-                                  <span className="mr-[2mm] font-bold">
-                                    HOTEL
-                                  </span>
+                                  DAY
+                                  <br />
+                                  {index + 1}
+                                </td>
 
-                                  {day.hotel}
+                                {/* 지역 */}
+                                <td className="w-[15mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
+                                  {day.region || "-"}
+                                </td>
+
+                                {/* 교통 */}
+                                <td className="w-[17mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
+                                  {day.transport || "-"}
+                                </td>
+
+                                {/* 시간 */}
+                                <td className="w-[15mm] whitespace-pre-wrap break-words border border-gray-400 px-[1mm] py-[1.2mm] align-top">
+                                  {day.time || "-"}
+                                </td>
+
+                                {/* 상세일정 */}
+                                <td className="whitespace-pre-line border border-gray-400 px-[1.5mm] py-[1.2mm] align-top">
+                                  {day.schedule || "-"}
+                                </td>
+
+                                {/* 식사 */}
+                                <td className="w-[37mm] border border-gray-400 px-[1mm] py-[1.2mm] text-center align-middle">
+                                  {day.breakfast && (
+                                    <div>
+                                      <span className="font-bold">조</span>{" "}
+                                      {day.breakfast}
+                                    </div>
+                                  )}
+
+                                  {day.lunch && (
+                                    <div>
+                                      <span className="font-bold">중</span>{" "}
+                                      {day.lunch}
+                                    </div>
+                                  )}
+
+                                  {day.dinner && (
+                                    <div>
+                                      <span className="font-bold">석</span>{" "}
+                                      {day.dinner}
+                                    </div>
+                                  )}
+
+                                  {!day.breakfast &&
+                                    !day.lunch &&
+                                    !day.dinner &&
+                                    "-"}
                                 </td>
                               </tr>
-                            )}
-                          </Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
 
-                  {/* 비고 */}
-                  {form.remarks && (
-                    <div className="mb-[2mm] border border-gray-400 text-[10pt] leading-[1.25]">
-                      <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
-                        비고
-                      </div>
+                              {/* 호텔 - DAY 맨 아래 별도 줄 */}
+                              {day.hotel && (
+                                <tr>
+                                  <td
+                                    colSpan={5}
+                                    className="border border-gray-400 bg-gray-50 px-[2mm] py-[1.2mm]"
+                                  >
+                                    <span className="mr-[2mm] font-bold">
+                                      HOTEL
+                                    </span>
 
-                      <div className="whitespace-pre-line px-[2mm] py-[1.5mm]">
-                        {form.remarks}
-                      </div>
+                                    {day.hotel}
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  )}
 
-                  {/* 하단 안내 */}
-                  <div className="mt-[2mm] border-t border-gray-500 pt-[1.5mm] text-center text-[6.5px] text-gray-600">
-                    상기 일정은 현지 및 항공 사정에 따라 변경될 수 있습니다.
+                    {/* 비고 */}
+                    {form.remarks && (
+                      <div className="mb-[2mm] border border-gray-400 text-[10pt] leading-[1.25]">
+                        <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
+                          비고
+                        </div>
+
+                        <div className="whitespace-pre-line px-[2mm] py-[1.5mm]">
+                          {form.remarks}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 하단 안내 */}
+                    <div className="mt-[2mm] border-t border-gray-500 pt-[1.5mm] text-center text-[6.5px] text-gray-600">
+                      상기 일정은 현지 및 항공 사정에 따라 변경될 수 있습니다.
+                    </div>
                   </div>
                 </div>
               </div>
