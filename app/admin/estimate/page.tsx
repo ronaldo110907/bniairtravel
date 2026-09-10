@@ -1392,7 +1392,7 @@ thead {
 
                   {/* 비고 */}
                   {form.remarks && (
-                    <div className="mb-[2mm] border border-gray-400 text-[7px] leading-[1.3]">
+                    <div className="mb-[2mm] border border-gray-400 text-[10pt] leading-[1.25]">
                       <div className="border-b border-gray-400 bg-gray-100 px-[2mm] py-[1mm] font-bold">
                         비고
                       </div>
