@@ -63,12 +63,15 @@ import {
   flightInfo as xiamenFlightInfo,
   itineraryValue3N5D as xiamenItineraryValue3N5D,
   itineraryPremium3N5D as xiamenItineraryPremium3N5D,
+  itineraryValue4N6D as xiamenItineraryValue4N6D,
   itineraryPremium4N6D as xiamenItineraryPremium4N6D,
   itineraryWuyishan4N6D as xiamenItineraryWuyishan4N6D,
   itineraryGolf3N5D as xiamenItineraryGolf3N5D,
   itineraryGolf4N6D as xiamenItineraryGolf4N6D,
   includesValue3 as xiamenIncludesValue3,
   excludesValue3 as xiamenExcludesValue3,
+  includesValue4 as xiamenIncludesValue4,
+  excludesValue4 as xiamenExcludesValue4,
   includesPremium3 as xiamenIncludesPremium3,
   excludesPremium3 as xiamenExcludesPremium3,
   includesPremium4 as xiamenIncludesPremium4,
@@ -388,6 +391,14 @@ export async function POST(request: Request) {
             excludes: xiamenExcludesPremium3,
           },
 
+          value4: {
+            name: "실속 4박6일",
+            itinerary: xiamenItineraryValue4N6D,
+            hotels: xiamenHotels,
+            includes: xiamenIncludesValue4,
+            excludes: xiamenExcludesValue4,
+          },
+
           premium4: {
             name: "고품격 4박6일",
             itinerary: xiamenItineraryPremium4N6D,
@@ -454,15 +465,17 @@ export async function POST(request: Request) {
     const selectedXiamenCourse =
       xiamenCourse === "premium3"
         ? productData.xiamen.courses.premium3
-        : xiamenCourse === "premium4"
-          ? productData.xiamen.courses.premium4
-          : xiamenCourse === "wuyishan4"
-            ? productData.xiamen.courses.wuyishan4
-            : xiamenCourse === "golf3"
-              ? productData.xiamen.courses.golf3
-              : xiamenCourse === "golf4"
-                ? productData.xiamen.courses.golf4
-                : productData.xiamen.courses.value3;
+        : xiamenCourse === "value4"
+          ? productData.xiamen.courses.value4
+          : xiamenCourse === "premium4"
+            ? productData.xiamen.courses.premium4
+            : xiamenCourse === "wuyishan4"
+              ? productData.xiamen.courses.wuyishan4
+              : xiamenCourse === "golf3"
+                ? productData.xiamen.courses.golf3
+                : xiamenCourse === "golf4"
+                  ? productData.xiamen.courses.golf4
+                  : productData.xiamen.courses.value3;
 
     const isPhuquoc = product === "phuquoc";
     const isGuilin = product === "guilin";

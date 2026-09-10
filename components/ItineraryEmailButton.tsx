@@ -12,17 +12,20 @@ type GuilinCourse =
 type XiamenCourse =
   | "value3"
   | "premium3"
+  | "golf3"
+  | "value4"
   | "premium4"
   | "wuyishan4"
-  | "golf3"
   | "golf4";
 type Props = {
   product: string;
 };
+type ShareMode = "email" | "link";
 
 export default function ItineraryEmailButton({ product }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [shareMode, setShareMode] = useState<ShareMode>("email");
   const [companyName, setCompanyName] = useState("");
   const [managerName, setManagerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -78,7 +81,40 @@ export default function ItineraryEmailButton({ product }: Props) {
           xiamenCourse,
         }),
       });
+      const openSharePanel = (mode: ShareMode) => {
+        setMessage("");
 
+        if (isOpen && shareMode === mode) {
+          setIsOpen(false);
+          return;
+        }
+
+        setShareMode(mode);
+        setIsOpen(true);
+      };
+
+      const copyItineraryLink = async () => {
+        let selectedCourse = "";
+
+        if (product === "phuquoc") {
+          selectedCourse = phuquocCourse;
+        } else if (product === "guilin") {
+          selectedCourse = guilinCourse;
+        } else if (product === "xiamen") {
+          selectedCourse = xiamenCourse;
+        } else {
+          selectedCourse = course === "4박5일" ? "4n5d" : "3n4d";
+        }
+
+        const url = `${window.location.origin}/share/${product}/${selectedCourse}`;
+
+        try {
+          await navigator.clipboard.writeText(url);
+          setMessage("일정 링크가 복사되었습니다. 🔗");
+        } catch {
+          setMessage(url);
+        }
+      };
       const result = await response.json();
 
       if (!response.ok) {
@@ -97,72 +133,136 @@ export default function ItineraryEmailButton({ product }: Props) {
     }
   };
 
+  const openSharePanel = (mode: ShareMode) => {
+    setMessage("");
+
+    if (isOpen && shareMode === mode) {
+      setIsOpen(false);
+      return;
+    }
+
+    setShareMode(mode);
+    setIsOpen(true);
+  };
+
+  const copyItineraryLink = async () => {
+    let selectedCourse = "";
+
+    if (product === "phuquoc") {
+      selectedCourse = phuquocCourse;
+    } else if (product === "guilin") {
+      selectedCourse = guilinCourse;
+    } else if (product === "xiamen") {
+      selectedCourse = xiamenCourse;
+    } else {
+      selectedCourse = course === "4박5일" ? "4n5d" : "3n4d";
+    }
+
+    const url = `${window.location.origin}/share/${product}/${selectedCourse}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setMessage("일정 링크가 복사되었습니다. 🔗");
+    } catch {
+      setMessage(url);
+    }
+  };
+
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        className="w-full rounded-2xl border bg-white px-5 py-4 font-bold shadow-sm transition hover:bg-gray-50"
-      >
-        📧 일정표 메일로 보내기
-        <span className="ml-2 text-gray-400">{isOpen ? "▲" : "▼"}</span>
-      </button>
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => openSharePanel("email")}
+          className={`rounded-2xl border px-5 py-4 font-bold shadow-sm transition ${
+            isOpen && shareMode === "email"
+              ? "border-[#b88a44] bg-[#b88a44] text-white"
+              : "bg-white hover:bg-gray-50"
+          }`}
+        >
+          📧 일정표 메일로 보내기
+        </button>
+
+        <button
+          type="button"
+          onClick={() => openSharePanel("link")}
+          className={`rounded-2xl border px-5 py-4 font-bold shadow-sm transition ${
+            isOpen && shareMode === "link"
+              ? "border-[#b88a44] bg-[#b88a44] text-white"
+              : "bg-white hover:bg-gray-50"
+          }`}
+        >
+          🔗 일정 링크 생성하기
+        </button>
+      </div>
 
       {isOpen && (
         <div className="mt-3 rounded-2xl border bg-white p-5 shadow-sm">
           <div className="mb-5">
-            <div className="font-bold">📧 일정표 메일 보내기</div>
+            <div className="font-bold">
+              {shareMode === "email"
+                ? "📧 일정표 메일 보내기"
+                : "🔗 일정 링크 생성하기"}
+            </div>
 
             <p className="mt-1 text-sm text-gray-500">
-              고객에게 여행 일정표를 이메일로 보내세요.
+              {shareMode === "email"
+                ? "고객에게 여행 일정표를 이메일로 보내세요."
+                : "공유할 여행 일정을 선택한 후 링크를 복사하세요."}
             </p>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="받는 분 이메일"
-              className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
-            />
+          {shareMode === "email" && (
+            <>
+              <div className="grid gap-3 md:grid-cols-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="받는 분 이메일"
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                />
 
-            <input
-              type="text"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="보내는 회사명"
-              className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
-            />
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="보내는 회사명"
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                />
 
-            <input
-              type="text"
-              value={managerName}
-              onChange={(e) => setManagerName(e.target.value)}
-              placeholder="담당자명"
-              className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
-            />
+                <input
+                  type="text"
+                  value={managerName}
+                  onChange={(e) => setManagerName(e.target.value)}
+                  placeholder="담당자명"
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                />
 
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="연락처"
-              className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
-            />
-          </div>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="연락처"
+                  className="rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+                />
+              </div>
 
-          <textarea
-            value={etc}
-            onChange={(e) => setEtc(e.target.value)}
-            placeholder="기타사항 (예: 요청하신 1월 13일 출발은 1인 1,290,000원입니다.)"
-            rows={2}
-            className="mt-3 w-full resize-none rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
-          />
+              <textarea
+                value={etc}
+                onChange={(e) => setEtc(e.target.value)}
+                placeholder="기타사항 (예: 요청하신 1월 13일 출발은 1인 1,290,000원입니다.)"
+                rows={2}
+                className="mt-3 w-full resize-none rounded-xl border px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </>
+          )}
 
           <div className="mt-6">
             <div className="mb-3 text-sm font-bold text-[#5f4a2f]">
-              보내실 일정을 선택해주세요.
+              {shareMode === "email"
+                ? "보내실 일정을 선택해주세요."
+                : "공유할 일정을 선택해주세요."}
             </div>
 
             {product === "phuquoc" ? (
@@ -254,28 +354,51 @@ export default function ItineraryEmailButton({ product }: Props) {
                 </div>
               </div>
             ) : product === "xiamen" ? (
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {[
-                  { key: "value3", label: "실속 3박5일" },
-                  { key: "premium3", label: "고품격 3박5일" },
-                  { key: "premium4", label: "고품격 4박6일" },
-                  { key: "wuyishan4", label: "무이산 4박6일" },
-                  { key: "golf3", label: "골프 3박5일" },
-                  { key: "golf4", label: "골프 4박6일" },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => setXiamenCourse(item.key as XiamenCourse)}
-                    className={`rounded-xl border px-4 py-3 font-bold transition ${
-                      xiamenCourse === item.key
-                        ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
-                        : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44] hover:bg-[#f7f3ec]"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              <div className="space-y-3">
+                {/* 3박5일 */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {[
+                    { key: "value3", label: "실속 3박5일" },
+                    { key: "premium3", label: "고품격 3박5일" },
+                    { key: "golf3", label: "골프 3박5일" },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setXiamenCourse(item.key as XiamenCourse)}
+                      className={`rounded-xl border px-4 py-3 font-bold transition ${
+                        xiamenCourse === item.key
+                          ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                          : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44] hover:bg-[#f7f3ec]"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 4박6일 */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {[
+                    { key: "value4", label: "실속 4박6일" },
+                    { key: "premium4", label: "고품격 4박6일" },
+                    { key: "wuyishan4", label: "무이산 4박6일" },
+                    { key: "golf4", label: "골프 4박6일" },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setXiamenCourse(item.key as XiamenCourse)}
+                      className={`rounded-xl border px-4 py-3 font-bold transition ${
+                        xiamenCourse === item.key
+                          ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                          : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44] hover:bg-[#f7f3ec]"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
@@ -305,14 +428,24 @@ export default function ItineraryEmailButton({ product }: Props) {
               </div>
             )}
           </div>
-          <button
-            type="button"
-            onClick={sendEmail}
-            disabled={sending}
-            className="mt-5 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
-          >
-            {sending ? "발송 중..." : "📧 일정표 메일 보내기"}
-          </button>
+          {shareMode === "email" ? (
+            <button
+              type="button"
+              onClick={sendEmail}
+              disabled={sending}
+              className="mt-5 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+            >
+              {sending ? "발송 중..." : "📧 일정표 메일 보내기"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={copyItineraryLink}
+              className="mt-5 w-full rounded-xl bg-[#b88a44] px-5 py-3 font-bold text-white transition hover:bg-[#a77a35]"
+            >
+              🔗 선택한 일정 링크 복사하기
+            </button>
+          )}
 
           {message && (
             <div className="mt-3 text-center text-sm text-gray-600">
