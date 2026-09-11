@@ -821,71 +821,85 @@ export default function DepartureAdminPage() {
       </div>
       {/* ==================== 출발일 필터 ==================== */}
 
-      <div className="mt-4 space-y-3 rounded-xl border bg-gray-50 p-4">
-        {/* 일정 */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-2 w-16 text-sm font-bold text-gray-500">
-            일정
-          </span>
+      <div className="mt-4 rounded-xl border bg-gray-50 p-4 xl:flex xl:items-start xl:justify-between xl:gap-8">
+        <div className="flex-1 space-y-3">
+          {/* 일정 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-2 w-16 text-sm font-bold text-gray-500">
+              일정
+            </span>
 
-          {courseOptions.map((course) => (
-            <button
-              key={course}
-              type="button"
-              onClick={() => changeCourseFilter(course)}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                courseFilter === course
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {course}
-            </button>
-          ))}
+            {courseOptions.map((course) => (
+              <button
+                key={course}
+                type="button"
+                onClick={() => changeCourseFilter(course)}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  courseFilter === course
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {course}
+              </button>
+            ))}
+          </div>
+
+          {/* 상품구분 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-2 w-16 text-sm font-bold text-gray-500">
+              상품
+            </span>
+
+            {variantOptions.map((variant) => (
+              <button
+                key={variant}
+                type="button"
+                onClick={() => changeVariantFilter(variant)}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  variantFilter === variant
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {variant === "전체" ? "전체 상품" : variant}
+              </button>
+            ))}
+          </div>
+
+          {/* 월 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-2 w-16 text-sm font-bold text-gray-500">
+              월
+            </span>
+
+            {monthOptions.map((month) => (
+              <button
+                key={month}
+                type="button"
+                onClick={() => changeMonthFilter(month)}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  monthFilter === month
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {month === "전체"
+                  ? "전체 월"
+                  : `${month.slice(0, 4)}년 ${Number(month.slice(5, 7))}월`}
+              </button>
+            ))}
+          </div>
         </div>
+        <div className="mt-4 shrink-0 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900 xl:mt-0 xl:w-[430px]">
+          <div className="font-bold text-amber-800">📌 안내</div>
 
-        {/* 상품구분 */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-2 w-16 text-sm font-bold text-gray-500">
-            상품
-          </span>
-
-          {variantOptions.map((variant) => (
-            <button
-              key={variant}
-              type="button"
-              onClick={() => changeVariantFilter(variant)}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                variantFilter === variant
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {variant === "전체" ? "전체 상품" : variant}
-            </button>
-          ))}
-        </div>
-
-        {/* 월 */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-2 w-16 text-sm font-bold text-gray-500">월</span>
-
-          {monthOptions.map((month) => (
-            <button
-              key={month}
-              type="button"
-              onClick={() => changeMonthFilter(month)}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                monthFilter === month
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {month === "전체"
-                ? "전체 월"
-                : `${month.slice(0, 4)}년 ${Number(month.slice(5, 7))}월`}
-            </button>
-          ))}
+          <div className="mt-1">
+            정산이 완료된 지난 출발일은 기본 목록에서 노출되지 않습니다.
+            <br />
+            확인이 필요하시면{" "}
+            <span className="font-bold">‘지난 출발일 보기’</span>를 눌러주세요.
+          </div>
         </div>
       </div>
       {/*}
