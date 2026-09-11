@@ -241,6 +241,11 @@ function ReservationsContent() {
   >(null);
   const [travelDocumentUploading, setTravelDocumentUploading] = useState(false);
 
+  const [useSeatPool, setUseSeatPool] = useState(false);
+  const [seatProductId, setSeatProductId] = useState("");
+  const [seatDepartures, setSeatDepartures] = useState<any[]>([]);
+  const [seatDepartureId, setSeatDepartureId] = useState("");
+
   const [products, setProducts] = useState<Product[]>([]);
   const [departures, setDepartures] = useState<Departure[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -851,14 +856,41 @@ function ReservationsContent() {
 
     setDepartures(data ?? []);
   }
+
+  async function loadSeatDepartures(productId: string) {
+    if (!productId) {
+      setSeatDepartures([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("departures")
+      .select("*")
+      .eq("product_id", productId)
+      .order("departure_date", { ascending: true });
+
+    if (error) {
+      console.log("SEAT DEPARTURE ERROR >>>", error);
+      return;
+    }
+
+    setSeatDepartures(data ?? []);
+  }
   async function addReservation() {
     // 필수값 체크
+    const customSeatPoolMissing =
+      isCustomProduct && useSeatPool && !newReservation.departure_id;
+
+    const normalDepartureMissing =
+      !isCustomProduct && !isManualDeparture && !newReservation.departure_id;
+
     if (
       !newReservation.name ||
       !newReservation.phone ||
       !newReservation.product ||
       !newReservation.departure_date ||
-      (!isCustomProduct && !isManualDeparture && !newReservation.departure_id)
+      customSeatPoolMissing ||
+      normalDepartureMissing
     ) {
       alert("필수 항목을 모두 입력해주세요.");
       return;
@@ -928,7 +960,11 @@ function ReservationsContent() {
       name: newReservation.name,
       phone: newReservation.phone,
       product: newReservation.product,
-      departure_id: isCustomProduct ? null : resolvedDepartureId,
+      departure_id: isCustomProduct
+        ? useSeatPool
+          ? resolvedDepartureId
+          : null
+        : resolvedDepartureId,
       departure_date: newReservation.departure_date,
       status: newReservation.status,
       message: newReservation.message,
@@ -959,6 +995,11 @@ function ReservationsContent() {
     setIsCustomProduct(false);
     setCustomProductName("");
 
+    setUseSeatPool(false);
+    setSeatProductId("");
+    setSeatDepartures([]);
+    setSeatDepartureId("");
+
     await loadReservations();
   }
   async function loadReservations() {
@@ -967,8 +1008,19 @@ function ReservationsContent() {
     try {
       const { data, error } = await supabase
         .from("reservations")
-        .select("*")
+        .select(
+          `
+        *,
+        departures (
+          product_id,
+          products (
+            title
+          )
+        )
+      `,
+        )
         .order("departure_date", { ascending: true });
+
       if (error) {
         console.error("RESERVATIONS ERROR", error);
         alert(error.message);
@@ -976,7 +1028,14 @@ function ReservationsContent() {
         return;
       }
 
-      setList((data as Reservation[]) || []);
+      const mappedData = (data ?? []).map((item: any) => ({
+        ...item,
+
+        // 좌석이 기존 상품에 연결되어 있으면 그 상품을 필터 기준으로 사용
+        filter_product: item.departures?.products?.title || item.product,
+      }));
+
+      setList(mappedData as Reservation[]);
     } catch (error) {
       console.error("LOAD RESERVATIONS CATCH", error);
       alert("예약 목록을 불러오지 못했습니다.");
@@ -1507,7 +1566,10 @@ function ReservationsContent() {
         .toLowerCase();
 
       if (keyword && !searchable.includes(keyword)) return false;
-      if (productFilter !== "전체" && item.product !== productFilter)
+      if (
+        productFilter !== "전체" &&
+        ((item as any).filter_product || item.product) !== productFilter
+      )
         return false;
 
       const departureDate = toDateInputValue(item.departure_date);
@@ -1752,7 +1814,11 @@ function ReservationsContent() {
                 <option value="전체">전체</option>
 
                 {Array.from(
-                  new Set(list.map((item) => item.product).filter(Boolean)),
+                  new Set(
+                    list
+                      .map((item: any) => item.filter_product || item.product)
+                      .filter(Boolean),
+                  ),
                 ).map((product) => (
                   <option key={product} value={product}>
                     {product}
@@ -2043,7 +2109,7 @@ function ReservationsContent() {
       </div>
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6">
             <div className="flex items-center justify-between border-b p-6">
               <h2 className="text-xl font-bold">예약 등록</h2>
 
@@ -2105,6 +2171,11 @@ function ReservationsContent() {
                     if (productTitle === "기타") {
                       setIsCustomProduct(true);
                       setCustomProductName("");
+
+                      setUseSeatPool(false);
+                      setSeatProductId("");
+                      setSeatDepartures([]);
+                      setSeatDepartureId("");
 
                       setNewReservation({
                         ...newReservation,
@@ -2169,25 +2240,127 @@ function ReservationsContent() {
                 </label>
 
                 {isCustomProduct ? (
-                  <input
-                    type="date"
-                    min="1900-01-01"
-                    max="9999-12-31"
-                    value={newReservation.departure_date}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const year = value.split("-")[0];
+                  <div className="space-y-3">
+                    <input
+                      type="date"
+                      min="1900-01-01"
+                      max="9999-12-31"
+                      value={newReservation.departure_date}
+                      disabled={useSeatPool}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const year = value.split("-")[0];
 
-                      if (year.length > 4) return;
+                        if (year.length > 4) return;
 
-                      setNewReservation({
-                        ...newReservation,
-                        departure_id: "",
-                        departure_date: value,
-                      });
-                    }}
-                    className="w-full rounded-xl border px-4 py-3"
-                  />
+                        setNewReservation({
+                          ...newReservation,
+                          departure_id: "",
+                          departure_date: value,
+                        });
+                      }}
+                      className="w-full rounded-xl border px-4 py-3 disabled:bg-gray-100 disabled:text-gray-400"
+                    />
+
+                    <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={useSeatPool}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+
+                          setUseSeatPool(checked);
+                          setSeatProductId("");
+                          setSeatDepartures([]);
+                          setSeatDepartureId("");
+
+                          setNewReservation({
+                            ...newReservation,
+                            departure_id: "",
+                            departure_date: "",
+                          });
+                        }}
+                      />
+                      기존 상품 좌석에서 차감
+                    </label>
+
+                    {useSeatPool && (
+                      <div className="space-y-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                        <div className="text-sm font-bold text-blue-800">
+                          좌석 차감 기준
+                        </div>
+
+                        <select
+                          value={seatProductId}
+                          onChange={(e) => {
+                            const productId = e.target.value;
+
+                            setSeatProductId(productId);
+                            setSeatDepartureId("");
+                            setSeatDepartures([]);
+
+                            setNewReservation({
+                              ...newReservation,
+                              departure_id: "",
+                              departure_date: "",
+                            });
+
+                            void loadSeatDepartures(productId);
+                          }}
+                          className="w-full rounded-xl border bg-white px-4 py-3"
+                        >
+                          <option value="">기준 상품 선택</option>
+
+                          {products.map((product) => (
+                            <option key={product.id} value={product.id}>
+                              {product.title}
+                            </option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={seatDepartureId}
+                          disabled={!seatProductId}
+                          onChange={(e) => {
+                            const departureId = e.target.value;
+
+                            const selectedDeparture = seatDepartures.find(
+                              (departure) =>
+                                String(departure.id) === departureId,
+                            );
+
+                            setSeatDepartureId(departureId);
+
+                            setNewReservation({
+                              ...newReservation,
+                              departure_id: departureId,
+                              departure_date:
+                                selectedDeparture?.departure_date ?? "",
+                            });
+                          }}
+                          className="w-full rounded-xl border bg-white px-4 py-3 disabled:bg-gray-100"
+                        >
+                          <option value="">좌석 차감 출발일 선택</option>
+
+                          {seatDepartures.map((departure) => (
+                            <option key={departure.id} value={departure.id}>
+                              {departure.departure_date} ·{" "}
+                              {departure.variant ||
+                                departure.course ||
+                                "코스 미지정"}{" "}
+                              · {Number(departure.price || 0).toLocaleString()}
+                              원
+                            </option>
+                          ))}
+                        </select>
+
+                        <div className="text-xs leading-5 text-blue-700">
+                          상품명은 직접입력 상품으로 유지되며, 좌석만 선택한
+                          출발일의 공유 좌석에서 차감됩니다.
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <select
