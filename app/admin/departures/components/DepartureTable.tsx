@@ -62,6 +62,19 @@ export default function DepartureTable({
       .reduce((sum, item) => sum + (passengerCounts[item.id] ?? 0), 0);
   };
 
+  const isSharedDeparture = (departure: any) => {
+    if (!departure.variant) return false;
+
+    const sharedDepartures = departures.filter(
+      (item) =>
+        item.product_id === departure.product_id &&
+        item.departure_date === departure.departure_date &&
+        item.variant,
+    );
+
+    return sharedDepartures.length > 1;
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border bg-white">
       <table className="min-w-full text-sm">
@@ -128,7 +141,18 @@ export default function DepartureTable({
 
               <td className="px-4 py-3 text-center">{departure.airline}</td>
 
-              <td className="px-4 py-3 text-center">{departure.seat}</td>
+              <td className="px-4 py-3 text-center">
+                <div>{departure.seat}</div>
+
+                {isSharedDeparture(departure) && (
+                  <div
+                    className="mt-1 inline-block rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700"
+                    title="여러 상품이 동일 좌석을 공유합니다."
+                  >
+                    🔗 좌석 공유
+                  </div>
+                )}
+              </td>
 
               <td className="px-4 py-3 text-center">
                 {passengerCounts[departure.id] ?? 0}

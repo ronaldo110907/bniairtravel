@@ -594,6 +594,10 @@ export default function Settlement({ reservations, departure }: Props) {
     <div>
       <h2 className="mb-4 text-xl font-bold">💰 정산</h2>
 
+      <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        ※ 인솔자는 좌석 인원에는 포함되며, 정산금액은 0원으로 처리됩니다.
+      </div>
+
       <div className="space-y-3">
         {reservations.length === 0 ? (
           <div className="rounded-lg bg-gray-50 p-6 text-center text-gray-500">

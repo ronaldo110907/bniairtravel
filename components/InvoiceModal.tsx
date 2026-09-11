@@ -307,34 +307,40 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
                   </button>
                 </div>
                 {/* 청구구분 */}
-                <div className="flex items-center gap-2">
-                  <span className="mr-1 text-sm font-semibold text-gray-600">
-                    청구
-                  </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="mr-1 text-sm font-semibold text-gray-600">
+                      청구
+                    </span>
 
-                  <button
-                    type="button"
-                    onClick={() => setInvoiceType("deposit")}
-                    className={`rounded-lg px-4 py-2 font-semibold ${
-                      invoiceType === "deposit"
-                        ? "bg-blue-600 text-white"
-                        : "border border-gray-300 bg-white"
-                    }`}
-                  >
-                    계약금 청구
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceType("deposit")}
+                      className={`rounded-lg px-4 py-2 font-semibold ${
+                        invoiceType === "deposit"
+                          ? "bg-blue-600 text-white"
+                          : "border border-gray-300 bg-white"
+                      }`}
+                    >
+                      계약금 청구
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setInvoiceType("balance")}
-                    className={`rounded-lg px-4 py-2 font-semibold ${
-                      invoiceType === "balance"
-                        ? "bg-blue-600 text-white"
-                        : "border border-gray-300 bg-white"
-                    }`}
-                  >
-                    잔금 청구
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceType("balance")}
+                      className={`rounded-lg px-4 py-2 font-semibold ${
+                        invoiceType === "balance"
+                          ? "bg-blue-600 text-white"
+                          : "border border-gray-300 bg-white"
+                      }`}
+                    >
+                      잔금 청구
+                    </button>
+                  </div>
+
+                  <div className="mt-2 text-xs leading-5 text-gray-500">
+                    ※ 기존 입금내역을 확인한 후 청구 구분을 선택해주세요.
+                  </div>
                 </div>
               </div>
             </div>
@@ -490,7 +496,11 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
               <div className="border-b bg-gray-50 px-4 py-2 font-bold">
                 입금계좌
               </div>
-
+              {!isPrinting && (
+                <div className="border-b border-blue-100 bg-blue-50 px-4 py-2 text-xs text-blue-700">
+                  ※ 예약 성격에 맞는 입금계좌를 선택해주세요.
+                </div>
+              )}
               <div className="space-y-4 p-4">
                 {!isPrinting && (
                   <select

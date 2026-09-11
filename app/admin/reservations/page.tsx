@@ -445,15 +445,23 @@ function ReservationsContent() {
     );
   }
   async function deletePerson(personId: string) {
-    const ok = confirm("예약자를 삭제하시겠습니까?");
-
-    if (!ok) return;
-
-    const { data: personData } = await supabase
+    const { data: personData, error: personError } = await supabase
       .from("reservation_people")
-      .select("passport_image")
+      .select("name, passport_image")
       .eq("id", personId)
       .single();
+
+    if (personError) {
+      console.error("PERSON LOAD ERROR", personError);
+      alert(personError.message);
+      return;
+    }
+
+    const ok = confirm(
+      `${personData?.name || "선택한 예약자"} 예약자를 삭제하시겠습니까?\n\n삭제 후 복구할 수 없습니다.`,
+    );
+
+    if (!ok) return;
 
     if (personData?.passport_image) {
       const { data, error } = await supabase.storage
@@ -462,6 +470,7 @@ function ReservationsContent() {
 
       console.log("DELETE STORAGE", data, error);
     }
+
     const { error } = await supabase
       .from("reservation_people")
       .delete()
@@ -1517,6 +1526,21 @@ function ReservationsContent() {
       }
     }
 
+    const targetReservation = list.find((item) => item.id === id);
+
+    const confirmed = window.confirm(
+      `${targetReservation?.name || "선택한 예약"} / ${
+        targetReservation?.departure_date || "-"
+      } / ${
+        targetReservation?.product || "-"
+      }\n\n정말 이 예약을 삭제하시겠습니까?\n삭제된 예약은 복구할 수 없습니다.`,
+    );
+
+    if (!confirmed) {
+      setDeletingId(null);
+      return;
+    }
+
     //예약자삭제//
     const { error: peopleError } = await supabase
       .from("reservation_people")
@@ -1525,13 +1549,6 @@ function ReservationsContent() {
 
     if (peopleError) {
       alert(peopleError.message);
-      return;
-    }
-    const confirmed = window.confirm(
-      "정말 이 예약을 삭제하시겠습니까?\n삭제된 예약은 복구할 수 없습니다.",
-    );
-
-    if (!confirmed) {
       setDeletingId(null);
       return;
     }
@@ -2424,24 +2441,30 @@ function ReservationsContent() {
                       ))}
                     </select>
 
-                    <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={isManualDeparture}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
+                    <div className="mt-3">
+                      <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                        <input
+                          type="checkbox"
+                          checked={isManualDeparture}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
 
-                          setIsManualDeparture(checked);
+                            setIsManualDeparture(checked);
 
-                          setNewReservation({
-                            ...newReservation,
-                            departure_id: "",
-                            departure_date: "",
-                          });
-                        }}
-                      />
-                      목록에 없는 과거 출발일 직접 입력
-                    </label>
+                            setNewReservation({
+                              ...newReservation,
+                              departure_id: "",
+                              departure_date: "",
+                            });
+                          }}
+                        />
+                        목록에 없는 과거 출발일 직접 입력
+                      </label>
+
+                      <div className="ml-6 mt-1 text-xs font-medium text-amber-700">
+                        ※ 과거 예약 누락분 정산시에만 사용해주세요.
+                      </div>
+                    </div>
 
                     {isManualDeparture && (
                       <input
@@ -2468,22 +2491,41 @@ function ReservationsContent() {
                 )}
 
                 {isCustomProduct && (
-                  <input
-                    type="text"
-                    value={customProductName}
-                    onChange={(e) => {
-                      const value = e.target.value;
+                  <div className="mt-3 space-y-3">
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+                      <div className="font-bold">
+                        ※ 기타(직접입력) 사용 안내
+                      </div>
 
-                      setCustomProductName(value);
+                      <div className="mt-1">
+                        단독견적 · 인센티브 등 별도 상품을 등록하지 않고 예약을
+                        생성할 때 사용해주세요.
+                        <br />
+                        기존 전세기 좌석을 사용하는 경우에는{" "}
+                        <span className="font-bold">
+                          ‘기존 상품 좌석에서 차감’
+                        </span>
+                        을 체크해주세요.
+                      </div>
+                    </div>
 
-                      setNewReservation({
-                        ...newReservation,
-                        product: value,
-                      });
-                    }}
-                    className="mt-3 w-full rounded-xl border px-4 py-3"
-                    placeholder="상품명을 직접 입력하세요."
-                  />
+                    <input
+                      type="text"
+                      value={customProductName}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        setCustomProductName(value);
+
+                        setNewReservation({
+                          ...newReservation,
+                          product: value,
+                        });
+                      }}
+                      className="w-full rounded-xl border px-4 py-3"
+                      placeholder="상품명을 직접 입력하세요."
+                    />
+                  </div>
                 )}
               </div>
               <div>
@@ -2503,6 +2545,9 @@ function ReservationsContent() {
                   <option value="확정">확정</option>
                   <option value="취소">취소</option>
                 </select>
+                <div className="mt-2 text-xs leading-5 text-gray-500">
+                  ※ 홀딩과 확정은 좌석이 차감되며, 취소는 좌석에서 제외됩니다.
+                </div>
               </div>
               <div className="col-span-2">
                 <label className="mb-2 block text-sm font-semibold">

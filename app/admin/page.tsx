@@ -273,42 +273,62 @@ export default async function AdminPage() {
           <div className="grid grid-cols-2 gap-4">
             <Link
               href="/admin/departures"
-              className="rounded-lg bg-blue-600 p-4 text-center font-bold text-white"
+              className="rounded-lg bg-blue-600 p-4 text-center text-white"
             >
-              📅 상품별 출발일 관리
+              <div className="font-bold">📅 상품별 출발일 관리</div>
+              <div className="mt-1 text-xs leading-5 text-white/80">
+                출발일 · 좌석 · 상품별 모집현황 관리
+              </div>
             </Link>
 
             <Link
               href="/admin/products"
-              className="rounded-lg bg-green-600 p-4 text-center font-bold text-white"
+              className="rounded-lg bg-green-600 p-4 text-center text-white"
             >
-              🧳 상품 등록 관리
+              <div className="font-bold">🧳 상품 등록 관리</div>
+              <div className="mt-1 text-xs leading-5 text-white/80">
+                홈페이지 상품정보 및 판매설정 관리
+              </div>
             </Link>
 
             <Link
               href="/admin/reservations"
-              className="rounded-lg bg-orange-500 p-4 text-center font-bold text-white"
+              className="rounded-lg bg-orange-500 p-4 text-center text-white"
             >
-              👥 예약 관리
+              <div className="font-bold">👥 예약 관리</div>
+              <div className="mt-1 text-xs leading-5 text-white/80">
+                예약 접수 · 예약자 정보 · 진행상태 관리
+              </div>
             </Link>
 
             <Link
               href="/admin/calendar"
-              className="rounded-lg bg-purple-600 p-4 text-center font-bold text-white"
+              className="rounded-lg bg-purple-600 p-4 text-center text-white"
             >
-              📆 출발 달력
+              <div className="font-bold">📆 출발 달력</div>
+              <div className="mt-1 text-xs leading-5 text-white/80">
+                날짜별 출발 및 예약현황 확인
+              </div>
             </Link>
+
             <Link
               href="/admin/estimate"
-              className="col-span-2 rounded-lg bg-slate-700 p-4 text-center font-bold text-white hover:bg-slate-800"
+              className="col-span-2 rounded-lg bg-slate-700 p-4 text-center text-white hover:bg-slate-800"
             >
-              📄 견적서 만들기
+              <div className="font-bold">📄 견적서 만들기</div>
+              <div className="mt-1 text-xs leading-5 text-white/80">
+                단독 · 인센티브 등 고객용 견적서 작성 및 출력
+              </div>
             </Link>
+
             <Link
               href="/admin/special"
-              className="col-span-2 rounded-lg bg-red-600 p-4 text-center font-bold text-white"
+              className="col-span-2 rounded-lg bg-red-600 p-4 text-center text-white"
             >
-              🔥 긴급특가 관리
+              <div className="font-bold">🔥 긴급특가 관리</div>
+              <div className="mt-1 text-xs leading-5 text-white/80">
+                긴급특가 출발일 및 홈페이지 노출 관리
+              </div>
             </Link>
           </div>
         </div>
