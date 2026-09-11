@@ -1006,33 +1006,63 @@ function ReservationsContent() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
+      // 1. 예약 목록 먼저 조회
+      const { data: reservationData, error: reservationError } = await supabase
         .from("reservations")
-        .select(
-          `
-        *,
-        departures (
-          product_id,
-          products (
-            title
-          )
-        )
-      `,
-        )
+        .select("*")
         .order("departure_date", { ascending: true });
 
-      if (error) {
-        console.error("RESERVATIONS ERROR", error);
-        alert(error.message);
+      if (reservationError) {
+        console.error("RESERVATIONS ERROR", reservationError);
+        alert(reservationError.message);
         setList([]);
         return;
       }
 
-      const mappedData = (data ?? []).map((item: any) => ({
-        ...item,
+      const reservations = reservationData ?? [];
 
-        // 좌석이 기존 상품에 연결되어 있으면 그 상품을 필터 기준으로 사용
-        filter_product: item.departures?.products?.title || item.product,
+      // 2. 예약에 연결된 departure_id만 모음
+      const departureIds = Array.from(
+        new Set(
+          reservations.map((item: any) => item.departure_id).filter(Boolean),
+        ),
+      );
+
+      const departureProductMap = new Map<string, string>();
+
+      // 3. 연결된 출발일이 있으면 원상품 조회
+      if (departureIds.length > 0) {
+        const { data: departureData, error: departureError } = await supabase
+          .from("departures")
+          .select(
+            `
+          id,
+          products (
+            title
+          )
+        `,
+          )
+          .in("id", departureIds);
+
+        if (departureError) {
+          console.error("DEPARTURES ERROR", departureError);
+        } else {
+          (departureData ?? []).forEach((departure: any) => {
+            if (departure.products?.title) {
+              departureProductMap.set(
+                String(departure.id),
+                departure.products.title,
+              );
+            }
+          });
+        }
+      }
+
+      // 4. 좌석 연결 상품을 필터 기준으로 사용
+      const mappedData = reservations.map((item: any) => ({
+        ...item,
+        filter_product:
+          departureProductMap.get(String(item.departure_id)) || item.product,
       }));
 
       setList(mappedData as Reservation[]);
