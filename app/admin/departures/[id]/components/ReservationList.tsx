@@ -67,7 +67,9 @@ export default function ReservationList({ reservations }: Props) {
                           : "bg-yellow-100 text-yellow-700"
                     }`}
                   >
-                    {reservation.status}
+                    {reservation.status === "대기"
+                      ? "홀딩"
+                      : reservation.status}
                   </div>
                 </div>
 

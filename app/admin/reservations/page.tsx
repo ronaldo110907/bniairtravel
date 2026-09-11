@@ -277,7 +277,7 @@ function ReservationsContent() {
     passport_sex: "",
     passport_nationality: "KOR",
   });
-
+  const [isManualDeparture, setIsManualDeparture] = useState(false);
   const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   const [editCustomerName, setEditCustomerName] = useState("");
   const [editCustomerPhone, setEditCustomerPhone] = useState("");
@@ -2056,7 +2056,7 @@ function ReservationsContent() {
                       setDepartures([]);
                       return;
                     }
-
+                    setIsManualDeparture(false);
                     setIsCustomProduct(false);
                     setCustomProductName("");
 
@@ -2129,32 +2129,81 @@ function ReservationsContent() {
                     className="w-full rounded-xl border px-4 py-3"
                   />
                 ) : (
-                  <select
-                    value={newReservation.departure_id}
-                    onChange={(e) => {
-                      const selectedDeparture = departures.find(
-                        (departure) => String(departure.id) === e.target.value,
-                      );
+                  <>
+                    <select
+                      value={newReservation.departure_id}
+                      disabled={isManualDeparture}
+                      onChange={(e) => {
+                        const selectedDeparture = departures.find(
+                          (departure) =>
+                            String(departure.id) === e.target.value,
+                        );
 
-                      setNewReservation({
-                        ...newReservation,
-                        departure_id: e.target.value,
-                        departure_date: selectedDeparture?.departure_date ?? "",
-                      });
-                    }}
-                    className="w-full rounded-xl border px-4 py-3"
-                  >
-                    <option value="">출발일 선택</option>
+                        setNewReservation({
+                          ...newReservation,
+                          departure_id: e.target.value,
+                          departure_date:
+                            selectedDeparture?.departure_date ?? "",
+                        });
+                      }}
+                      className="w-full rounded-xl border px-4 py-3 disabled:bg-gray-100 disabled:text-gray-400"
+                    >
+                      <option value="">출발일 선택</option>
 
-                    {departures.map((departure) => (
-                      <option key={departure.id} value={departure.id}>
-                        {departure.departure_date} ·{" "}
-                        {departure.variant || departure.course || "코스 미지정"}{" "}
-                        · {Number(departure.price || 0).toLocaleString()}원
-                      </option>
-                    ))}
-                  </select>
+                      {departures.map((departure) => (
+                        <option key={departure.id} value={departure.id}>
+                          {departure.departure_date} ·{" "}
+                          {departure.variant ||
+                            departure.course ||
+                            "코스 미지정"}{" "}
+                          · {Number(departure.price || 0).toLocaleString()}원
+                        </option>
+                      ))}
+                    </select>
+
+                    <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={isManualDeparture}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+
+                          setIsManualDeparture(checked);
+
+                          setNewReservation({
+                            ...newReservation,
+                            departure_id: "",
+                            departure_date: "",
+                          });
+                        }}
+                      />
+                      목록에 없는 과거 출발일 직접 입력
+                    </label>
+
+                    {isManualDeparture && (
+                      <input
+                        type="date"
+                        min="1900-01-01"
+                        max="9999-12-31"
+                        value={newReservation.departure_date}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const year = value.split("-")[0];
+
+                          if (year.length > 4) return;
+
+                          setNewReservation({
+                            ...newReservation,
+                            departure_id: "",
+                            departure_date: value,
+                          });
+                        }}
+                        className="mt-3 w-full rounded-xl border px-4 py-3"
+                      />
+                    )}
+                  </>
                 )}
+
                 {isCustomProduct && (
                   <input
                     type="text"
@@ -2187,7 +2236,7 @@ function ReservationsContent() {
                     })
                   }
                 >
-                  <option value="대기">대기</option>
+                  <option value="대기">홀딩</option>
                   <option value="확정">확정</option>
                   <option value="취소">취소</option>
                 </select>

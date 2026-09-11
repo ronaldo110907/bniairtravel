@@ -80,7 +80,7 @@ export default function CalendarPage() {
         (reservation) =>
           reservation.id === person.reservation_id &&
           reservation.departure_id === departureId &&
-          reservation.status === "확정",
+          ["대기", "확정"].includes(reservation.status),
       ),
     );
 
@@ -109,7 +109,7 @@ export default function CalendarPage() {
         (reservation) =>
           reservation.id === person.reservation_id &&
           sharedDepartureIds.includes(reservation.departure_id) &&
-          reservation.status === "확정",
+          ["대기", "확정"].includes(reservation.status),
       ),
     ).length;
   }

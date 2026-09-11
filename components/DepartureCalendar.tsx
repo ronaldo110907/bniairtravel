@@ -91,7 +91,7 @@ export default function DepartureCalendar({ productId, productName }: Props) {
             (reservation: any) =>
               reservation.id === person.reservation_id &&
               sharedDepartureIds.includes(reservation.departure_id) &&
-              reservation.status === "확정",
+              ["대기", "확정"].includes(reservation.status),
           ),
         ).length;
 
