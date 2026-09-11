@@ -852,24 +852,83 @@ function ReservationsContent() {
     setDepartures(data ?? []);
   }
   async function addReservation() {
+    // 필수값 체크
     if (
       !newReservation.name ||
       !newReservation.phone ||
       !newReservation.product ||
       !newReservation.departure_date ||
-      (!isCustomProduct && !newReservation.departure_id)
+      (!isCustomProduct && !isManualDeparture && !newReservation.departure_id)
     ) {
       alert("필수 항목을 모두 입력해주세요.");
       return;
+    }
+
+    let resolvedDepartureId: string | null =
+      newReservation.departure_id || null;
+
+    // 기존 상품인데 목록에 없는 출발일을 직접 입력한 경우
+    if (!isCustomProduct && isManualDeparture) {
+      const selectedProduct = products.find(
+        (product) => product.title === newReservation.product,
+      );
+
+      if (!selectedProduct) {
+        alert("상품 정보를 찾을 수 없습니다.");
+        return;
+      }
+
+      // 같은 상품 + 같은 날짜의 출발일이 이미 있는지 확인
+      const { data: existingDepartures, error: findError } = await supabase
+        .from("departures")
+        .select("id")
+        .eq("product_id", selectedProduct.id)
+        .eq("departure_date", newReservation.departure_date)
+        .limit(1);
+
+      if (findError) {
+        console.log("DEPARTURE FIND ERROR >>>", findError);
+        alert(findError.message);
+        return;
+      }
+
+      if (existingDepartures && existingDepartures.length > 0) {
+        // 이미 있으면 기존 출발일 재사용
+        resolvedDepartureId = String(existingDepartures[0].id);
+      } else {
+        // 없으면 정산용 출발일 자동 생성
+        const { data: createdDeparture, error: departureError } = await supabase
+          .from("departures")
+          .insert({
+            product_id: selectedProduct.id,
+            departure_date: newReservation.departure_date,
+            course: "정산용",
+            variant: null,
+            price: 0,
+            price_note: "정산용",
+            airline: "",
+            seat: 0,
+            status: "마감",
+            is_special: false,
+          })
+          .select("id")
+          .single();
+
+        if (departureError) {
+          console.log("DEPARTURE CREATE ERROR >>>", departureError);
+          alert(departureError.message);
+          return;
+        }
+
+        resolvedDepartureId = String(createdDeparture.id);
+      }
     }
 
     const { error } = await supabase.from("reservations").insert({
       name: newReservation.name,
       phone: newReservation.phone,
       product: newReservation.product,
-      departure_id: isCustomProduct
-        ? null
-        : newReservation.departure_id || null,
+      departure_id: isCustomProduct ? null : resolvedDepartureId,
       departure_date: newReservation.departure_date,
       status: newReservation.status,
       message: newReservation.message,
@@ -880,6 +939,7 @@ function ReservationsContent() {
       alert(error.message);
       return;
     }
+
     alert("예약이 등록되었습니다.");
 
     setIsAddModalOpen(false);
