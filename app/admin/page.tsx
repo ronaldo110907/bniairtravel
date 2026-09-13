@@ -164,7 +164,15 @@ export default async function AdminPage() {
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow">
-          <h2 className="text-xl font-bold">📌 이번주 출발</h2>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <h2 className="text-xl font-bold">📌 이번주 출발</h2>
+
+            <p className="text-sm text-gray-500">
+              ※ 출발 항목 클릭 시 정산 페이지로 이동합니다. 예약 상세는{" "}
+              <strong className="text-gray-700">예약관리</strong>에서
+              확인해주세요.
+            </p>
+          </div>
           <div className="mt-4">
             {weekDepartures && weekDepartures.length > 0 ? (
               weekDepartures.map((departure) => (
