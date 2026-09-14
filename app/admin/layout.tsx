@@ -7,7 +7,7 @@ export default function AdminLayout({
 }) {
   return (
     <>
-      {children}
+      <div className="pb-28">{children}</div>
 
       <AdminHomeButton />
     </>
