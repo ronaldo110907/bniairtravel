@@ -89,7 +89,7 @@ export default function ExchangeRateCard({ today }: { today: string }) {
           </div>
         </div>
 
-        <div className="text-xs text-gray-400">1시간 자동갱신</div>
+        <div className="text-xs text-gray-400">1시간마다 최신 환율 확인</div>
       </div>
 
       {loading ? (

@@ -11,22 +11,25 @@ import DepartureSettlementSummary from "./components/DepartureSettlementSummary"
 
 export default function DepartureDetailPage() {
   const params = useParams();
+
   const [departure, setDeparture] = useState<any>(null);
   const [reservations, setReservations] = useState<any[]>([]);
+
   useEffect(() => {
     loadDeparture();
     loadReservations();
   }, []);
+
   async function loadDeparture() {
     const { data, error } = await supabase
       .from("departures")
       .select(
         `
-      *,
-      products (
-        title
-      )
-    `,
+        *,
+        products (
+          title
+        )
+      `,
       )
       .eq("id", params.id)
       .single();
@@ -40,14 +43,15 @@ export default function DepartureDetailPage() {
 
     setDeparture(data);
   }
+
   async function loadReservations() {
     const { data, error } = await supabase
       .from("reservations")
       .select(
         `
-      *,
-      people:reservation_people(*)
-    `,
+        *,
+        people:reservation_people(*)
+      `,
       )
       .eq("departure_id", params.id)
       .order("created_at", { ascending: true });
@@ -59,12 +63,27 @@ export default function DepartureDetailPage() {
 
     setReservations(data || []);
   }
-  const reservedCount = reservations.reduce(
-    (sum, reservation) => sum + (reservation.people?.length || 0),
-    0,
-  );
+
+  // 좌석 점유 계산
+  // 대기(홀딩) + 확정 = 좌석 점유
+  // 취소 = 좌석 점유 제외
+  const reservedCount = reservations.reduce((sum, reservation) => {
+    if (reservation.status === "취소") {
+      return sum;
+    }
+
+    const savedPeopleCount = Number(reservation.people_count) || 0;
+    const registeredPeopleCount = reservation.people?.length || 0;
+
+    // 신규 예약의 people_count와
+    // 기존 예약의 실제 등록인원을 모두 안전하게 반영
+    const count = Math.max(savedPeopleCount, registeredPeopleCount, 1);
+
+    return sum + count;
+  }, 0);
 
   const remainSeat = (departure?.seat || 0) - reservedCount;
+
   async function downloadDispatch() {
     try {
       const res = await fetch(`/api/dispatch?id=${params.id}`);
@@ -93,7 +112,7 @@ export default function DepartureDetailPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl text-center font-bold">출발일 관리</h1>
+      <h1 className="text-center text-3xl font-bold">출발일 관리</h1>
 
       {departure && (
         <div className="mx-auto mt-6 max-w-3xl">
@@ -102,15 +121,15 @@ export default function DepartureDetailPage() {
               type="button"
               onClick={downloadDispatch}
               className="
-          flex items-center gap-2
-          rounded-xl
-          bg-emerald-600
-          px-6
-          py-3
-          font-bold
-          text-white
-          hover:bg-emerald-700
-        "
+                flex items-center gap-2
+                rounded-xl
+                bg-emerald-600
+                px-6
+                py-3
+                font-bold
+                text-white
+                hover:bg-emerald-700
+              "
             >
               <Download size={18} />
               수배의뢰서 다운로드
@@ -144,12 +163,15 @@ export default function DepartureDetailPage() {
             </div>
 
             <div>
-              <span className="font-semibold text-gray-500">예약 / 잔여 :</span>
+              <span className="font-semibold text-gray-500">
+                예약 / 잔여 :{" "}
+              </span>
               예약 {reservedCount}명 / 잔여 {remainSeat}석
             </div>
           </div>
         </div>
       )}
+
       <RoomAssignment departureId={String(params.id)} />
 
       <div id="settlement">

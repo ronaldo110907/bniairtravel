@@ -78,10 +78,12 @@ export default async function AdminPage() {
     .gte("departure_date", today);
 
   const { data: reservations } = await supabase.from("reservations").select(`
-    id,
-    departure_id,
-    reservation_people(id)
-  `);
+  id,
+  departure_id,
+  status,
+  people_count,
+  reservation_people(id)
+`);
 
   const { data: settlementDepartures } = await supabase
     .from("departures")
@@ -114,7 +116,19 @@ export default async function AdminPage() {
 
       if (!isTargetDeparture) return sum;
 
-      return sum + (reservation.reservation_people?.length ?? 1);
+      // 취소 예약은 좌석 점유에서 제외
+      if (reservation.status === "취소") {
+        return sum;
+      }
+
+      const savedPeopleCount = Number(reservation.people_count) || 0;
+      const registeredPeopleCount = reservation.reservation_people?.length || 0;
+
+      // 신규 예약은 people_count,
+      // 기존 예약은 실제 등록인원도 함께 보정
+      const count = Math.max(savedPeopleCount, registeredPeopleCount, 1);
+
+      return sum + count;
     }, 0);
 
     return {
