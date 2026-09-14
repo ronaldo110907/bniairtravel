@@ -65,7 +65,7 @@ export const productTabs = [
   {
     id: "golf3" as const,
     label: "골프 3박5일",
-    description: "남태무CC · 동방CC",
+    description: "남태무CC · 천주CC · 동방CC",
   },
   {
     id: "golf4" as const,
@@ -73,6 +73,10 @@ export const productTabs = [
     description: "남태무CC · 천주CC · 동방CC",
   },
 ];
+
+export const publicProductTabs = productTabs.filter(
+  (tab) => tab.id !== "premium4",
+);
 
 export const flightInfo = {
   outbound: {
@@ -1624,13 +1628,13 @@ export const includesValue3 = [
   { id: 3, text: "전 일정 식사" },
   { id: 4, text: "전용차량" },
   { id: 5, text: "관광지 입장료, 여행자보험(1억원)" },
-  { id: 6, text: "기사 · 가이드 팁" },
 ];
 
 export const excludesValue3 = [
-  { id: 1, text: "선택관광 비용" },
-  { id: 2, text: "매너팁 및 기타 개인경비" },
-  { id: 3, text: "싱글차지 110,000원 / 1인(3박)" },
+  { id: 1, text: "기사/가이드팁50$" },
+  { id: 2, text: "선택관광 비용" },
+  { id: 3, text: "매너팁 및 기타 개인경비" },
+  { id: 4, text: "싱글차지 110,000원 / 1인(3박)" },
 ];
 
 export const includesPremium3 = [
@@ -1661,13 +1665,13 @@ export const includesValue4 = [
   { id: 3, text: "전 일정 식사" },
   { id: 4, text: "전용차량" },
   { id: 5, text: "관광지 입장료 · 여행자보험(1억원)" },
-  { id: 6, text: "기사 · 가이드팁" },
 ];
 
 export const excludesValue4 = [
-  { id: 1, text: "마사지 매너팁" },
-  { id: 2, text: "기타 개인경비" },
-  { id: 3, text: "싱글차지 200,000원 / 1인(4박)" },
+  { id: 1, text: "기사/가이드팁60$" },
+  { id: 2, text: "선택관광 비용" },
+  { id: 3, text: "매너팁 및 기타 개인경비" },
+  { id: 4, text: "싱글차지 200,000원 / 1인(4박)" },
 ];
 
 export const includesPremium4 = [

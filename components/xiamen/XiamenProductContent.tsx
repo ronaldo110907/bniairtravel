@@ -95,7 +95,7 @@ export default function XiamenProductContent() {
   );
 
   const tabs4N6D = productTabs.filter((tab) =>
-    ["value4", "premium4", "wuyishan4", "golf4"].includes(tab.id),
+    ["value4", "wuyishan4", "golf4"].includes(tab.id),
   );
 
   return (
@@ -156,7 +156,7 @@ export default function XiamenProductContent() {
           </div>
 
           {/* 4박6일 */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {tabs4N6D.map((tab) => {
               const active = activeType === tab.id;
 
