@@ -968,6 +968,7 @@ export default function DepartureAdminPage() {
 
       <DepartureTable
         departures={filteredDepartures}
+        allDepartures={departures}
         passengerCounts={passengerCounts}
         settlementCompleted={settlementCompleted}
         selectedDepartureIds={selectedDepartureIds}

@@ -2,6 +2,7 @@
 
 type Props = {
   departures: any[];
+  allDepartures: any[];
   onEdit: (departure: any) => void;
   onDelete: (departure: any) => void;
   onView: (departure: any) => void;
@@ -16,6 +17,7 @@ type Props = {
 
 export default function DepartureTable({
   departures,
+  allDepartures,
   passengerCounts,
   settlementCompleted,
   onEdit,
@@ -48,28 +50,23 @@ export default function DepartureTable({
     );
 
   const getSharedPassengerCount = (departure: any) => {
-    if (!departure.variant) {
-      return passengerCounts[departure.id] ?? 0;
-    }
+    const sharedDepartures = allDepartures.filter(
+      (item) =>
+        item.product_id === departure.product_id &&
+        item.departure_date === departure.departure_date,
+    );
 
-    return departures
-      .filter(
-        (item) =>
-          item.product_id === departure.product_id &&
-          item.departure_date === departure.departure_date &&
-          item.variant,
-      )
-      .reduce((sum, item) => sum + (passengerCounts[item.id] ?? 0), 0);
+    return sharedDepartures.reduce(
+      (sum, item) => sum + (passengerCounts[item.id] ?? 0),
+      0,
+    );
   };
 
   const isSharedDeparture = (departure: any) => {
-    if (!departure.variant) return false;
-
-    const sharedDepartures = departures.filter(
+    const sharedDepartures = allDepartures.filter(
       (item) =>
         item.product_id === departure.product_id &&
-        item.departure_date === departure.departure_date &&
-        item.variant,
+        item.departure_date === departure.departure_date,
     );
 
     return sharedDepartures.length > 1;
