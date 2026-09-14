@@ -78,9 +78,19 @@ export default async function AdminPage() {
     .gte("departure_date", today);
 
   const { data: reservations } = await supabase.from("reservations").select(`
+    id,
     departure_id,
     reservation_people(id)
   `);
+
+  const { data: settlementDepartures } = await supabase
+    .from("departures")
+    .select("id, product_id")
+    .lte("departure_date", today);
+
+  const { data: settlementStatus } = await supabase
+    .from("reservation_settlements")
+    .select("reservation_id, is_completed");
 
   const totalPassengerCount = (reservations ?? []).reduce(
     (sum, reservation) => sum + (reservation.reservation_people?.length ?? 1),
@@ -114,6 +124,37 @@ export default async function AdminPage() {
       remainSeat: totalSeat - reservationCount,
     };
   });
+
+  const completedReservationIds = new Set(
+    (settlementStatus ?? [])
+      .filter((item) => item.is_completed)
+      .map((item) => String(item.reservation_id)),
+  );
+
+  const unsettledSummary = (products ?? [])
+    .map((product) => {
+      const productDepartureIds = new Set(
+        (settlementDepartures ?? [])
+          .filter((departure) => departure.product_id === product.id)
+          .map((departure) => String(departure.id)),
+      );
+
+      const unsettledCount = (reservations ?? []).filter((reservation) => {
+        const belongsToProduct = productDepartureIds.has(
+          String(reservation.departure_id),
+        );
+
+        const isCompleted = completedReservationIds.has(String(reservation.id));
+
+        return belongsToProduct && !isCompleted;
+      }).length;
+
+      return {
+        title: product.title,
+        unsettledCount,
+      };
+    })
+    .filter((item) => item.unsettledCount > 0);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -200,21 +241,52 @@ export default async function AdminPage() {
         </div>
 
         <div className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr_2fr]">
-          <Link
-            href="/admin/reservations"
-            className="block rounded-xl border bg-white p-5 shadow-sm transition hover:border-orange-300 hover:bg-orange-50"
-          >
-            <div className="mb-2 flex items-center gap-2 text-gray-500">
-              👥
-              <span className="text-sm font-medium">예약인원</span>
-            </div>
+          <div className="rounded-xl border bg-white p-5 shadow-sm">
+            <div className="grid gap-5 md:grid-cols-2">
+              {/* 예약인원 */}
+              <div>
+                <div className="mb-2 flex items-center gap-2 text-gray-500">
+                  👥
+                  <span className="text-sm font-medium">예약인원</span>
+                </div>
 
-            <div className="text-3xl font-bold text-gray-900">
-              {totalPassengerCount}
-            </div>
+                <div className="text-3xl font-bold text-gray-900">
+                  {totalPassengerCount}
+                </div>
 
-            <div className="mt-2 text-xs text-gray-400">전체 예약 인원</div>
-          </Link>
+                <div className="mt-2 text-xs text-gray-400">전체 예약 인원</div>
+              </div>
+
+              {/* 미정산 현황 */}
+              <div className="border-t pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
+                <div className="mb-3 flex items-center gap-2 text-gray-700">
+                  🧾
+                  <span className="text-sm font-semibold">미정산 현황</span>
+                </div>
+
+                {unsettledSummary.length > 0 ? (
+                  <div className="space-y-2">
+                    {unsettledSummary.map((item) => (
+                      <div
+                        key={item.title}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-gray-600">🧳 {item.title}</span>
+
+                        <span className="font-bold text-orange-600">
+                          {item.unsettledCount}건
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400">
+                    ✅ 미정산 건이 없습니다.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
           <div className="rounded-xl border bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2 text-gray-700">
