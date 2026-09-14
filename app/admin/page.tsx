@@ -159,7 +159,14 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <h1 className="text-3xl font-bold">📊 관리자 메인 대시보드</h1>
+        <div>
+          <h1 className="text-3xl font-bold">📊 관리자 메인 대시보드</h1>
+
+          <div className="mt-1 text-xs text-gray-400">
+            👤 로그인 ID :{" "}
+            <span className="font-medium text-gray-500">{adminEmail}</span>
+          </div>
+        </div>
 
         <ExchangeRateCard today={today} />
       </div>
