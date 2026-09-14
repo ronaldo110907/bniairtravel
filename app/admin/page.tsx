@@ -266,6 +266,14 @@ export default async function AdminPage() {
             </div>
           </div>
         </div>
+        <Link href="/admin/departures" className="hidden">
+          <div className="rounded-xl bg-white p-6 shadow transition hover:bg-blue-50 cursor-pointer">
+            <h2 className="text-xl font-bold">🏨 출발 관리</h2>
+            <h2 className="mt-2 text-sm text-gray-500">
+              출발일별 객실 배정 및 정산이 가능합니다.
+            </h2>
+          </div>
+        </Link>
 
         <div className="rounded-xl bg-white p-6 shadow">
           <h2 className="mb-4 text-xl font-bold">🚀 빠른 이동</h2>
