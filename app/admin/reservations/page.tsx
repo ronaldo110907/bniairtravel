@@ -232,7 +232,7 @@ function ReservationsContent() {
     departure_date: "",
     status: "대기",
     message: "",
-    people_count: 1,
+    people_count: "1",
   });
   const [isCustomProduct, setIsCustomProduct] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
@@ -978,7 +978,7 @@ function ReservationsContent() {
       departure_date: newReservation.departure_date,
       status: newReservation.status,
       message: newReservation.message,
-      people_count: newReservation.people_count,
+      people_count: Number(newReservation.people_count) || 1,
     });
 
     if (error) {
@@ -999,7 +999,7 @@ function ReservationsContent() {
       departure_date: "",
       status: "대기",
       message: "",
-      people_count: 1,
+      people_count: "1",
     });
 
     setDepartures([]);
@@ -2538,12 +2538,12 @@ function ReservationsContent() {
 
                 <input
                   type="number"
-                  min={1}
+                  min="1"
                   value={newReservation.people_count}
                   onChange={(e) =>
                     setNewReservation({
                       ...newReservation,
-                      people_count: Math.max(1, Number(e.target.value)),
+                      people_count: e.target.value,
                     })
                   }
                   className="w-full rounded-xl border px-4 py-3"
