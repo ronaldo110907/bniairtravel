@@ -237,26 +237,40 @@ export default function DepartureAdminPage() {
 
     const { data: reservations } = await supabase
       .from("reservations")
-      .select("id, departure_id, status");
+      .select("id, departure_id, status, people_count");
 
-    const reservationMap = new Map<string, string>();
+    // 기존 예약자명단 인원수 계산
+    const peopleCountMap = new Map<string, number>();
 
-    reservations?.forEach((reservation) => {
-      if (!reservation.departure_id) return;
+    people?.forEach((person) => {
+      const reservationId = String(person.reservation_id);
 
-      // 확정 예약만 좌석 차감
-      if (reservation.status !== "확정") return;
-
-      reservationMap.set(reservation.id, reservation.departure_id);
+      peopleCountMap.set(
+        reservationId,
+        (peopleCountMap.get(reservationId) ?? 0) + 1,
+      );
     });
 
     const counts: Record<string, number> = {};
 
-    people?.forEach((person) => {
-      const departureId = reservationMap.get(person.reservation_id);
-      if (!departureId) return;
+    reservations?.forEach((reservation) => {
+      if (!reservation.departure_id) return;
 
-      counts[departureId] = (counts[departureId] ?? 0) + 1;
+      // 취소만 좌석 점유 제외
+      if (reservation.status === "취소") return;
+
+      const savedPeopleCount = Number(reservation.people_count) || 0;
+
+      const registeredPeopleCount =
+        peopleCountMap.get(String(reservation.id)) ?? 0;
+
+      // 신규 예약은 people_count 사용
+      // 기존 예약은 reservation_people도 함께 보정
+      const count = Math.max(savedPeopleCount, registeredPeopleCount, 1);
+
+      const departureId = String(reservation.departure_id);
+
+      counts[departureId] = (counts[departureId] ?? 0) + count;
     });
 
     setPassengerCounts(counts);
@@ -583,10 +597,16 @@ export default function DepartureAdminPage() {
     }
 
     setDepartureReservations(data ?? []);
-    const total = (data ?? []).reduce(
-      (sum, reservation) => sum + (reservation.people?.length ?? 0),
-      0,
-    );
+    const total = (data ?? []).reduce((sum, reservation) => {
+      if (reservation.status === "취소") {
+        return sum;
+      }
+
+      const savedPeopleCount = Number(reservation.people_count) || 0;
+      const registeredPeopleCount = reservation.people?.length || 0;
+
+      return sum + Math.max(savedPeopleCount, registeredPeopleCount, 1);
+    }, 0);
 
     setTotalPassengers(total);
   }
