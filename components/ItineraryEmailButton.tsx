@@ -378,26 +378,30 @@ export default function ItineraryEmailButton({ product }: Props) {
                 </div>
 
                 {/* 4박6일 */}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {[
                     { key: "value4", label: "실속 4박6일" },
                     { key: "premium4", label: "고품격 4박6일" },
                     { key: "wuyishan4", label: "무이산 4박6일" },
                     { key: "golf4", label: "골프 4박6일" },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setXiamenCourse(item.key as XiamenCourse)}
-                      className={`rounded-xl border px-4 py-3 font-bold transition ${
-                        xiamenCourse === item.key
-                          ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
-                          : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44] hover:bg-[#f7f3ec]"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                  ]
+                    .filter((item) => item.key !== "premium4")
+                    .map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() =>
+                          setXiamenCourse(item.key as XiamenCourse)
+                        }
+                        className={`rounded-xl border px-4 py-3 font-bold transition ${
+                          xiamenCourse === item.key
+                            ? "border-[#b88a44] bg-[#b88a44] text-white shadow-sm"
+                            : "border-[#ddd3c4] bg-[#faf8f4] text-[#5f4a2f] hover:border-[#b88a44] hover:bg-[#f7f3ec]"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
                 </div>
               </div>
             ) : (
