@@ -202,6 +202,7 @@ const xiamenSpotImageMap: Record<string, string> = {
   중산로: `${xiamenImageBaseUrl}zhongshan.jpg`,
 
   고랑서: `${xiamenImageBaseUrl}golangseo.jpg`,
+  숙장화원: `${xiamenImageBaseUrl}sukjang.jpg`,
   민남전기쇼: `${xiamenImageBaseUrl}minnamjeonki.jpg`,
 
   전라갱토루: `${xiamenImageBaseUrl}jeonlagang.jpg`,
@@ -218,6 +219,8 @@ const xiamenSpotImageMap: Record<string, string> = {
 
   // 무이산
   천유봉: `${xiamenImageBaseUrl}chunyoubong.jpg`,
+  옥녀봉: `${xiamenImageBaseUrl}okneo.jpg`,
+  무이산: `${xiamenImageBaseUrl}wuyishan.jpg`,
   인상대홍포쇼: `${xiamenImageBaseUrl}hongpo.jpg`,
   "무이산 구곡 뗏목투어": `${xiamenImageBaseUrl}wuyishanship.jpg`,
 };
@@ -362,6 +365,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
 ▶ 해상의 화원이라 불리는 작은 섬인 고랑서 관광
 - 바다를 끼고 만들어진 아름다운 전통 정원인 숙장화원
 - 해발 93m의 고랑서에서 가장 높은 봉우리 일광암
+- 100여개의 피아노가 있는 피아노 박물관
 ▶ 다양한 현지 먹거리와 아기자기한 상점이 모여 있는 증조안 미식거리
 선택관광(추천)
 1. 민남전기쇼 또는 링링서커스($50/1인)
@@ -577,17 +581,12 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
 ▶ 해상의 화원이라 불리는 작은 섬인 고랑서 관광
 - 바다를 끼고 만들어진 아름다운 전통 정원인 숙장화원(전동카 편도)
 - 해발 93m의 고랑서에서 가장 높은 봉우리 일광암
+- 100여개의 피아노가 있는 피아노 박물관
 중식 후
 ▶ 세계 최초의 360도 회전식 객석이 있는 초대형 실내 공연 민남전기쇼
 ▶ 원당호 또는 샤포웨이 또는 해만공원 중 카페거리 방문
 석식 후 호텔 투숙 및 휴식`,
-    places: [
-      "고랑서",
-      "숙장화원 전동카 편도",
-      "일광암",
-      "민남전기쇼",
-      "카페거리",
-    ],
+    places: ["고랑서", "숙장화원", "일광암", "민남전기쇼", "카페거리"],
     duration: "전일 관광",
     meals: {
       breakfast: "호텔식",
@@ -750,6 +749,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
 ▶ 해상의 화원이라 불리는 작은 섬인 고랑서 관광
 - 바다를 끼고 만들어진 아름다운 전통 정원인 숙장화원
 - 해발 93m의 고랑서에서 가장 높은 봉우리 일광암
+- 100여개의 피아노가 있는 피아노 박물관
 중식 후
 ▶ 다양한 현지 먹거리와 아기자기한 상점이 모여있는 증조안 미식거리
 선택관광(추천)
@@ -820,7 +820,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
 
     schedule: `호텔 조식 후
 ▶ 하문의 랜드마크인 해상명주탑 전망대
-▶ 하문에서 가장 활기찬 해벼가인 백성해변
+▶ 하문에서 가장 활기찬 해변가가인 백성해변
 ▶ 19세기 청나라 시대에 만들어진 군사 요새인 호리산포대
 중식 후
 선택관광(추천)
@@ -1162,7 +1162,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
 무이산 도착 후 석식 및 호텔 투숙 및 휴식`,
     places: [
       "고랑서",
-      "숙장화원 전동카 편도",
+      "숙장화원",
       "일광암",
       "무이산 열차 이동",
       "인상대홍포쇼(추천)",
@@ -1207,7 +1207,8 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       "다동",
       "천유봉",
       "무이산 구곡 뗏목투어",
-      "송대 옛거리",
+      "옥녀봉",
+      "무이산",
       "고속열차",
     ],
     duration: "무이산 전일 관광 후 샤먼 이동",
