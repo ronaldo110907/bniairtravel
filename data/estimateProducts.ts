@@ -178,9 +178,9 @@ export const estimateProducts: EstimateProductPreset[] = [
 
     region: "하문",
     stay: "3박5일",
-    type: "고품격",
+    type: "품격",
 
-    productName: "하문 고품격 3박5일",
+    productName: "하문 품격 3박5일",
     travelPeriod: "3박5일",
 
     includes: listToText(includesPremium3),

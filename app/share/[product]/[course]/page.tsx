@@ -279,7 +279,7 @@ const shareProducts: Record<string, ShareProduct> = {
         excludes: excludesValue3 as ShareListItem[],
       },
       premium3: {
-        name: "고품격 3박5일",
+        name: "품격 3박5일",
         itinerary: itineraryPremium3N5D as ShareItem[],
         hotels: xiamenHotels as ShareHotel[],
         includes: includesPremium3 as ShareListItem[],

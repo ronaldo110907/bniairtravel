@@ -359,7 +359,7 @@ export default function ItineraryEmailButton({ product }: Props) {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
                     { key: "value3", label: "실속 3박5일" },
-                    { key: "premium3", label: "고품격 3박5일" },
+                    { key: "premium3", label: "품격 3박5일" },
                     { key: "golf3", label: "골프 3박5일" },
                   ].map((item) => (
                     <button

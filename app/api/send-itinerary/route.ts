@@ -487,7 +487,7 @@ export async function POST(request: Request) {
           },
 
           premium3: {
-            name: "고품격 3박5일",
+            name: "품격 3박5일",
             itinerary: xiamenItineraryPremium3N5D,
             hotels: xiamenHotels,
             includes: xiamenIncludesPremium3,
