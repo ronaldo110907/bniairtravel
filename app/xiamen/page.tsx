@@ -14,6 +14,8 @@ import ItineraryEmailButton from "@/components/ItineraryEmailButton";
 
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function XiamenPage() {
   const { data: product } = await supabase
     .from("products")
