@@ -303,7 +303,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트(준5성급)또는 동급 ★★★★☆",
   },
 
   {
@@ -346,7 +346,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "현지식",
       dinner: "현지식",
     },
-    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트(준5성급)또는 동급 ★★★★☆",
   },
 
   {
@@ -406,7 +406,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "현지식",
       dinner: "현지식",
     },
-    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트(준5성급)또는 동급 ★★★★☆",
   },
 
   {
@@ -533,7 +533,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -562,7 +562,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "딤섬",
       dinner: "호남요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -593,7 +593,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "동북요리",
       dinner: "삼겹살 무제한",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -696,7 +696,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
   },
 
   {
@@ -733,7 +733,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "현지식",
       dinner: "현지식",
     },
-    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
   },
 
   {
@@ -764,7 +764,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "현지식",
       dinner: "현지식",
     },
-    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
   },
 
   {
@@ -803,7 +803,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "객가요리",
       dinner: "항주요리",
     },
-    hotel: "코트야드 메리어트 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
   },
 
   {
@@ -904,7 +904,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -933,7 +933,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "딤섬",
       dinner: "호남요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -966,7 +966,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "동북요리",
       dinner: "삼겹살 무제한",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1005,7 +1005,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "객가요리",
       dinner: "항주요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1106,7 +1106,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1135,7 +1135,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "딤섬",
       dinner: "호남요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1143,12 +1143,12 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
     icon: "🚄",
     title: "고랑서 관광 · 무이산 이동",
     description:
-      "고랑서의 숙장화원과 일광암을 관광한 후 열차를 이용해 무이산으로 이동합니다. 석식 후 인상대홍포쇼를 관람합니다.",
+      "고랑서의 숙장화원과 일광암을 관광한 후 고속열차를 이용해 무이산으로 이동합니다. 석식 후 인상대홍포쇼를 관람합니다.",
     region: `하문
 무이산`,
 
     transport: `전용차량
-열차`,
+고속열차`,
 
     time: `전일
 14:15
@@ -1158,13 +1158,13 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
 ▶ 해상의 화원이라 불리는 작은 섬인 고랑서 관광
 - 바다를 끼고 만들어진 아름다운 전통 정원인 숙장화원(전동카 편도)
 - 해발 93m의 고랑서에서 가장 높은 봉우리 일광암
-중식 후 열차편으로 무이산으로 이동
+중식 후 고속열차로 무이산으로 이동
 무이산 도착 후 석식 및 호텔 투숙 및 휴식`,
     places: [
       "고랑서",
       "숙장화원",
       "일광암",
-      "무이산 열차 이동",
+      "무이산 고속열차 이동",
       "인상대홍포쇼(추천)",
     ],
     duration: "고랑서 관광 후 무이산 이동",
@@ -1173,7 +1173,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "동북요리",
       dinner: "버섯요리",
     },
-    hotel: "무이산 윈덤 호텔 또는 동급 ★★★★☆",
+    hotel: "무이산 윈덤 호텔(준5성급) 또는 동급 ★★★★☆",
   },
 
   {
@@ -1200,7 +1200,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
 중식 후
 ▶ 무이산 핵심 코스인 9곡에서 1곡까지 펼쳐지는 뗏목투어
 ▶ 송나라 시대의 건축양식을 재현한 송대 옛거리 관람
-열차역으로 이동 후 무이산 출발
+고속열차역으로 이동 후 무이산 출발
 하문 도착 후 석식 및 호텔 투숙`,
     places: [
       "일선천",
@@ -1217,7 +1217,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "농가요리",
       dinner: "삼겹살 무제한",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1320,7 +1320,7 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1348,7 +1348,7 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
       lunch: "클럽중식 불포함",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1375,7 +1375,7 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
       lunch: "클럽중식 불포함",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1469,7 +1469,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1497,7 +1497,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
       lunch: "클럽중식 불포함",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1524,7 +1524,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
       lunch: "클럽중식 불포함",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1555,7 +1555,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
       lunch: "클럽중식 불포함",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
   },
 
   {
@@ -1722,7 +1722,7 @@ export const excludesWuyishan4 = [
 
 export const includesGolf3 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
-  { id: 2, text: "정5성급 호텔 2인 1실" },
+  { id: 2, text: "하문 정5성급 호텔 2인 1실" },
   { id: 3, text: "전용차량" },
   { id: 4, text: "조식+석식" },
   { id: 5, text: "여행자보험" },
@@ -1742,7 +1742,7 @@ export const excludesGolf3 = [
 
 export const includesGolf4 = [
   { id: 1, text: "왕복항공료(TAX · 유류할증료)" },
-  { id: 2, text: "정5성급 호텔 2인 1실" },
+  { id: 2, text: "하문 정5성급 호텔 2인 1실" },
   { id: 3, text: "전용차량" },
   { id: 4, text: "석식" },
   { id: 5, text: "여행자보험" },
