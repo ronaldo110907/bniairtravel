@@ -81,6 +81,63 @@ export default function XiamenProductContent() {
 
   const isGolf = activeType === "golf3" || activeType === "golf4";
 
+  const golfCourseNames = Array.from(
+    new Set(
+      itinerary.flatMap((item) =>
+        (item.places ?? []).flatMap((place) => {
+          const courses: string[] = [];
+
+          if (place.includes("남태무")) courses.push("남태무 CC");
+          if (place.includes("천주")) courses.push("천주 CC");
+          if (place.includes("동방")) courses.push("동방 CC");
+          if (place.includes("해서")) courses.push("해서 CC");
+
+          return courses;
+        }),
+      ),
+    ),
+  );
+
+  const golfCourseGuideMap: Record<string, string | undefined> = {
+    "남태무 CC": golfImageMap["남태무 CC"]?.courseGuide,
+    "천주 CC": golfImageMap["천주 골프장"]?.courseGuide,
+    "동방 CC": golfImageMap["동방 골프장"]?.courseGuide,
+    "해서 CC": golfImageMap["해서 골프장"]?.courseGuide,
+  };
+
+  const golfCourseGuideNames = isGolf
+    ? Array.from(new Set([...golfCourseNames, "해서 CC"]))
+    : golfCourseNames;
+
+  const golfCourseCards = [
+    {
+      name: "남태무 CC",
+      image: golfImageMap["남태무 CC"]?.photos?.[0],
+      description: `1996년에 개장한 바다와 산을 끼고 있는 18홀 규모의 골프장
+7,324야드의 동쪽은 바다, 남쪽으로는 남태무산을 끼고 있습니다.`,
+    },
+    {
+      name: "천주 CC",
+      image: golfImageMap["천주 골프장"]?.photos?.[0],
+      description: `천주 4대 명산 중 자모산 자락에 위치한 18홀 규모의 골프장
+산과 계곡을 따라 설계되어 있으며 도전적인 레이아웃으로 난이도 상급입니다.`,
+    },
+    {
+      name: "동방 CC",
+      image: golfImageMap["동방 골프장"]?.photos?.[0],
+      description: `1995년에 오픈한 로널드 프림이 설계한 27홀 규모의 명문 골프장
+10,665야드, 27홀, 파 108 규모의 골프장입니다.
+세계 100대 골프장에 선정된 바 있는 명문 골프장입니다.`,
+    },
+    {
+      name: "해서 CC",
+      image: golfImageMap["해서 골프장"]?.photos?.[0],
+      description: `골프의 전설 잭 니클라우스가 설계한 18홀 규모의 명문 골프장
+      7,206야드, 18홀, 파 72 규모의 골프장입니다.
+      중국 10대 골프장으로 선정되었으며 코스 완성도와 잔디관리가 최상의 골프장입니다.`,
+    },
+  ];
+
   const shoppingNotice =
     activeType === "premium3" ||
     activeType === "premium4" ||
@@ -199,6 +256,52 @@ export default function XiamenProductContent() {
 
           <p className="mt-3 text-sm text-gray-500">{activeTab?.description}</p>
         </div>
+        {/* ==================== 골프장 종합 안내 ==================== */}
+
+        {isGolf && (
+          <div className="mb-16 rounded-[30px] border border-[#E8DCC4] bg-white px-6 py-8 text-center shadow-sm md:px-10">
+            <p className="text-sm font-bold tracking-[0.25em] text-[#B88A44]">
+              GOLF COURSE
+            </p>
+
+            <h3 className="mt-3 text-2xl font-bold text-[#1f1f1f] md:text-3xl">
+              ⛳ {activeType === "golf3" ? "골프 3박5일" : "골프 4박6일"}
+            </h3>
+
+            <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {golfCourseCards.map((course) => (
+                <div
+                  key={course.name}
+                  className="overflow-hidden rounded-2xl border border-[#E8DCC4] bg-white shadow-sm"
+                >
+                  {course.image && (
+                    <img
+                      src={course.image}
+                      alt={course.name}
+                      className="h-36 w-full object-cover md:h-40"
+                    />
+                  )}
+
+                  <div className="p-4">
+                    <p className="text-base font-bold text-[#1f1f1f]">
+                      ⛳ {course.name}
+                    </p>
+
+                    <p className="mt-2 whitespace-pre-line text-sm leading-6 text-gray-500">
+                      {course.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-5 text-sm leading-6 text-gray-500">
+              일정에 따라 상기 골프장 중 지정 골프장에서 18홀 라운딩으로
+              진행됩니다.
+            </p>
+          </div>
+        )}
+
         {/* ==================== 관광 지도 ==================== */}
 
         {!isGolf && (
@@ -340,32 +443,6 @@ export default function XiamenProductContent() {
                           <div className="whitespace-pre-line text-[15px] leading-7 text-gray-700">
                             {item.schedule}
                           </div>
-
-                          {golfImages?.courseGuide && (
-                            <div className="mt-5">
-                              <p className="mb-3 text-sm font-bold text-[#B88A44]">
-                                코스 안내도
-                              </p>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setZoomImage(golfImages.courseGuide!)
-                                }
-                                className="block w-full overflow-hidden rounded-2xl border border-[#E8DCC4] bg-white"
-                              >
-                                <img
-                                  src={golfImages.courseGuide}
-                                  alt={`${golfPlace} 코스 안내도`}
-                                  className="w-full transition duration-300 hover:scale-[1.01]"
-                                />
-                              </button>
-
-                              <p className="mt-2 text-center text-xs text-gray-400">
-                                이미지를 클릭하면 크게 볼 수 있습니다.
-                              </p>
-                            </div>
-                          )}
                         </div>
                       )}
 
@@ -517,7 +594,66 @@ export default function XiamenProductContent() {
             </p>
           </div>
         )}
+        {/* ==================== 골프 코스 안내도 ==================== */}
 
+        {isGolf && (
+          <div className="mt-16">
+            <div className="mb-8 text-center">
+              <p className="text-sm font-bold tracking-[0.3em] text-[#B88A44]">
+                GOLF COURSE GUIDE
+              </p>
+
+              <h3 className="mt-3 text-3xl font-bold text-[#1f1f1f]">
+                ⛳ 골프 코스 안내도
+              </h3>
+
+              <p className="mt-3 text-sm text-gray-500">
+                이용 예정 골프장의 코스 안내도를 확인해보세요.
+              </p>
+            </div>
+
+            <div className="space-y-8">
+              {golfCourseGuideNames.map((course) => {
+                const courseGuide = golfCourseGuideMap[course];
+
+                if (!courseGuide) return null;
+
+                return (
+                  <div
+                    key={course}
+                    className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-5 shadow-sm"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <h4 className="text-xl font-bold text-[#1f1f1f]">
+                        ⛳ {course}
+                      </h4>
+
+                      <span className="text-sm font-semibold text-[#B88A44]">
+                        COURSE MAP
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setZoomImage(courseGuide)}
+                      className="block w-full overflow-hidden rounded-2xl border border-[#E8DCC4] bg-white"
+                    >
+                      <img
+                        src={courseGuide}
+                        alt={`${course} 코스 안내도`}
+                        className="w-full transition duration-300 hover:scale-[1.01]"
+                      />
+                    </button>
+
+                    <p className="mt-3 text-center text-xs text-gray-400">
+                      이미지를 클릭하면 크게 볼 수 있습니다.
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {/* ==================== 안내 ==================== */}
 
         <p className="mt-12 text-center text-xs leading-6 text-gray-400 md:text-sm">

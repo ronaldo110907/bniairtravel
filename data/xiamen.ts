@@ -303,7 +303,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "코트야드 메리어트(준5성급)또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -344,9 +344,9 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
     meals: {
       breakfast: "호텔식",
       lunch: "현지식",
-      dinner: "현지식",
+      dinner: "동북요리",
     },
-    hotel: "코트야드 메리어트(준5성급)또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -404,9 +404,9 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
     meals: {
       breakfast: "호텔식",
       lunch: "현지식",
-      dinner: "현지식",
+      dinner: "호남요리",
     },
-    hotel: "코트야드 메리어트(준5성급)또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -465,8 +465,8 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
     duration: "전일 관광 후 공항 이동",
     meals: {
       breakfast: "호텔식",
-      lunch: "현지식",
-      dinner: "현지식",
+      lunch: "토루식",
+      dinner: "한 식",
     },
     hotel: "기내 숙박",
   },
@@ -533,7 +533,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -559,10 +559,10 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
     duration: "오후 샤먼 관광",
     meals: {
       breakfast: "호텔식",
-      lunch: "딤섬",
+      lunch: "쇼우딤섬",
       dinner: "호남요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -593,7 +593,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
       lunch: "동북요리",
       dinner: "삼겹살 무제한",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -630,7 +630,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
     duration: "전일 관광 후 공항 이동",
     meals: {
       breakfast: "호텔식",
-      lunch: "객가요리",
+      lunch: "객가요리(남정호텔)",
       dinner: "항주요리",
     },
     hotel: "기내 숙박",
@@ -696,7 +696,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -731,9 +731,9 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
     meals: {
       breakfast: "호텔식",
       lunch: "현지식",
-      dinner: "현지식",
+      dinner: "동북요리",
     },
-    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -762,9 +762,9 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
     meals: {
       breakfast: "호텔식",
       lunch: "현지식",
-      dinner: "현지식",
+      dinner: "호남요리",
     },
-    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -800,10 +800,10 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
     duration: "전일 관광",
     meals: {
       breakfast: "호텔식",
-      lunch: "객가요리",
-      dinner: "항주요리",
+      lunch: "토루식",
+      dinner: "한 식",
     },
-    hotel: "코트야드 메리어트(준5성급) 또는 동급 ★★★★☆",
+    hotel: "코트야드 메리어트 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -904,7 +904,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -930,10 +930,10 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
     duration: "오후 샤먼 관광",
     meals: {
       breakfast: "호텔식",
-      lunch: "딤섬",
+      lunch: "쇼우딤섬",
       dinner: "호남요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -966,7 +966,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "동북요리",
       dinner: "삼겹살 무제한",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -1005,7 +1005,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "객가요리",
       dinner: "항주요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -1106,7 +1106,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -1132,10 +1132,10 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
     duration: "오후 샤먼 관광",
     meals: {
       breakfast: "호텔식",
-      lunch: "딤섬",
+      lunch: "쇼우딤섬",
       dinner: "호남요리",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -1173,7 +1173,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "동북요리",
       dinner: "버섯요리",
     },
-    hotel: "무이산 윈덤 호텔(준5성급) 또는 동급 ★★★★☆",
+    hotel: "무이산 윈덤 호텔 또는 동급(준5성급) ★★★★☆",
   },
 
   {
@@ -1217,7 +1217,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
       lunch: "농가요리",
       dinner: "삼겹살 무제한",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는 동급(정5성급) ★★★★★",
   },
 
   {
@@ -1320,15 +1320,15 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는(정5성급) 동급 ★★★★★",
   },
 
   {
     day: "DAY 2",
     icon: "⛳",
-    title: "남태무 CC · 18홀",
+    title: "남태무 CC · 천주 CC · 동방 CC 중 18홀",
     description:
-      "호텔 조식 후 남태무 골프장으로 이동하여 18홀 라운딩을 즐긴 후 호텔로 돌아옵니다.",
+      "호텔 조식 후 오전 자유일정 후 골프장으로 이동하여 18홀 라운딩을 즐긴 후 호텔로 돌아옵니다.",
     region: `하문`,
 
     transport: `전용차량`,
@@ -1336,26 +1336,29 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
     time: `전일`,
 
     schedule: `호텔 조식 후 오전 자유일정 및 휴식
-남태무 골프장으로 이동(약 40분 소요)
-▶ 남태무CC 18홀 라운딩
-- 1996년에 개장한 바다와 산을 끼고 있는 18홀 규모의 골프장
-- 7,324야드의 동쪽은 바다, 남쪽으로는 남태무산을 끼고 있습니다.
+ 골프장으로 이동
+
+▶ ⛳ 남태무 CC · 천주 CC · 동방 CC 중 18홀
+
 석식 후 호텔 투숙 및 휴식`,
-    places: ["남태무 CC", "18홀 라운딩"],
+
+    places: ["남태무 CC · 천주 CC · 동방 CC 중", "18홀 라운딩"],
+
     duration: "전일 골프",
     meals: {
       breakfast: "호텔식",
       lunch: "클럽중식 불포함",
-      dinner: "현지식",
+      dinner: "샤브샤브(하이디라오)",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는(정5성급) 동급 ★★★★★",
   },
 
   {
     day: "DAY 3",
     icon: "🏌️",
-    title: "남태무 CC · 18홀",
-    description: "남태무 골프장으로 이동하여 두 번째 18홀 라운딩을 진행합니다.",
+    title: "남태무 CC · 천주 CC · 동방 CC 중 18홀",
+    description:
+      "호텔 조식 후 골프장으로 이동하여 두 번째 18홀 라운딩을 진행합니다.",
     region: `하문`,
 
     transport: `전용차량`,
@@ -1363,19 +1366,16 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
     time: `전일`,
 
     schedule: `호텔 조식 후
-남태무 골프장으로 이동(약 40분 소요)
-▶ 남태무CC 18홀 라운딩
-- 1996년에 개장한 바다와 산을 끼고 있는 18홀 규모의 골프장
-- 7,324야드의 동쪽은 바다, 남쪽으로는 남태무산을 끼고 있습니다.
+▶ ⛳ 남태무 CC · 천주 CC · 동방 CC 중 18홀
 석식 후 호텔 투숙 및 휴식`,
-    places: ["남태무 CC", "18홀 라운딩"],
+    places: ["남태무 CC · 천주 CC · 동방 CC 중", "18홀 라운딩"],
     duration: "전일 골프",
     meals: {
       breakfast: "호텔식",
       lunch: "클럽중식 불포함",
-      dinner: "현지식",
+      dinner: "한 식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는(정5성급) 동급 ★★★★★",
   },
 
   {
@@ -1393,10 +1393,6 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
     schedule: `호텔 조식 후 오전
 동방 골프장으로 이동(약 10분 소요)
 ※ 골프복장으로 출발!! 라운딩 종료 후 호텔로 복귀하여 샤워 후 체크아웃 진행합니다. ※
-▶ 동방CC 18홀 라운딩
-- 1995년에 오픈한 로널드 프림이 설계한 27홀 규모의 명문 골프장
-- 10,665야드, 27홀, 파 108 규모의 골프장입니다.
-- 세계 100대 골프장에 선정된 바 있는 명문 골프장입니다.
 석식 후 자유일정
 23시 공항으로 이동`,
     places: ["동방 CC", "18홀 라운딩", "공항 이동"],
@@ -1404,7 +1400,7 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
     meals: {
       breakfast: "호텔식",
       lunch: "클럽중식 불포함",
-      dinner: "현지식",
+      dinner: "삼겹살무제한",
     },
     hotel: "기내 숙박",
   },
@@ -1469,15 +1465,15 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
       lunch: "-----",
       dinner: "-----",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는(정5성급) 동급 ★★★★★",
   },
 
   {
     day: "DAY 2",
     icon: "⛳",
-    title: "남태무 CC · 18홀",
+    title: "남태무 CC · 천주 CC · 동방 CC 중 18홀",
     description:
-      "호텔 조식 후 남태무 골프장으로 이동하여 18홀 라운딩을 즐깁니다.",
+      "호텔 조식 후 오전 자유일정 후 골프장으로 이동하여 18홀 라운딩을 즐긴 후 호텔로 돌아옵니다.",
     region: `하문`,
 
     transport: `전용차량`,
@@ -1485,26 +1481,29 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
     time: `전일`,
 
     schedule: `호텔 조식 후 오전 자유일정 및 휴식
-남태무 골프장으로 이동(약 40분 소요)
-▶ 남태무CC 18홀 라운딩
-- 1996년에 개장한 바다와 산을 끼고 있는 18홀 규모의 골프장
-- 7,324야드의 동쪽은 바다, 남쪽으로는 남태무산을 끼고 있습니다.
+골프장으로 이동
+
+▶ ⛳ 남태무 CC · 천주 CC · 동방 CC 중 18홀
+
 석식 후 호텔 투숙 및 휴식`,
-    places: ["남태무 CC", "18홀 라운딩"],
+
+    places: ["남태무 CC · 천주 CC · 동방 CC 중", "18홀 라운딩"],
+
     duration: "전일 골프",
     meals: {
       breakfast: "호텔식",
       lunch: "클럽중식 불포함",
-      dinner: "현지식",
+      dinner: "샤브샤브(하이디라오)",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는(정5성급) 동급 ★★★★★",
   },
 
   {
     day: "DAY 3",
-    icon: "🏌️",
-    title: "남태무 CC · 18홀",
-    description: "남태무 골프장으로 이동하여 두 번째 18홀 라운딩을 진행합니다.",
+    icon: "⛳",
+    title: "남태무 CC · 천주 CC · 동방 CC 중 18홀",
+    description:
+      "호텔 조식 후 오전 자유일정 후 골프장으로 이동하여 18홀 라운딩을 즐긴 후 호텔로 돌아옵니다.",
     region: `하문`,
 
     transport: `전용차량`,
@@ -1512,50 +1511,51 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
     time: `전일`,
 
     schedule: `호텔 조식 후 오전 자유일정 및 휴식
-남태무 골프장으로 이동(약 40분 소요)
-▶ 남태무CC 18홀 라운딩
-- 1996년에 개장한 바다와 산을 끼고 있는 18홀 규모의 골프장
-- 7,324야드의 동쪽은 바다, 남쪽으로는 남태무산을 끼고 있습니다.
+골프장으로 이동
+
+▶ ⛳ 남태무 CC · 천주 CC · 동방 CC 중 18홀
+
 석식 후 호텔 투숙 및 휴식`,
-    places: ["남태무 CC", "18홀 라운딩"],
+
+    places: ["남태무 CC · 천주 CC · 동방 CC 중", "18홀 라운딩"],
+
     duration: "전일 골프",
     meals: {
       breakfast: "호텔식",
       lunch: "클럽중식 불포함",
       dinner: "현지식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는(정5성급) 동급 ★★★★★",
   },
 
   {
     day: "DAY 4",
     icon: "⛳",
-    title: "천주 CC · 18홀",
+    title: "남태무 CC · 천주 CC · 동방 CC 중 18홀",
     description:
-      "천주 골프장으로 이동하여 18홀 라운딩을 진행한 후 샤먼으로 돌아옵니다.",
-    region: `하문
-천주
-하문`,
+      "호텔 조식 후 오전 자유일정 후 골프장으로 이동하여 18홀 라운딩을 즐긴 후 호텔로 돌아옵니다.",
+    region: `하문`,
 
     transport: `전용차량`,
 
     time: `전일`,
 
     schedule: `호텔 조식 후 오전 자유일정 및 휴식
-천주 골프장으로 이동(약 1시간 10분 소요)
-▶ 천주CC 18홀 라운딩
-- 천주 4대 명산 중 자모산 자락에 위치한 18홀 규모의 골프장
-- 산과 계곡을 따라 설계되어 있으며 도전적인 레이아웃으로 난이도 상급
-하문으로 이동(약 1시간 10분 소요)
+골프장으로 이동
+
+▶ ⛳ 남태무 CC · 천주 CC · 동방 CC 중 18홀
+
 석식 후 호텔 투숙 및 휴식`,
-    places: ["천주 CC", "18홀 라운딩"],
+
+    places: ["남태무 CC · 천주 CC · 동방 CC 중", "18홀 라운딩"],
+
     duration: "전일 골프",
     meals: {
       breakfast: "호텔식",
       lunch: "클럽중식 불포함",
-      dinner: "현지식",
+      dinner: "한 식",
     },
-    hotel: "화렉스 호텔 / 큐리오 힐튼(정5성급) 또는 동급 ★★★★★",
+    hotel: "화렉스 호텔 / 큐리오 힐튼 또는(정5성급) 동급 ★★★★★",
   },
 
   {
@@ -1573,10 +1573,6 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
     schedule: `호텔 조식 후 오전
 동방 골프장으로 이동(약 10분 소요)
 ※ 골프복장으로 출발!! 라운딩 종료 후 호텔로 복귀하여 샤워 후 체크아웃 진행합니다. ※
-▶ 동방CC 18홀 라운딩
-- 1995년에 오픈한 로널드 프림이 설계한 27홀 규모의 명문 골프장
-- 10,665야드, 27홀, 파 108 규모의 골프장입니다.
-- 세계 100대 골프장에 선정된 바 있는 명문 골프장입니다.
 석식 후 자유일정
 23시 공항으로 이동`,
     places: ["동방 CC", "18홀 라운딩", "공항 이동"],
@@ -1584,7 +1580,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
     meals: {
       breakfast: "호텔식",
       lunch: "클럽중식 불포함",
-      dinner: "현지식",
+      dinner: "삼겹살무제한",
     },
     hotel: "기내 숙박",
   },
@@ -1626,12 +1622,12 @@ export const includesValue3 = [
   { id: 2, text: "준5성급 호텔 2인 1실" },
   { id: 3, text: "전 일정 식사" },
   { id: 4, text: "전용차량" },
-  { id: 5, text: "관광지 입장료, 여행자보험(1억원)" },
+  { id: 5, text: "관광지 입장료, 여행자보험(2억원)" },
 ];
 
 export const excludesValue3 = [
   { id: 1, text: "기사/가이드팁50$" },
-  { id: 2, text: "선택관광 비용" },
+  { id: 2, text: "선택관광 비용(약200$)" },
   { id: 3, text: "매너팁 및 기타 개인경비" },
   { id: 4, text: "싱글차지 110,000원 / 1인(3박)" },
 ];
@@ -1644,7 +1640,7 @@ export const includesPremium3 = [
     text: "전 일정 식사 · 특식6회(딤섬, 호남요리, 동북요리, 삼겹살 무제한, 객가요리, 항주요리)",
   },
   { id: 4, text: "전용차량" },
-  { id: 5, text: "관광지 입장료 · 여행자보험(1억원)" },
+  { id: 5, text: "관광지 입장료 · 여행자보험(2억원)" },
   {
     id: 6,
     text: "특전[발+전신마사지 90분 1회(매너팁별도), 숙장화원(전동카 편도),민남전기쇼, 야경 유람선]",
@@ -1663,12 +1659,12 @@ export const includesValue4 = [
   { id: 2, text: "준5성급 호텔 2인 1실" },
   { id: 3, text: "전 일정 식사" },
   { id: 4, text: "전용차량" },
-  { id: 5, text: "관광지 입장료 · 여행자보험(1억원)" },
+  { id: 5, text: "관광지 입장료 · 여행자보험(2억원)" },
 ];
 
 export const excludesValue4 = [
   { id: 1, text: "기사/가이드팁60$" },
-  { id: 2, text: "선택관광 비용" },
+  { id: 2, text: "선택관광 비용(약250$)" },
   { id: 3, text: "매너팁 및 기타 개인경비" },
   { id: 4, text: "싱글차지 200,000원 / 1인(4박)" },
 ];
@@ -1681,7 +1677,7 @@ export const includesPremium4 = [
     text: "전 일정 식사 · 특식8회(딤섬, 호남요리, 동북요리, 삼겹살 무제한, 객가요리, 항주요리, 한식, 샤브샤브무제한)",
   },
   { id: 4, text: "전용차량" },
-  { id: 5, text: "관광지 입장료 · 여행자보험(1억원)" },
+  { id: 5, text: "관광지 입장료 · 여행자보험(2억원)" },
   {
     id: 6,
     text: "특전[발+전신마사지 90분 1회(매너팁별도),숙장화원(전동카 편도),민남전기쇼,해상명주탑,일월곡 온천욕,야경 유람선]",
@@ -1706,7 +1702,7 @@ export const includesWuyishan4 = [
     text: "전 일정 식사 · 특식8회(딤섬, 호남요리, 동북요리, 버섯요리, 삼겹살 무제한, 농가요리, 객가요리, 샤브샤브 무제한)",
   },
   { id: 4, text: "전용차량" },
-  { id: 5, text: "관광지 입장료 · 여행자보험(1억원)" },
+  { id: 5, text: "관광지 입장료 · 여행자보험(2억원)" },
   {
     id: 6,
     text: "[특전] 발+전신마사지 90분 1회(매너팁별도), 숙장화원(전동카 편도),무이산 왕복고속열차, 무이산 뗏목투어, 신야경 유람선",
@@ -1725,7 +1721,7 @@ export const includesGolf3 = [
   { id: 2, text: "하문 정5성급 호텔 2인 1실" },
   { id: 3, text: "전용차량" },
   { id: 4, text: "조식+석식" },
-  { id: 5, text: "여행자보험(1억원)" },
+  { id: 5, text: "여행자보험(2억원)" },
   { id: 6, text: "54홀 그린피+캐디피(2인1캐디)+카트비(2인1카트)" },
   { id: 7, text: "미팅&샌딩비" },
 ];
@@ -1745,7 +1741,7 @@ export const includesGolf4 = [
   { id: 2, text: "하문 정5성급 호텔 2인 1실" },
   { id: 3, text: "전용차량" },
   { id: 4, text: "석식" },
-  { id: 5, text: "여행자보험(1억원)" },
+  { id: 5, text: "여행자보험(2억원)" },
   { id: 6, text: "72홀 그린피+캐디피(2인1캐디)+카트비(2인1카트)" },
   { id: 7, text: "미팅&샌딩비" },
 ];
