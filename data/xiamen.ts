@@ -154,7 +154,7 @@ export const xiamenHotelBaseUrl =
 export const xiamenHotels = [
   {
     id: 1,
-    name: "화렉스 호텔",
+    name: "화렉스 호텔 (정5성급)",
     grade: "★★★★★",
     image: `${xiamenHotelBaseUrl}hualex.jpg`,
     roomImage: `${xiamenHotelBaseUrl}hualexroom.jpg`,
@@ -162,15 +162,15 @@ export const xiamenHotels = [
   },
   {
     id: 2,
-    name: "큐리오 힐튼",
+    name: "큐리오 힐튼 (정5성급)",
     grade: "★★★★★",
     image: `${xiamenHotelBaseUrl}hilton.jpg`,
     roomImage: `${xiamenHotelBaseUrl}hiltonroom.jpg`,
-    desc: "편안한 객실과 안정적인 숙박 환경을 갖춘 정5성급 호텔입니다.",
+    desc: "휴양지에서나 볼법한 리조트 형식의 정5성급 호텔입니다.",
   },
   {
     id: 3,
-    name: "코트야드 메리어트 샤먼",
+    name: "코트야드 메리어트 샤먼 (준5성급)",
     grade: "★★★★☆",
     image: `${xiamenHotelBaseUrl}marriot.jpg`,
     roomImage: `${xiamenHotelBaseUrl}marriotroom.jpg`,
@@ -182,11 +182,11 @@ export const wuyishanHotels = [
   ...xiamenHotels,
   {
     id: 4,
-    name: "무이산 윈덤 호텔",
+    name: "무이산 윈덤 호텔 (준5성급)",
     grade: "★★★★☆",
     image: `${xiamenHotelBaseUrl}whindom.jpg`,
     roomImage: `${xiamenHotelBaseUrl}whindomroom.jpg`,
-    desc: "무이산 일정 중 이용하는 호텔로 편안한 휴식을 제공합니다.",
+    desc: "무이산 일정 중 이용하는 호텔로 넓은 객실을 제공합니다.",
   },
 ];
 
