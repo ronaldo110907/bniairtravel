@@ -479,6 +479,45 @@ export default function XiamenProductContent() {
           </div>
         </div>
 
+        {/* ==================== 골프장 변경 안내 ==================== */}
+
+        {(activeType === "golf3" || activeType === "golf4") && (
+          <div className="mt-12 rounded-2xl border border-[#d9c5a5] bg-[#fffaf2] p-6">
+            <p className="text-lg font-bold text-[#8a642f]">
+              ⛳ 하문 명문 골프장 해서CC 변경 안내
+            </p>
+
+            <p className="mt-3 leading-7 text-gray-700">
+              보다 수준 높은 라운딩을 원하실 경우,
+              <strong className="font-bold text-gray-900">
+                {" "}
+                하문 명문 골프장 해서CC로 변경 가능합니다.
+              </strong>
+            </p>
+
+            <p className="mt-2 leading-7 text-gray-700">
+              CC 변경 시
+              <strong className="font-bold text-[#b88a44]">
+                {" "}
+                {activeType === "golf3"
+                  ? "1인 주중 USD 50 / 주말 USD 70 추가"
+                  : "1인 주중 USD 50 추가"}
+              </strong>
+              되며,
+              <strong className="font-semibold text-gray-900">
+                {" "}
+                그린피 · 카트비 · 캐디피가 포함
+              </strong>
+              됩니다.
+            </p>
+
+            <p className="mt-4 text-sm text-gray-500">
+              ※ 골프장 사정에 따라 변경 가능 여부 및 추가요금은 달라질 수
+              있습니다.
+            </p>
+          </div>
+        )}
+
         {/* ==================== 안내 ==================== */}
 
         <p className="mt-12 text-center text-xs leading-6 text-gray-400 md:text-sm">
