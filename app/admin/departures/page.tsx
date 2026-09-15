@@ -61,7 +61,7 @@ export default function DepartureAdminPage() {
   const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
 
   const [bulkEditField, setBulkEditField] = useState<
-    "price" | "airline" | "seat" | "status"
+    "price" | "airline" | "seat" | "status" | "course"
   >("price");
 
   const [bulkEditValue, setBulkEditValue] = useState("");
@@ -495,6 +495,7 @@ export default function DepartureAdminPage() {
       airline?: string;
       seat?: number;
       status?: string;
+      variant?: string;
     } = {};
 
     let fieldLabel = "";
@@ -552,6 +553,11 @@ export default function DepartureAdminPage() {
 
       updateData.status = bulkEditValue;
       fieldLabel = "상태";
+    }
+
+    if (bulkEditField === "course") {
+      updateData.variant = bulkEditValue.trim();
+      fieldLabel = "코스구분";
     }
 
     const confirmed = confirm(
@@ -1016,7 +1022,12 @@ export default function DepartureAdminPage() {
                   value={bulkEditField}
                   onChange={(e) => {
                     setBulkEditField(
-                      e.target.value as "price" | "airline" | "seat" | "status",
+                      e.target.value as
+                        | "price"
+                        | "airline"
+                        | "seat"
+                        | "status"
+                        | "course",
                     );
                     setBulkEditValue("");
                   }}
@@ -1026,6 +1037,7 @@ export default function DepartureAdminPage() {
                   <option value="airline">항공사</option>
                   <option value="seat">총좌석</option>
                   <option value="status">상태</option>
+                  <option value="course">코스구분</option>
                 </select>
               </div>
 
@@ -1063,7 +1075,7 @@ export default function DepartureAdminPage() {
               </div>
 
               <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
-                출발일, 일정, 코스구분은 일괄 수정되지 않습니다.
+                출발일, 일정은 일괄 수정되지 않습니다.
               </div>
             </div>
 
