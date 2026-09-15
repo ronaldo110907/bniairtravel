@@ -332,7 +332,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
       {
         name: "남보타사",
         image:
-          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/nambotasa.jpg",
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/nambotasa.jpeg",
       },
       {
         name: "중산로 관광",
