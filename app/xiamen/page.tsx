@@ -115,7 +115,7 @@ export default async function XiamenPage() {
 
       {/* ==================== 모바일 예약 ==================== */}
 
-      <MobileBookingButton />
+      <MobileBookingButton product={product?.title ?? "샤먼"} />
     </main>
   );
 }
