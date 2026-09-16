@@ -132,7 +132,7 @@ export default async function GuilinPage() {
         />
       </SectionReveal>
 
-      <MobileBookingButton />
+      <MobileBookingButton product={product?.title ?? "계림"} />
     </main>
   );
 }

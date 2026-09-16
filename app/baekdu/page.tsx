@@ -148,7 +148,7 @@ export default async function BaekduPage() {
         />
       </SectionReveal>
 
-      <MobileBookingButton />
+      <MobileBookingButton product={product?.title ?? "백두산"} />
     </main>
   );
 }

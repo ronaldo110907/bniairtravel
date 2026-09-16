@@ -156,7 +156,7 @@ export default async function PhuQuocPage() {
 
       {/* ==================== 모바일 예약 ==================== */}
 
-      <MobileBookingButton />
+      <MobileBookingButton product={product?.title ?? "푸꾸옥"} />
     </main>
   );
 }

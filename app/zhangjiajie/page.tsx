@@ -155,7 +155,7 @@ export default async function ZhangjiajiePage() {
         />
       </SectionReveal>
 
-      <MobileBookingButton />
+      <MobileBookingButton product={product?.title ?? "장가계"} />
     </main>
   );
 }
