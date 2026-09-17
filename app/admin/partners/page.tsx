@@ -22,6 +22,8 @@ export default function PartnersPage() {
   const [mobile, setMobile] = useState("");
   const [memo, setMemo] = useState("");
 
+  const [showExistingPartners, setShowExistingPartners] = useState(false);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -55,6 +57,19 @@ export default function PartnersPage() {
   async function handleSave() {
     if (!name.trim()) {
       alert("거래처명을 입력해주세요.");
+      return;
+    }
+
+    const duplicatePartner = partners.find(
+      (partner) =>
+        partner.name.trim().toLowerCase() === name.trim().toLowerCase() &&
+        partner.id !== editingId,
+    );
+
+    if (duplicatePartner) {
+      alert(
+        `"${duplicatePartner.name}" 거래처가 이미 등록되어 있습니다.\n기존 거래처를 확인해주세요.`,
+      );
       return;
     }
 
@@ -157,17 +172,84 @@ export default function PartnersPage() {
           </h2>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <div>
+            <div className="relative">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 거래처명 *
               </label>
 
               <input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onFocus={() => {
+                  if (name.trim()) {
+                    setShowExistingPartners(true);
+                  }
+                }}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  setName(value);
+                  setShowExistingPartners(value.trim().length > 0);
+                }}
+                onBlur={() => {
+                  setTimeout(() => {
+                    setShowExistingPartners(false);
+                  }, 150);
+                }}
                 placeholder="예: 하나투어 청주점"
+                autoComplete="off"
                 className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
               />
+
+              {showExistingPartners &&
+                name.trim() &&
+                partners.filter((partner) =>
+                  partner.name
+                    .toLowerCase()
+                    .includes(name.trim().toLowerCase()),
+                ).length > 0 && (
+                  <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-xl border bg-white shadow-xl">
+                    <div className="border-b bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-700">
+                      ⚠ 이미 등록된 거래처인지 확인해주세요.
+                    </div>
+
+                    {partners
+                      .filter((partner) =>
+                        partner.name
+                          .toLowerCase()
+                          .includes(name.trim().toLowerCase()),
+                      )
+                      .slice(0, 10)
+                      .map((partner) => (
+                        <button
+                          key={partner.id}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+
+                            handleEdit(partner);
+                            setShowExistingPartners(false);
+                          }}
+                          className="flex w-full items-center justify-between border-b px-4 py-3 text-left last:border-b-0 hover:bg-blue-50"
+                        >
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              🏢 {partner.name}
+                            </div>
+
+                            <div className="mt-1 space-y-0.5 text-xs text-gray-500">
+                              {partner.phone && <div>☎ {partner.phone}</div>}
+                              {partner.mobile && <div>📱 {partner.mobile}</div>}
+                              {partner.memo && <div>메모 : {partner.memo}</div>}
+                            </div>
+                          </div>
+
+                          <span className="text-xs font-bold text-blue-600">
+                            기존 거래처
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                )}
             </div>
 
             <div>
