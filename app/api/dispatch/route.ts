@@ -14,6 +14,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const departureId = searchParams.get("id");
+    const reservationIds =
+      searchParams
+        .get("reservationIds")
+        ?.split(",")
+        .map((id) => id.trim())
+        .filter(Boolean) ?? [];
 
     if (!departureId) {
       return NextResponse.json({ error: "departure id 없음" }, { status: 400 });
@@ -42,7 +48,7 @@ export async function GET(request: Request) {
     }
 
     // 예약 + 예약자 조회
-    const { data: reservations, error: reservationError } = await supabase
+    let reservationQuery = supabase
       .from("reservations")
       .select(
         `
@@ -51,7 +57,15 @@ export async function GET(request: Request) {
     `,
       )
       .eq("departure_id", departureId)
+      .neq("status", "취소")
       .order("created_at");
+
+    if (reservationIds.length > 0) {
+      reservationQuery = reservationQuery.in("id", reservationIds);
+    }
+
+    const { data: reservations, error: reservationError } =
+      await reservationQuery;
 
     if (reservationError) {
       return NextResponse.json(

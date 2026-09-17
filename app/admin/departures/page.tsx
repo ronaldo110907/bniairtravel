@@ -925,6 +925,11 @@ export default function DepartureAdminPage() {
             <br />
             확인이 필요하시면{" "}
             <span className="font-bold">‘지난 출발일 보기’</span>를 눌러주세요.
+            <br />
+            수배의뢰서는 해당 출발일의 <span className="font-bold">
+              ‘관리’
+            </span>{" "}
+            화면에서 출력할 수 있습니다.
           </div>
         </div>
       </div>

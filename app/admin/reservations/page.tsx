@@ -78,6 +78,7 @@ type Reservation = {
   departure_price?: number;
 
   people?: ReservationPeople[];
+  reservation_people?: ReservationPeople[];
   itinerary_file?: string | null;
 
   entry_declaration_file?: string | null;
@@ -200,6 +201,38 @@ function formatPhoneNumber(phone?: string | null) {
   return phone;
 }
 
+function getRosterProgress(reservation: Reservation) {
+  const expectedCount = Math.max(
+    1,
+    Number((reservation as any).people_count) || 1,
+  );
+
+  const people = reservation.people ?? reservation.reservation_people ?? [];
+
+  const completedCount = people.filter((person) => {
+    if (person.is_guide) return false;
+
+    const name = person.name?.trim() ?? "";
+
+    if (!name) return false;
+
+    if (/^예약자\s*\d+$/i.test(name)) {
+      return false;
+    }
+
+    return true;
+  }).length;
+
+  const missingCount = Math.max(0, expectedCount - completedCount);
+
+  return {
+    expectedCount,
+    completedCount,
+    missingCount,
+    isComplete: missingCount === 0,
+  };
+}
+
 function ReservationsContent() {
   const [list, setList] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -220,6 +253,11 @@ function ReservationsContent() {
   const searchParams = useSearchParams();
   const reservationId = searchParams.get("id");
   const [selected, setSelected] = useState<Reservation | null>(null);
+
+  const [insuranceDone, setInsuranceDone] = useState(false);
+  const [savingInsurance, setSavingInsurance] = useState(false);
+  const [invoiceDone, setInvoiceDone] = useState(false);
+  const [requestDone, setRequestDone] = useState(false);
 
   const [openPersonId, setOpenPersonId] = useState<string | null>(null);
   const [previewPassport, setPreviewPassport] = useState<string | null>(null);
@@ -995,25 +1033,68 @@ function ReservationsContent() {
       }
     }
 
-    const { error } = await supabase.from("reservations").insert({
-      name: newReservation.name,
-      phone: newReservation.phone,
-      mobile: newReservation.mobile || null,
-      product: newReservation.product,
-      departure_id: isCustomProduct
-        ? useSeatPool
-          ? resolvedDepartureId
-          : null
-        : resolvedDepartureId,
-      departure_date: newReservation.departure_date,
-      status: newReservation.status,
-      message: newReservation.message,
-      people_count: Number(newReservation.people_count) || 1,
-    });
+    const peopleCount = Math.max(1, Number(newReservation.people_count) || 1);
 
-    if (error) {
-      console.log("ERROR >>>", error);
-      alert(error.message);
+    const { data: createdReservation, error } = await supabase
+      .from("reservations")
+      .insert({
+        name: newReservation.name,
+        phone: newReservation.phone,
+        mobile: newReservation.mobile || null,
+        product: newReservation.product,
+        departure_id: isCustomProduct
+          ? useSeatPool
+            ? resolvedDepartureId
+            : null
+          : resolvedDepartureId,
+        departure_date: newReservation.departure_date,
+        status: newReservation.status,
+        message: newReservation.message,
+        people_count: peopleCount,
+      })
+      .select("id")
+      .single();
+
+    if (error || !createdReservation) {
+      console.log("RESERVATION INSERT ERROR >>>", error);
+      alert(error?.message || "예약 등록에 실패했습니다.");
+      return;
+    }
+
+    /* 예약인원만큼 예약자 명단 자동 생성 */
+    const autoPeople = Array.from({ length: peopleCount }, (_, index) => ({
+      reservation_id: createdReservation.id,
+      name: `예약자 ${index + 1}`,
+      sort_order: index,
+
+      passport_name: null,
+      passport_number: null,
+      passport_birth: null,
+      passport_issue: null,
+      passport_expiry: null,
+      passport_sex: null,
+      passport_nationality: "KOR",
+
+      is_guide: false,
+    }));
+
+    const { error: peopleError } = await supabase
+      .from("reservation_people")
+      .insert(autoPeople);
+
+    if (peopleError) {
+      console.error("AUTO PEOPLE INSERT ERROR >>>", peopleError);
+
+      // 명단 생성 실패 시 방금 생성한 예약도 되돌림
+      await supabase
+        .from("reservations")
+        .delete()
+        .eq("id", createdReservation.id);
+
+      alert(
+        "예약자 명단 자동 생성에 실패하여 예약 등록을 취소했습니다.\n다시 시도해주세요.",
+      );
+
       return;
     }
 
@@ -1064,6 +1145,23 @@ function ReservationsContent() {
 
       const reservations = reservationData ?? [];
 
+      const reservationIds = reservations.map((item: any) => item.id);
+
+      let peopleData: any[] = [];
+
+      if (reservationIds.length > 0) {
+        const { data, error: peopleError } = await supabase
+          .from("reservation_people")
+          .select("id, reservation_id, name, sort_order, is_guide")
+          .in("reservation_id", reservationIds);
+
+        if (peopleError) {
+          console.error("RESERVATION PEOPLE ERROR", peopleError);
+        } else {
+          peopleData = data ?? [];
+        }
+      }
+
       // 2. 예약에 연결된 departure_id만 모음
       const departureIds = Array.from(
         new Set(
@@ -1104,6 +1202,11 @@ function ReservationsContent() {
       // 4. 좌석 연결 상품을 필터 기준으로 사용
       const mappedData = reservations.map((item: any) => ({
         ...item,
+
+        reservation_people: (peopleData ?? []).filter(
+          (person: any) => String(person.reservation_id) === String(item.id),
+        ),
+
         filter_product:
           departureProductMap.get(String(item.departure_id)) || item.product,
       }));
@@ -1610,6 +1713,88 @@ function ReservationsContent() {
     }
   }
 
+  async function loadChecklist(reservationId: string) {
+    const { data, error } = await supabase
+      .from("reservation_checklists")
+      .select("insurance_done, invoice_done")
+      .eq("reservation_id", reservationId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("CHECKLIST LOAD ERROR", error);
+      setInsuranceDone(false);
+      setInvoiceDone(false);
+      return;
+    }
+
+    setInsuranceDone(data?.insurance_done ?? false);
+    setInvoiceDone(data?.invoice_done ?? false);
+  }
+
+  async function updateInsuranceDone(checked: boolean) {
+    if (!selected) return;
+
+    setSavingInsurance(true);
+
+    try {
+      const { error } = await supabase.from("reservation_checklists").upsert(
+        {
+          reservation_id: selected.id,
+          insurance_done: checked,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "reservation_id",
+        },
+      );
+
+      if (error) {
+        console.error("INSURANCE CHECK ERROR", error);
+        alert(error.message);
+        return;
+      }
+
+      setInsuranceDone(checked);
+    } finally {
+      setSavingInsurance(false);
+    }
+  }
+
+  async function markInvoiceDone() {
+    if (!selected) return;
+
+    const { error } = await supabase.from("reservation_checklists").upsert(
+      {
+        reservation_id: selected.id,
+        insurance_done: insuranceDone,
+        invoice_done: true,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "reservation_id",
+      },
+    );
+
+    if (error) {
+      console.error("INVOICE CHECK ERROR CODE:", error.code);
+      console.error("INVOICE CHECK ERROR MESSAGE:", error.message);
+      console.error("INVOICE CHECK ERROR DETAILS:", error.details);
+      console.error("INVOICE CHECK ERROR HINT:", error.hint);
+
+      alert(
+        `인보이스 완료 저장 오류\n\n` +
+          `message: ${error.message || "-"}\n` +
+          `code: ${error.code || "-"}\n` +
+          `details: ${error.details || "-"}\n` +
+          `hint: ${error.hint || "-"}`,
+      );
+
+      return;
+    }
+
+    setInvoiceDone(true);
+  }
+
   async function openDetail(item: Reservation) {
     setEditPerson(null);
     setSelected(item);
@@ -1617,6 +1802,7 @@ function ReservationsContent() {
     setMemoDraft(item.memo || "");
     await loadPeople(item.id);
     await loadDeparturePrice(item.departure_id);
+    await loadChecklist(item.id);
   }
 
   function resetFilters() {
@@ -1994,6 +2180,7 @@ function ReservationsContent() {
                 <tr>
                   <th className="px-4 py-4 text-center">번호</th>
                   <th className="px-4 py-4 text-left">이름</th>
+                  <th className="px-4 py-4 text-center">명단</th>
                   <th className="px-4 py-4 text-left">연락처</th>
                   <th className="px-4 py-4 text-left">상품</th>
                   <th className="px-4 py-4 text-left">출발일</th>
@@ -2022,6 +2209,31 @@ function ReservationsContent() {
                       {item.name || "-"}
                     </td>
 
+                    <td className="whitespace-nowrap px-4 py-4 text-center">
+                      {(() => {
+                        const roster = getRosterProgress(item);
+
+                        return roster.isComplete ? (
+                          <div>
+                            <div className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                              ✅ 명단 {roster.completedCount}/
+                              {roster.expectedCount}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
+                              ⚠ 명단 {roster.completedCount}/
+                              {roster.expectedCount}
+                            </div>
+
+                            <div className="mt-1 text-xs font-semibold text-red-500">
+                              {roster.missingCount}명 미입력
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </td>
                     <td className="whitespace-nowrap px-4 py-4">
                       <div className="space-y-1">
                         {item.phone && (
@@ -2985,6 +3197,181 @@ function ReservationsContent() {
                   )}
                 </div>
               </div>
+              {selected &&
+                (() => {
+                  const roster = getRosterProgress(selected);
+
+                  const rosterDone = roster.isComplete;
+                  const itineraryDone = Boolean(selected.itinerary_file);
+
+                  const completedCount = [
+                    rosterDone,
+                    insuranceDone,
+                    itineraryDone,
+                    requestDone,
+                    invoiceDone,
+                  ].filter(Boolean).length;
+
+                  const totalCount = 5;
+
+                  const progress = Math.round(
+                    (completedCount / totalCount) * 100,
+                  );
+
+                  return (
+                    <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/40 p-5">
+                      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <h3 className="font-bold text-gray-900">
+                            ✈️ 출발 준비 체크리스트
+                          </h3>
+
+                          <p className="mt-1 text-sm text-gray-500">
+                            출발 전 준비사항을 자동으로 확인합니다.
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-blue-700">
+                            {completedCount}/{totalCount} 완료
+                          </div>
+
+                          <div className="mt-1 text-xs text-gray-500">
+                            준비율 {progress}%
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {/* 예약자 명단 */}
+                        <div className="flex items-center justify-between rounded-lg bg-white p-3">
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              👥 예약자 명단
+                            </div>
+
+                            <div className="mt-1 text-xs text-gray-500">
+                              {roster.completedCount}/{roster.expectedCount}명
+                              입력
+                            </div>
+                          </div>
+
+                          <span
+                            className={`text-sm font-bold ${
+                              rosterDone ? "text-emerald-600" : "text-red-500"
+                            }`}
+                          >
+                            {rosterDone
+                              ? "✅ 완료"
+                              : `⚠ ${roster.missingCount}명 미입력`}
+                          </span>
+                        </div>
+
+                        {/* 여행자보험 */}
+                        <div className="flex items-center justify-between rounded-lg bg-white p-3">
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              🛡️ 여행자보험
+                            </div>
+
+                            <div className="mt-1 text-xs text-gray-500">
+                              보험 가입이 완료되었으면 체크해주세요.
+                            </div>
+                          </div>
+
+                          <label className="flex cursor-pointer items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={insuranceDone}
+                              disabled={savingInsurance}
+                              onChange={(e) =>
+                                void updateInsuranceDone(e.target.checked)
+                              }
+                              className="h-5 w-5 cursor-pointer"
+                            />
+
+                            <span
+                              className={`text-sm font-bold ${
+                                insuranceDone
+                                  ? "text-emerald-600"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {insuranceDone ? "✅ 완료" : "미완료"}
+                            </span>
+                          </label>
+                        </div>
+
+                        {/* 일정표 */}
+                        <div className="flex items-center justify-between rounded-lg bg-white p-3">
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              📋 일정표(확정서)
+                            </div>
+
+                            <div className="mt-1 text-xs text-gray-500">
+                              일정표(확정서) 등록 여부를 자동으로 확인합니다.
+                            </div>
+                          </div>
+
+                          <span
+                            className={`text-sm font-bold ${
+                              itineraryDone
+                                ? "text-emerald-600"
+                                : "text-red-500"
+                            }`}
+                          >
+                            {itineraryDone ? "✅ 등록완료" : "⚠ 미등록"}
+                          </span>
+                        </div>
+
+                        {/* 수배의뢰서 */}
+                        <div className="flex items-center justify-between rounded-lg bg-white p-3">
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              📋 수배의뢰서
+                            </div>
+
+                            <div className="mt-1 text-xs text-gray-500">
+                              해당 예약이 포함된 수배의뢰서 생성 여부를 자동으로
+                              확인합니다.
+                            </div>
+                          </div>
+
+                          <span
+                            className={`text-sm font-bold ${
+                              requestDone ? "text-emerald-600" : "text-red-500"
+                            }`}
+                          >
+                            {requestDone ? "✅ 생성완료" : "⚠ 미생성"}
+                          </span>
+                        </div>
+
+                        {/* 인보이스 */}
+                        <div className="flex items-center justify-between rounded-lg bg-white p-3">
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              📄 잔금 인보이스
+                            </div>
+
+                            <div className="mt-1 text-xs text-gray-500">
+                              잔금 인보이스 인쇄&저장 실행 여부를 자동으로
+                              확인합니다.
+                            </div>
+                          </div>
+
+                          <span
+                            className={`text-sm font-bold ${
+                              invoiceDone ? "text-emerald-600" : "text-red-500"
+                            }`}
+                          >
+                            {invoiceDone ? "✅ 생성완료" : "⚠ 미생성"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               <div className="mt-6 rounded-xl border p-5">
                 <h3 className="mb-4 font-bold">👥 예약자 명단 관리</h3>
 
@@ -3700,6 +4087,7 @@ h-[50px]
         open={showInvoiceModal}
         onClose={() => setShowInvoiceModal(false)}
         reservation={selected}
+        onGenerated={() => void markInvoiceDone()}
       />
 
       <TravelContractModal

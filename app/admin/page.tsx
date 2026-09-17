@@ -57,6 +57,10 @@ export default async function AdminPage() {
 
   const weekStart = formatKoreanDate(startOfWeek);
   const weekEnd = formatKoreanDate(endOfWeek);
+  const upcomingEndDate = new Date(now);
+  upcomingEndDate.setDate(upcomingEndDate.getDate() + 14);
+
+  const upcomingEnd = formatKoreanDate(upcomingEndDate);
 
   const { data: weekDepartures } = await supabase
     .from("departures")
@@ -69,6 +73,28 @@ export default async function AdminPage() {
     .gte("departure_date", today)
     .lte("departure_date", weekEnd)
     .order("departure_date");
+
+  const { data: upcomingReservations } = await supabase
+    .from("reservations")
+    .select(
+      `
+    id,
+    name,
+    product,
+    departure_date,
+    status,
+    people_count,
+    reservation_people (
+      id,
+      name,
+      is_guide
+    )
+  `,
+    )
+    .gte("departure_date", today)
+    .lte("departure_date", upcomingEnd)
+    .neq("status", "취소")
+    .order("departure_date", { ascending: true });
 
   const { data: products } = await supabase.from("products").select("*");
 
@@ -170,6 +196,54 @@ export default async function AdminPage() {
     })
     .filter((item) => item.unsettledCount > 0);
 
+  const upcomingSummary = (upcomingReservations ?? []).map(
+    (reservation: any) => {
+      const expectedCount = Math.max(1, Number(reservation.people_count) || 1);
+
+      const completedCount = (reservation.reservation_people ?? []).filter(
+        (person: any) => {
+          if (person.is_guide) return false;
+
+          const name = person.name?.trim() ?? "";
+
+          if (!name) return false;
+          if (/^예약자\s*\d+$/i.test(name)) return false;
+
+          return true;
+        },
+      ).length;
+
+      const missingCount = Math.max(0, expectedCount - completedCount);
+
+      const todayParts = today.split("-").map(Number);
+      const departureParts = reservation.departure_date.split("-").map(Number);
+
+      const todayUtc = Date.UTC(
+        todayParts[0],
+        todayParts[1] - 1,
+        todayParts[2],
+      );
+
+      const departureUtc = Date.UTC(
+        departureParts[0],
+        departureParts[1] - 1,
+        departureParts[2],
+      );
+
+      const dDay = Math.round(
+        (departureUtc - todayUtc) / (1000 * 60 * 60 * 24),
+      );
+
+      return {
+        ...reservation,
+        expectedCount,
+        completedCount,
+        missingCount,
+        dDay,
+      };
+    },
+  );
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -234,6 +308,89 @@ export default async function AdminPage() {
               <strong className="text-gray-700">예약관리</strong>에서
               확인해주세요.
             </p>
+          </div>
+          <div className="rounded-xl border border-orange-200 bg-white p-6 shadow">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold">⏰ 출발 임박 예약</h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  오늘부터 14일 이내 출발 예약입니다.
+                </p>
+              </div>
+
+              <div className="rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700">
+                {upcomingSummary.length}건
+              </div>
+            </div>
+
+            {upcomingSummary.length > 0 ? (
+              <div className="space-y-3">
+                {upcomingSummary.map((reservation: any) => (
+                  <Link
+                    key={reservation.id}
+                    href={`/admin/reservations?id=${reservation.id}`}
+                    className="block rounded-xl border p-4 transition hover:border-orange-300 hover:bg-orange-50"
+                  >
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-gray-900">
+                            ✈ {reservation.product}
+                          </span>
+
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                              reservation.dDay === 0
+                                ? "bg-red-100 text-red-700"
+                                : reservation.dDay <= 3
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-blue-100 text-blue-700"
+                            }`}
+                          >
+                            {reservation.dDay === 0
+                              ? "D-DAY"
+                              : `D-${reservation.dDay}`}
+                          </span>
+                        </div>
+
+                        <div className="mt-2 text-sm text-gray-600">
+                          👤 {reservation.name}
+                          <span className="mx-2 text-gray-300">|</span>
+                          📅 {reservation.departure_date}
+                          <span className="mx-2 text-gray-300">|</span>
+                          👥 {reservation.expectedCount}명
+                        </div>
+                      </div>
+
+                      <div className="text-left md:text-right">
+                        {reservation.missingCount === 0 ? (
+                          <div className="inline-flex rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-bold text-emerald-700">
+                            ✅ 명단 {reservation.completedCount}/
+                            {reservation.expectedCount}
+                          </div>
+                        ) : (
+                          <>
+                            <div className="inline-flex rounded-full bg-amber-100 px-3 py-1.5 text-sm font-bold text-amber-700">
+                              ⚠ 명단 {reservation.completedCount}/
+                              {reservation.expectedCount}
+                            </div>
+
+                            <div className="mt-1 text-xs font-bold text-red-500">
+                              {reservation.missingCount}명 미입력
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl bg-gray-50 p-8 text-center text-sm text-gray-400">
+                ✈️ 14일 이내 출발 예정 예약이 없습니다.
+              </div>
+            )}
           </div>
           <div className="mt-4">
             {weekDepartures && weekDepartures.length > 0 ? (

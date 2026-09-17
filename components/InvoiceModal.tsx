@@ -27,6 +27,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   reservation: Reservation | null;
+  onGenerated?: () => void;
 };
 
 const accounts = [
@@ -62,7 +63,12 @@ function parseMoney(value: string) {
   return Number(value.replaceAll(",", "")) || 0;
 }
 
-export default function InvoiceModal({ open, onClose, reservation }: Props) {
+export default function InvoiceModal({
+  open,
+  onClose,
+  reservation,
+  onGenerated,
+}: Props) {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const [sender, setSender] = useState("이민우 부장");
@@ -164,6 +170,10 @@ export default function InvoiceModal({ open, onClose, reservation }: Props) {
 
     setTimeout(async () => {
       await handlePrint();
+
+      if (invoiceType === "balance") {
+        onGenerated?.();
+      }
 
       setTimeout(() => {
         setIsPrinting(false);
