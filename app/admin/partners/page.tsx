@@ -60,19 +60,6 @@ export default function PartnersPage() {
       return;
     }
 
-    const duplicatePartner = partners.find(
-      (partner) =>
-        partner.name.trim().toLowerCase() === name.trim().toLowerCase() &&
-        partner.id !== editingId,
-    );
-
-    if (duplicatePartner) {
-      alert(
-        `"${duplicatePartner.name}" 거래처가 이미 등록되어 있습니다.\n기존 거래처를 확인해주세요.`,
-      );
-      return;
-    }
-
     setLoading(true);
 
     if (editingId) {
