@@ -47,10 +47,18 @@ type Departure = {
   price: number | null;
 };
 
+type Partner = {
+  id: string;
+  name: string;
+  phone: string | null;
+  mobile: string | null;
+};
+
 type Reservation = {
   id: string;
   name: string;
   phone: string;
+  mobile?: string | null;
   product: string;
   departure_date: string;
   message: string;
@@ -227,6 +235,7 @@ function ReservationsContent() {
   const [newReservation, setNewReservation] = useState({
     name: "",
     phone: "",
+    mobile: "",
     product: "",
     departure_id: "",
     departure_date: "",
@@ -249,8 +258,11 @@ function ReservationsContent() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [departures, setDepartures] = useState<Departure[]>([]);
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [showPartnerSuggestions, setShowPartnerSuggestions] = useState(false);
+
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const selectedProduct = useMemo(() => {
     if (!selected) return null;
 
@@ -287,10 +299,12 @@ function ReservationsContent() {
   const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   const [editCustomerName, setEditCustomerName] = useState("");
   const [editCustomerPhone, setEditCustomerPhone] = useState("");
+  const [editCustomerMobile, setEditCustomerMobile] = useState("");
 
   useEffect(() => {
     void loadReservations();
     void loadProducts();
+    void loadPartners();
   }, []);
 
   useEffect(() => {
@@ -847,6 +861,21 @@ function ReservationsContent() {
 
     setProducts(data ?? []);
   }
+
+  async function loadPartners() {
+    const { data, error } = await supabase
+      .from("partners")
+      .select("id, name, phone, mobile")
+      .eq("is_active", true)
+      .order("name");
+
+    if (error) {
+      console.error("PARTNERS ERROR", error);
+      return;
+    }
+
+    setPartners(data ?? []);
+  }
   async function loadDepartures(productId: string) {
     console.log("선택된 productId:", productId);
 
@@ -896,7 +925,7 @@ function ReservationsContent() {
 
     if (
       !newReservation.name ||
-      !newReservation.phone ||
+      (!newReservation.phone && !newReservation.mobile) ||
       !newReservation.product ||
       !newReservation.departure_date ||
       customSeatPoolMissing ||
@@ -969,6 +998,7 @@ function ReservationsContent() {
     const { error } = await supabase.from("reservations").insert({
       name: newReservation.name,
       phone: newReservation.phone,
+      mobile: newReservation.mobile || null,
       product: newReservation.product,
       departure_id: isCustomProduct
         ? useSeatPool
@@ -994,6 +1024,7 @@ function ReservationsContent() {
     setNewReservation({
       name: "",
       phone: "",
+      mobile: "",
       product: "",
       departure_id: "",
       departure_date: "",
@@ -1608,6 +1639,7 @@ function ReservationsContent() {
       const searchable = [
         item.name,
         item.phone,
+        item.mobile || "",
         item.product,
         item.message,
         item.memo || "",
@@ -1991,12 +2023,29 @@ function ReservationsContent() {
                     </td>
 
                     <td className="whitespace-nowrap px-4 py-4">
-                      <a
-                        href={`tel:${item.phone}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {formatPhoneNumber(item.phone)}
-                      </a>
+                      <div className="space-y-1">
+                        {item.phone && (
+                          <a
+                            href={`tel:${item.phone}`}
+                            className="block text-blue-600 hover:underline"
+                          >
+                            ☎ {formatPhoneNumber(item.phone)}
+                          </a>
+                        )}
+
+                        {item.mobile && (
+                          <a
+                            href={`tel:${item.mobile}`}
+                            className="block text-blue-600 hover:underline"
+                          >
+                            📱 {formatPhoneNumber(item.mobile)}
+                          </a>
+                        )}
+
+                        {!item.phone && !item.mobile && (
+                          <span className="text-gray-300">-</span>
+                        )}
+                      </div>
                     </td>
 
                     <td className="max-w-[260px] px-4 py-4">
@@ -2172,7 +2221,7 @@ function ReservationsContent() {
             </div>
 
             <div className="grid grid-cols-2 gap-6 p-6">
-              <div>
+              <div className="relative">
                 <label className="mb-2 block text-sm font-semibold">
                   예약자명
                 </label>
@@ -2180,15 +2229,89 @@ function ReservationsContent() {
                 <input
                   type="text"
                   value={newReservation.name}
-                  onChange={(e) =>
+                  onFocus={() => {
+                    if (newReservation.name.trim()) {
+                      setShowPartnerSuggestions(true);
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
                     setNewReservation({
                       ...newReservation,
-                      name: e.target.value,
-                    })
-                  }
+                      name: value,
+                    });
+
+                    setShowPartnerSuggestions(value.trim().length > 0);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setShowPartnerSuggestions(false);
+                    }, 150);
+                  }}
                   className="w-full rounded-xl border px-4 py-3"
-                  placeholder="예약자명을 입력하세요."
+                  placeholder="예약자명 또는 거래처명을 입력하세요."
+                  autoComplete="off"
                 />
+
+                {showPartnerSuggestions &&
+                  newReservation.name.trim() &&
+                  partners.filter((partner) =>
+                    partner.name
+                      .toLowerCase()
+                      .includes(newReservation.name.trim().toLowerCase()),
+                  ).length > 0 && (
+                    <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-xl border bg-white shadow-lg">
+                      {partners
+                        .filter((partner) =>
+                          partner.name
+                            .toLowerCase()
+                            .includes(newReservation.name.trim().toLowerCase()),
+                        )
+                        .slice(0, 10)
+                        .map((partner) => (
+                          <button
+                            key={partner.id}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+
+                              setNewReservation({
+                                ...newReservation,
+                                name: partner.name,
+                                phone: partner.phone ?? "",
+                                mobile: partner.mobile ?? "",
+                              });
+
+                              setShowPartnerSuggestions(false);
+                            }}
+                            className="flex w-full items-center justify-between border-b px-4 py-3 text-left last:border-b-0 hover:bg-blue-50"
+                          >
+                            <div>
+                              <div className="font-semibold text-gray-900">
+                                🏢 {partner.name}
+                              </div>
+
+                              <div className="mt-1 space-y-0.5 text-xs text-gray-500">
+                                {partner.phone && <div>☎ {partner.phone}</div>}
+
+                                {partner.mobile && (
+                                  <div>📱 {partner.mobile}</div>
+                                )}
+
+                                {!partner.phone && !partner.mobile && (
+                                  <div>등록된 연락처 없음</div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="text-xs font-semibold text-blue-600">
+                              선택
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  )}
               </div>
 
               <div>
@@ -2203,6 +2326,25 @@ function ReservationsContent() {
                     setNewReservation({
                       ...newReservation,
                       phone: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border px-4 py-3"
+                  placeholder="010-0000-0000"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold">
+                  휴대폰
+                </label>
+
+                <input
+                  type="text"
+                  value={newReservation.mobile}
+                  onChange={(e) =>
+                    setNewReservation({
+                      ...newReservation,
+                      mobile: e.target.value,
                     })
                   }
                   className="w-full rounded-xl border px-4 py-3"
@@ -2676,6 +2818,7 @@ function ReservationsContent() {
                     onClick={() => {
                       setEditCustomerName(selected.name ?? "");
                       setEditCustomerPhone(selected.phone ?? "");
+                      setEditCustomerMobile(selected.mobile ?? "");
                       setIsEditingCustomer(true);
                     }}
                     className="text-sm font-bold text-blue-600 hover:underline"
@@ -2703,6 +2846,18 @@ function ReservationsContent() {
                           type="text"
                           value={editCustomerPhone}
                           onChange={(e) => setEditCustomerPhone(e.target.value)}
+                          className="w-full rounded-lg border bg-white px-3 py-2 font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <div className="mb-1 text-xs text-gray-500">휴대폰</div>
+
+                        <input
+                          type="text"
+                          value={editCustomerMobile}
+                          onChange={(e) =>
+                            setEditCustomerMobile(e.target.value)
+                          }
                           className="w-full rounded-lg border bg-white px-3 py-2 font-semibold"
                         />
                       </div>

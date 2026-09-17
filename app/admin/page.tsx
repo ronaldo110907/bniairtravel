@@ -431,6 +431,16 @@ export default async function AdminPage() {
                 긴급특가 출발일 및 홈페이지 노출 관리
               </div>
             </Link>
+
+            <Link
+              href="/admin/partners"
+              className="col-span-2 rounded-lg bg-teal-600 p-4 text-center text-white hover:bg-teal-700"
+            >
+              <div className="font-bold">🏢 거래처 관리</div>
+              <div className="mt-1 text-xs leading-5 text-white/80">
+                거래처명 · 연락처 · 사용여부 관리
+              </div>
+            </Link>
           </div>
         </div>
         {/* 개발 웹툰 비하인드 */}
