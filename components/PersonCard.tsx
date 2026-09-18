@@ -4,6 +4,8 @@ type ReservationPeople = {
   name: string;
   passport_image: string | null;
   passport_name: string | null;
+  passport_last_name: string | null;
+  passport_first_name: string | null;
   passport_number: string | null;
   passport_birth: string | null;
   passport_expiry: string | null;
@@ -183,8 +185,21 @@ export default function PersonCard({
             </div>
 
             <div>
-              <div className="text-xs text-gray-500">영문이름</div>
-              <div className="font-semibold">{person.passport_name || "-"}</div>
+              <div className="text-xs text-gray-500">영문 성</div>
+              <div className="font-semibold">
+                {person.passport_last_name ||
+                  person.passport_name?.split(" ")[0] ||
+                  "-"}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs text-gray-500">영문 이름</div>
+              <div className="font-semibold">
+                {person.passport_first_name ||
+                  person.passport_name?.split(" ").slice(1).join(" ") ||
+                  "-"}
+              </div>
             </div>
 
             <div>

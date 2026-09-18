@@ -30,22 +30,45 @@ export default function PersonForm({ person, setPerson }: PersonFormProps) {
       </div>
       <div>
         <label className="mb-1 block text-sm font-bold text-gray-700">
+          영문 성
+        </label>
+
+        <input
+          className="
+      w-full
+      rounded-lg
+      border
+      px-3
+      py-2
+    "
+          value={person.passport_last_name || ""}
+          onChange={(e) =>
+            setPerson({
+              ...person,
+              passport_last_name: e.target.value.toUpperCase(),
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm font-bold text-gray-700">
           영문 이름
         </label>
 
         <input
           className="
-    w-full
-    rounded-lg
-    border
-    px-3
-    py-2
+      w-full
+      rounded-lg
+      border
+      px-3
+      py-2
     "
-          value={person.passport_name || ""}
+          value={person.passport_first_name || ""}
           onChange={(e) =>
             setPerson({
               ...person,
-              passport_name: e.target.value.toUpperCase(),
+              passport_first_name: e.target.value.toUpperCase(),
             })
           }
         />

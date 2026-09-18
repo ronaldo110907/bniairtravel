@@ -16,6 +16,8 @@ type ReservationPeople = {
   name: string;
   passport_image: string | null;
   passport_name: string | null;
+  passport_last_name: string | null;
+  passport_first_name: string | null;
   passport_number: string | null;
   passport_birth: string | null;
   passport_expiry: string | null;
@@ -324,6 +326,8 @@ function ReservationsContent() {
     name: "",
 
     passport_name: "",
+    passport_last_name: "",
+    passport_first_name: "",
     passport_number: "",
 
     passport_birth: "",
@@ -409,7 +413,13 @@ function ReservationsContent() {
 
         sort_order: selected.people?.length || 0,
 
-        passport_name: personDraft.passport_name || null,
+        passport_name:
+          `${personDraft.passport_last_name} ${personDraft.passport_first_name}`.trim() ||
+          null,
+
+        passport_last_name: personDraft.passport_last_name || null,
+        passport_first_name: personDraft.passport_first_name || null,
+
         passport_number: personDraft.passport_number || null,
 
         passport_birth: personDraft.passport_birth || null,
@@ -436,6 +446,8 @@ function ReservationsContent() {
       name: "",
 
       passport_name: "",
+      passport_last_name: "",
+      passport_first_name: "",
       passport_number: "",
 
       passport_birth: "",
@@ -470,6 +482,8 @@ function ReservationsContent() {
       sort_order: currentCount + index,
 
       passport_name: null,
+      passport_last_name: null,
+      passport_first_name: null,
       passport_number: null,
       passport_birth: null,
       passport_issue: null,
@@ -547,7 +561,15 @@ function ReservationsContent() {
       .update({
         name: editPerson.name,
 
-        passport_name: editPerson.passport_name || null,
+        passport_name:
+          `${editPerson.passport_last_name || ""} ${
+            editPerson.passport_first_name || ""
+          }`.trim() ||
+          editPerson.passport_name ||
+          null,
+        passport_last_name: editPerson.passport_last_name || null,
+        passport_first_name: editPerson.passport_first_name || null,
+
         passport_number: editPerson.passport_number || null,
 
         passport_birth: editPerson.passport_birth || null,
@@ -1068,6 +1090,8 @@ function ReservationsContent() {
       sort_order: index,
 
       passport_name: null,
+      passport_last_name: null,
+      passport_first_name: null,
       passport_number: null,
       passport_birth: null,
       passport_issue: null,

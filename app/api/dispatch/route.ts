@@ -86,14 +86,19 @@ export async function GET(request: Request) {
       );
 
     const rows = people.map((person: any, index: number) => {
-      const passportName = person.passport_name ?? "";
-      const [lastName, ...firstNames] = passportName.split(" ");
+      const passportName = (person.passport_name ?? "").trim();
+      const [legacyLastName = "", ...legacyFirstNames] =
+        passportName.split(/\s+/);
 
       return {
         no: index + 1,
         name: person.name,
-        lastName,
-        firstName: firstNames.join(" "),
+
+        lastName: person.passport_last_name?.trim() || legacyLastName,
+
+        firstName:
+          person.passport_first_name?.trim() || legacyFirstNames.join(" "),
+
         sex: person.passport_sex,
         birth: person.passport_birth,
         passportNo: person.passport_number,
