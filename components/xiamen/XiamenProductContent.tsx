@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import IncludedCard from "@/components/IncludedCard";
 import ShoppingSection from "@/components/sections/ShoppingSection";
 
@@ -73,6 +74,13 @@ export default function XiamenProductContent() {
   const itinerary = itineraryMap[activeType];
 
   const activeTab = productTabs.find((tab) => tab.id === activeType);
+
+  const webtoonHref =
+    activeType === "premium3"
+      ? "/xiamen/webtoon?course=premium3"
+      : activeType === "wuyishan4"
+        ? "/xiamen/webtoon?course=wuyishan4"
+        : null;
 
   const includes = includesMap[activeType];
   const excludes = excludesMap[activeType];
@@ -174,6 +182,33 @@ export default function XiamenProductContent() {
             선택해보세요.
           </p>
         </div>
+        {webtoonHref && (
+          <div className="mx-auto mb-10 max-w-2xl">
+            <Link
+              href={webtoonHref}
+              className="group block rounded-2xl border border-[#E8DCC4] bg-[#FCFAF7] px-6 py-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            >
+              <p className="text-sm font-bold tracking-wider text-[#B88A44]">
+                🎨 TRAVEL WEBTOON
+              </p>
+
+              <p className="mt-2 text-lg font-bold text-gray-900 md:text-xl">
+                웹툰으로 미리 떠나는 여행
+              </p>
+
+              <p className="mt-1 text-sm text-gray-500">
+                재미있는 웹툰으로 여행 일정을 먼저 만나보세요.
+              </p>
+
+              <div className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#B88A44]">
+                웹툰 여행 보기
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </div>
+            </Link>
+          </div>
+        )}
 
         {/* ==================== 상품 탭 ==================== */}
 
