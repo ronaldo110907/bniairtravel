@@ -9,7 +9,7 @@ export default function XiamenGoogleSheetSyncButton() {
     if (isSyncing) return;
 
     const confirmed = window.confirm(
-      "하문 예약 데이터를 구글 좌석표에 동기화하시겠습니까?",
+      "예약 데이터를 구글 좌석표에 동기화하시겠습니까?",
     );
 
     if (!confirmed) return;
