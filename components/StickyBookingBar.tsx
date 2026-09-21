@@ -77,6 +77,16 @@ export default function StickyBookingBar({
             </div>
           )}
             */}
+          {product === "하문" && (
+            <a
+              href="https://docs.google.com/spreadsheets/d/1yDeuQ6T9oVjiXN_BbjLDqx-iwZeM9K1R6ai_l5x118A/edit?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex rounded-full border border-[#b88a44] px-5 py-3 text-sm font-bold text-[#b88a44] transition hover:bg-[#b88a44] hover:text-white"
+            >
+              📊 전체 좌석현황 보기
+            </a>
+          )}
           {pdfFile && (
             <a
               href={pdfFile}
