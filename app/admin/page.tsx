@@ -247,8 +247,9 @@ export default async function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div>
+      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(280px,0.8fr)_minmax(420px,1.5fr)_auto] xl:items-stretch">
+        {/* 관리자 제목 */}
+        <div className="flex flex-col justify-center">
           <h1 className="text-3xl font-bold">📊 관리자 메인 대시보드</h1>
 
           <div className="mt-1 text-xs text-gray-400">
@@ -257,7 +258,40 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        <ExchangeRateCard today={today} />
+        {/* 관리자 사용법 웹툰 */}
+        <Link
+          href="/admin/guide"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex min-h-[110px] items-center justify-between gap-5 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 via-white to-blue-50 px-6 py-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
+        >
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-3xl shadow-sm">
+              📘
+            </div>
+
+            <div className="min-w-0">
+              <div className="text-lg font-bold text-gray-900">
+                웹툰으로 보는 관리자 페이지 사용법
+              </div>
+
+              <div className="mt-1 text-sm leading-6 text-gray-500">
+                예약관리 · 출발일 · 달력 · 정산 · 인보이스 등
+                <br className="hidden 2xl:block" />
+                필요한 기능을 쉽고 빠르게 확인하세요.
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition group-hover:bg-blue-700">
+            사용법 보기 →
+          </div>
+        </Link>
+
+        {/* 환율 */}
+        <div className="xl:self-start">
+          <ExchangeRateCard today={today} />
+        </div>
       </div>
 
       <div className="grid gap-6">
