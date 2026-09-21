@@ -49,7 +49,7 @@ export default function XiamenGoogleSheetSyncButton() {
       disabled={isSyncing}
       className="rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
     >
-      {isSyncing ? "🔄 동기화 중..." : "📊 하문 좌석 동기화"}
+      {isSyncing ? "🔄 동기화 중..." : "📊 구글시트 좌석 동기화"}
     </button>
   );
 }
