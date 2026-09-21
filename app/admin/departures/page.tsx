@@ -917,6 +917,12 @@ export default function DepartureAdminPage() {
             ))}
           </div>
         </div>
+        <div className="mt-4 flex flex-1 items-center justify-center px-4 xl:mt-0">
+          <p className="text-sm font-semibold text-red-600">
+            ※ 공유좌석 수정 시 동일 날짜의 모든 관련 상품 좌석 수를 동일하게
+            수정해주세요.
+          </p>
+        </div>
         <div className="mt-4 shrink-0 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900 xl:mt-0 xl:w-[430px]">
           <div className="font-bold text-amber-800">📌 안내</div>
 
