@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ExchangeRateCard from "@/components/admin/ExchangeRateCard";
 import { cookies } from "next/headers";
+import XiamenGoogleSheetSyncButton from "../../components/admin/XiamenGoogleSheetSyncButton";
 
 export default async function AdminPage() {
   const cookieStore = await cookies();

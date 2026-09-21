@@ -1,8 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/passport-cleanup",
-      "schedule": "0 18 * * *"
+      "path": "/api/cron/xiamen-seat-sync",
+      "schedule": "0 0,1,4,6,8 * * *"
     }
   ]
 }

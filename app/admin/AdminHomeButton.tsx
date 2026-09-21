@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import XiamenGoogleSheetSyncButton from "../../components/admin/XiamenGoogleSheetSyncButton";
 
 export default function AdminHomeButton() {
   const pathname = usePathname();
@@ -65,6 +66,7 @@ export default function AdminHomeButton() {
           "🚪 로그아웃"
         )}
       </button>
+      <XiamenGoogleSheetSyncButton />
 
       <Link
         href="/admin"
