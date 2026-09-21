@@ -77,7 +77,7 @@ export default function StickyBookingBar({
             </div>
           )}
             */}
-          {product === "하문" && (
+          {["하문", "샤먼"].includes(product) && (
             <a
               href="https://docs.google.com/spreadsheets/d/1yDeuQ6T9oVjiXN_BbjLDqx-iwZeM9K1R6ai_l5x118A/edit?usp=sharing"
               target="_blank"
