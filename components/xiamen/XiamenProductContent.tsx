@@ -339,36 +339,107 @@ export default function XiamenProductContent() {
 
         {/* ==================== 관광 지도 ==================== */}
 
-        {!isGolf && (
-          <div className="mb-16">
-            <div
-              className={[
-                "grid gap-6",
-                activeType === "wuyishan4"
-                  ? "md:grid-cols-2"
-                  : "mx-auto max-w-4xl",
-              ].join(" ")}
-            >
-              <div className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-4 shadow-sm">
-                <img
-                  src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/xiamenmap.png"
-                  alt="하문 관광지 경로 안내"
-                  className="w-full rounded-2xl"
-                />
-              </div>
+        {(() => {
+          const baseUrl =
+            "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen";
 
-              {activeType === "wuyishan4" && (
-                <div className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-4 shadow-sm">
-                  <img
-                    src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/wuyishanmap.png"
-                    alt="무이산 관광 안내도"
-                    className="w-full rounded-2xl"
-                  />
-                </div>
-              )}
+          const mapByType: Partial<
+            Record<XiamenProductType, { src: string; alt: string }[]>
+          > = {
+            value3: [
+              {
+                src: `${baseUrl}/xiamenmap.png`,
+                alt: "하문 호텔 및 주요 관광지 위치 안내",
+              },
+              {
+                src: `${baseUrl}/xiamentorumap.png`,
+                alt: "남정토루 핵심 관광지 위치 안내",
+              },
+            ],
+
+            premium3: [
+              {
+                src: `${baseUrl}/xiamenmap.png`,
+                alt: "하문 호텔 및 주요 관광지 위치 안내",
+              },
+              {
+                src: `${baseUrl}/xiamentorumap.png`,
+                alt: "남정토루 핵심 관광지 위치 안내",
+              },
+            ],
+
+            value4: [
+              {
+                src: `${baseUrl}/xiamenmap.png`,
+                alt: "하문 호텔 및 주요 관광지 위치 안내",
+              },
+              {
+                src: `${baseUrl}/xiamentorumap.png`,
+                alt: "남정토루 핵심 관광지 위치 안내",
+              },
+            ],
+
+            wuyishan4: [
+              {
+                src: `${baseUrl}/wuyishanmap.png`,
+                alt: "무이산 주요 관광지 위치 안내",
+              },
+            ],
+
+            golf3: [
+              {
+                src: `${baseUrl}/xiamengolfmap.png`,
+                alt: "하문 주요 골프장 위치 및 이동시간 안내",
+              },
+            ],
+
+            golf4: [
+              {
+                src: `${baseUrl}/xiamengolfmap.png`,
+                alt: "하문 주요 골프장 위치 및 이동시간 안내",
+              },
+            ],
+          };
+
+          const activeMaps = mapByType[activeType] ?? [];
+
+          if (activeMaps.length === 0) return null;
+
+          return (
+            <div className="mx-auto mb-16 max-w-5xl">
+              <div
+                className={[
+                  "grid gap-6",
+                  activeMaps.length > 1 ? "md:grid-cols-2" : "grid-cols-1",
+                ].join(" ")}
+              >
+                {activeMaps.map((map) => (
+                  <div
+                    key={map.src}
+                    className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-4 shadow-sm"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setZoomImage(map.src)}
+                      className="group block w-full cursor-zoom-in overflow-hidden rounded-2xl"
+                      aria-label={`${map.alt} 크게 보기`}
+                    >
+                      <img
+                        src={map.src}
+                        alt={map.alt}
+                        className="w-full transition duration-300 group-hover:scale-[1.01]"
+                      />
+                    </button>
+
+                    <p className="mt-3 text-center text-xs text-gray-400">
+                      이미지를 클릭하면 크게 볼 수 있습니다.
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
         {/* ==================== 일정 ==================== */}
 
         <div className="relative">
