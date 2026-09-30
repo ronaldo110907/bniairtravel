@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import XiamenGoogleSheetSyncButton from "../../components/admin/XiamenGoogleSheetSyncButton";
+import XiamenNameTagButton from "../../components/admin/XiamenNameTagButton";
 
 export default function AdminHomeButton() {
   const pathname = usePathname();
@@ -67,6 +68,8 @@ export default function AdminHomeButton() {
         )}
       </button>
       <XiamenGoogleSheetSyncButton />
+
+      <XiamenNameTagButton />
 
       <Link
         href="/admin"
