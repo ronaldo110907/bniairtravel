@@ -6,7 +6,7 @@ import * as XLSX from "xlsx-js-style";
 import PersonCard from "@/components/PersonCard";
 import PersonForm from "@/components/PersonForm";
 import { Fragment } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import InvoiceModal from "@/components/InvoiceModal";
 import TravelContractModal from "@/components/contract/TravelContractModal";
 
@@ -252,8 +252,11 @@ function ReservationsContent() {
   const [createdFrom, setCreatedFrom] = useState("");
   const [createdTo, setCreatedTo] = useState("");
   const [page, setPage] = useState(1);
+
+  const router = useRouter();
   const searchParams = useSearchParams();
   const reservationId = searchParams.get("id");
+
   const [selected, setSelected] = useState<Reservation | null>(null);
 
   const [insuranceDone, setInsuranceDone] = useState(false);
@@ -358,6 +361,21 @@ function ReservationsContent() {
       void openDetail(reservation);
     }
   }, [reservationId, list]);
+
+  function closeDetail() {
+    setEditPerson(null);
+    setSelected(null);
+    setShowPersonForm(false);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("id");
+
+    const query = params.toString();
+
+    router.replace(query ? `?${query}` : "?", {
+      scroll: false,
+    });
+  }
 
   async function uploadPersonPassport(person: ReservationPeople, file: File) {
     if (!selected) return;
@@ -3002,7 +3020,7 @@ function ReservationsContent() {
           "
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
-              setSelected(null);
+              closeDetail();
             }
           }}
         >
@@ -3920,11 +3938,7 @@ h-[50px]
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditPerson(null);
-                        setSelected(null);
-                        setShowPersonForm(false);
-                      }}
+                      onClick={closeDetail}
                       className="
           whitespace-nowrap
           rounded-xl
