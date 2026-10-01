@@ -357,10 +357,19 @@ function ReservationsContent() {
 
     const reservation = list.find((item) => item.id === reservationId);
 
-    if (reservation) {
-      void openDetail(reservation);
-    }
-  }, [reservationId, list]);
+    if (!reservation) return;
+
+    void openDetail(reservation);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("id");
+
+    const query = params.toString();
+
+    router.replace(`${window.location.pathname}${query ? `?${query}` : ""}`, {
+      scroll: false,
+    });
+  }, [reservationId, list, router, searchParams]);
 
   function closeDetail() {
     setEditPerson(null);
