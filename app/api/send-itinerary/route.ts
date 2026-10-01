@@ -625,6 +625,140 @@ export async function POST(request: Request) {
             ? selectedProduct.itinerary4
             : selectedProduct.itinerary3;
 
+    const allPlaces = itinerary.flatMap((item) => item.places ?? []);
+
+    const hasXiamenMap = allPlaces.some((place) =>
+      [
+        "남보타사",
+        "고랑서",
+        "중산로",
+        "증조안",
+        "호리산",
+        "원림식물원",
+        "일월곡",
+        "민남전기쇼",
+        "환도로",
+        "해상명주탑",
+      ].some((keyword) => place.includes(keyword)),
+    );
+
+    const hasTulouMap = allPlaces.some((place) =>
+      ["남정토루", "천라갱", "유창루", "탑하촌"].some((keyword) =>
+        place.includes(keyword),
+      ),
+    );
+
+    const hasWuyishanMap = allPlaces.some((place) =>
+      [
+        "천유봉",
+        "구곡계",
+        "옥녀봉",
+        "무이궁",
+        "대홍포",
+        "수렴동",
+        "일선천",
+      ].some((keyword) => place.includes(keyword)),
+    );
+
+    const xiamenMapImages =
+      isXiamen && !["golf3", "golf4"].includes(xiamenCourse)
+        ? [
+            ...(hasXiamenMap
+              ? [
+                  {
+                    name: "하문 호텔 & 주요 관광지 위치안내",
+                    image:
+                      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/xiamenmap.png",
+                  },
+                ]
+              : []),
+
+            ...(hasTulouMap
+              ? [
+                  {
+                    name: "남정토루 핵심 관광지 위치안내",
+                    image:
+                      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/xiamentorumap.png",
+                  },
+                ]
+              : []),
+
+            ...(hasWuyishanMap
+              ? [
+                  {
+                    name: "무이산 관광 안내도",
+                    image:
+                      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/wuyishanmap.png",
+                  },
+                ]
+              : []),
+          ]
+        : [];
+
+    const xiamenMapsHtml =
+      xiamenMapImages.length > 0
+        ? `
+      <div
+        style="
+          margin: 28px 0 36px;
+        "
+      >
+        <div
+          style="
+            margin-bottom: 16px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+          "
+        >
+          🗺 관광지 위치안내
+        </div>
+
+        ${xiamenMapImages
+          .map(
+            (map) => `
+              <div
+                style="
+                  margin-bottom: 18px;
+                  padding: 12px;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 14px;
+                  background-color: #ffffff;
+                "
+              >
+                <img
+                  src="${map.image}"
+                  alt="${map.name}"
+                  style="
+                    display: block;
+                    width: 100%;
+                    max-width: 900px;
+                    height: auto;
+                    margin: 0 auto;
+                    border: 0;
+                    border-radius: 10px;
+                  "
+                />
+
+                <div
+                  style="
+                    margin-top: 8px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    text-align: center;
+                    color: #4b5563;
+                  "
+                >
+                  ${map.name}
+                </div>
+              </div>
+            `,
+          )
+          .join("")}
+      </div>
+    `
+        : "";
+
     const flightHtml = `
   <div
     style="
@@ -1305,6 +1439,7 @@ export async function POST(request: Request) {
     }
 
     ${flightHtml}
+    ${xiamenMapsHtml}
 
 <div
   style="

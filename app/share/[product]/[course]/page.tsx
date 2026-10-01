@@ -351,14 +351,89 @@ export default async function ShareItineraryPage({
   const productData = shareProducts[product];
   const courseData = productData?.courses[course];
 
-  const selectedHotels = courseData.hotels;
-  const selectedIncludes = courseData.includes;
-  const selectedExcludes = courseData.excludes;
-
   if (!productData || !courseData) {
     notFound();
   }
 
+  const selectedHotels = courseData.hotels;
+  const selectedIncludes = courseData.includes;
+  const selectedExcludes = courseData.excludes;
+
+  const allPlaces = courseData.itinerary.flatMap((item) => item.places ?? []);
+
+  const hasXiamenMap =
+    product === "xiamen" &&
+    allPlaces.some((place) =>
+      [
+        "남보타사",
+        "고랑서",
+        "중산로",
+        "증조안",
+        "호리산",
+        "원림식물원",
+        "일월곡",
+        "민남전기쇼",
+        "환도로",
+        "해상명주탑",
+      ].some((keyword) => place.includes(keyword)),
+    );
+
+  const hasTulouMap =
+    product === "xiamen" &&
+    allPlaces.some((place) =>
+      ["남정토루", "천라갱", "유창루", "탑하촌"].some((keyword) =>
+        place.includes(keyword),
+      ),
+    );
+
+  const hasWuyishanMap =
+    product === "xiamen" &&
+    allPlaces.some((place) =>
+      [
+        "천유봉",
+        "구곡계",
+        "옥녀봉",
+        "무이궁",
+        "대홍포",
+        "수렴동",
+        "일선천",
+      ].some((keyword) => place.includes(keyword)),
+    );
+
+  const xiamenMapImages =
+    product === "xiamen" && !["golf3", "golf4"].includes(course)
+      ? [
+          ...(hasXiamenMap
+            ? [
+                {
+                  name: "하문 호텔 & 주요 관광지 위치안내",
+                  image:
+                    "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/xiamenmap.png",
+                },
+              ]
+            : []),
+
+          ...(hasTulouMap
+            ? [
+                {
+                  name: "남정토루 핵심 관광지 위치안내",
+                  image:
+                    "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/xiamentorumap.png",
+                },
+              ]
+            : []),
+
+          ...(hasWuyishanMap
+            ? [
+                {
+                  name: "무이산 관광 안내도",
+                  image:
+                    "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/wuyishanmap.png",
+                },
+              ]
+            : []),
+        ]
+      : [];
   return (
     <main className="min-h-screen bg-[#faf8f4] px-4 py-10 md:px-6 md:py-16">
       <div className="mx-auto max-w-4xl">
@@ -420,6 +495,45 @@ export default async function ShareItineraryPage({
           </div>
         </div>
 
+        {xiamenMapImages.length > 0 && (
+          <div className="mb-10">
+            <div className="mb-5 text-center">
+              <h2 className="text-2xl font-bold text-[#1f1f1f]">
+                🗺 관광지 위치안내
+              </h2>
+
+              <p className="mt-2 text-sm text-gray-500">
+                여행 일정에 포함된 주요 관광지 위치를 확인해 주세요.
+              </p>
+            </div>
+
+            <div
+              className={[
+                "grid gap-6",
+                xiamenMapImages.length > 1
+                  ? "md:grid-cols-2"
+                  : "mx-auto max-w-4xl",
+              ].join(" ")}
+            >
+              {xiamenMapImages.map((map) => (
+                <div
+                  key={map.image}
+                  className="overflow-hidden rounded-[28px] border border-[#ece7df] bg-white p-4 shadow-sm"
+                >
+                  <img
+                    src={map.image}
+                    alt={map.name}
+                    className="w-full rounded-2xl"
+                  />
+
+                  <div className="mt-3 text-center text-sm font-bold text-gray-600">
+                    {map.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="mb-6 rounded-[24px] border border-[#ece7df] bg-[#faf8f4] px-6 py-5">
           <div className="text-xl font-bold text-[#1f1f1f]">
             📋 상세 여행일정
