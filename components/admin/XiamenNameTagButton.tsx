@@ -363,11 +363,11 @@ export default function XiamenNameTagButton() {
             koreanName.style.textAlign = "center";
 
             if (person.name.length >= 8) {
-              koreanName.style.fontSize = "22px";
-            } else if (person.name.length >= 6) {
               koreanName.style.fontSize = "26px";
+            } else if (person.name.length >= 6) {
+              koreanName.style.fontSize = "30px";
             } else {
-              koreanName.style.fontSize = "32px";
+              koreanName.style.fontSize = "38px";
             }
 
             const englishName = formatEnglishName(person);
@@ -385,13 +385,13 @@ export default function XiamenNameTagButton() {
             const englishLength = englishName.replace(/\s/g, "").length;
 
             if (englishLength >= 20) {
-              english.style.fontSize = "14px";
-            } else if (englishLength >= 16) {
               english.style.fontSize = "16px";
-            } else if (englishLength >= 12) {
+            } else if (englishLength >= 16) {
               english.style.fontSize = "18px";
-            } else {
+            } else if (englishLength >= 12) {
               english.style.fontSize = "21px";
+            } else {
+              english.style.fontSize = "24px";
             }
 
             label.appendChild(koreanName);
@@ -694,7 +694,7 @@ export default function XiamenNameTagButton() {
                             >
                               {person ? (
                                 <div className="min-w-0">
-                                  <div className="truncate text-xl font-black text-gray-900">
+                                  <div className="truncate text-2xl font-black text-gray-900">
                                     {person.name}
                                   </div>
 
