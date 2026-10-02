@@ -242,110 +242,111 @@ export default function PersonCard({
               </div>
             </div>
           </div>
+
+          {person.passport_image && (
+            <div className="mt-4">
+              <img
+                src={person.passport_image}
+                alt="여권"
+                className="w-48 rounded-lg border"
+              />
+            </div>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <label
+              className="
+          inline-block
+          cursor-pointer
+          rounded-lg
+          bg-green-600
+          px-3
+          py-1
+          text-sm
+          font-bold
+          text-white
+        "
+            >
+              여권 등록
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+
+                  if (!file) return;
+
+                  void onUpload(person, file);
+
+                  e.target.value = "";
+                }}
+              />
+            </label>
+
+            {person.passport_image && (
+              <button
+                type="button"
+                onClick={() => onPreview(person.passport_image!)}
+                className="
+            rounded-lg
+            bg-indigo-600
+            px-3
+            py-1
+            text-sm
+            font-bold
+            text-white
+            hover:bg-indigo-700
+          "
+              >
+                👁 여권보기
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => onEdit(person)}
+              className="
+          rounded-lg
+          bg-blue-500
+          px-3
+          py-1
+          text-sm
+          font-bold
+          text-white
+        "
+            >
+              수정
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (index === 0) {
+                  alert(
+                    "대표예약자는 삭제할 수 없습니다.\n\n다른 예약자를 대표예약자로 변경한 후 삭제해주세요.",
+                  );
+
+                  return;
+                }
+
+                void onDelete(person.id);
+              }}
+              className="
+          rounded-lg
+          bg-red-500
+          px-3
+          py-1
+          text-sm
+          font-bold
+          text-white
+        "
+            >
+              삭제
+            </button>
+          </div>
         </>
       )}
-      {person.passport_image && (
-        <div className="mt-4">
-          <img
-            src={person.passport_image}
-            alt="여권"
-            className="w-48 rounded-lg border"
-          />
-        </div>
-      )}
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <label
-          className="
-            inline-block
-            cursor-pointer
-            rounded-lg
-            bg-green-600
-            px-3
-            py-1
-            text-sm
-            font-bold
-            text-white
-          "
-        >
-          여권 등록
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-
-              if (!file) return;
-
-              void onUpload(person, file);
-
-              e.target.value = "";
-            }}
-          />
-        </label>
-
-        {person.passport_image && (
-          <button
-            type="button"
-            onClick={() => onPreview(person.passport_image!)}
-            className="
-              rounded-lg
-              bg-indigo-600
-              px-3
-              py-1
-              text-sm
-              font-bold
-              text-white
-              hover:bg-indigo-700
-            "
-          >
-            👁 여권보기
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={() => onEdit(person)}
-          className="
-            rounded-lg
-            bg-blue-500
-            px-3
-            py-1
-            text-sm
-            font-bold
-            text-white
-          "
-        >
-          수정
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (index === 0) {
-              alert(
-                "대표예약자는 삭제할 수 없습니다.\n\n다른 예약자를 대표예약자로 변경한 후 삭제해주세요.",
-              );
-
-              return;
-            }
-
-            void onDelete(person.id);
-          }}
-          className="
-            rounded-lg
-            bg-red-500
-            px-3
-            py-1
-            text-sm
-            font-bold
-            text-white
-          "
-        >
-          삭제
-        </button>
-      </div>
     </div>
   );
 }
