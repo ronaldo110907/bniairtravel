@@ -259,6 +259,8 @@ function ReservationsContent() {
 
   const [selected, setSelected] = useState<Reservation | null>(null);
 
+  const [personSearch, setPersonSearch] = useState("");
+
   const [insuranceDone, setInsuranceDone] = useState(false);
   const [savingInsurance, setSavingInsurance] = useState(false);
   const [invoiceDone, setInvoiceDone] = useState(false);
@@ -3496,6 +3498,29 @@ function ReservationsContent() {
                     💰 정산 바로가기
                   </button>
                 </div>
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    value={personSearch}
+                    onChange={(e) => setPersonSearch(e.target.value)}
+                    placeholder="예약자 한글 이름 검색"
+                    className="
+      w-full
+      rounded-xl
+      border
+      border-gray-300
+      bg-white
+      px-4
+      py-3
+      text-sm
+      outline-none
+      transition
+      focus:border-blue-500
+      focus:ring-2
+      focus:ring-blue-100
+    "
+                  />
+                </div>
                 {showBulkPersonForm && (
                   <div className="mt-4 rounded-xl border bg-gray-50 p-4">
                     <div className="flex items-end gap-3">
@@ -3576,92 +3601,107 @@ px-4 py-2
                 )}
                 {selected.people && selected.people.length > 0 ? (
                   <div className="mt-5 space-y-3">
-                    {selected.people.map((person, index) => (
-                      <Fragment key={person.id}>
-                        <PersonCard
-                          person={person}
-                          index={index}
-                          totalPeople={selected.people?.length ?? 0}
-                          openPersonId={openPersonId}
-                          onToggle={(id) =>
-                            setOpenPersonId(openPersonId === id ? null : id)
-                          }
-                          onMakePrimary={makePrimaryPerson}
-                          onMoveUp={movePersonUp}
-                          onMoveDown={movePersonDown}
-                          onEdit={setEditPerson}
-                          onDelete={deletePerson}
-                          onUpload={uploadPersonPassport}
-                          onPreview={setPreviewPassport}
-                        />
-                        {editPerson?.id === person.id && (
-                          <div className="mt-5 rounded-xl bg-blue-50 p-5">
-                            <div className="mb-3 font-bold">예약자 수정</div>
+                    {selected.people
+                      .filter((person) =>
+                        person.name.includes(personSearch.trim()),
+                      )
+                      .map((person) => {
+                        const originalIndex =
+                          selected.people?.findIndex(
+                            (p) => p.id === person.id,
+                          ) ?? -1;
 
-                            <PersonForm
-                              person={editPerson}
-                              setPerson={setEditPerson}
+                        return (
+                          <Fragment key={person.id}>
+                            <PersonCard
+                              person={person}
+                              index={originalIndex}
+                              totalPeople={selected.people?.length ?? 0}
+                              openPersonId={openPersonId}
+                              onToggle={(id) =>
+                                setOpenPersonId(openPersonId === id ? null : id)
+                              }
+                              onMakePrimary={makePrimaryPerson}
+                              onMoveUp={movePersonUp}
+                              onMoveDown={movePersonDown}
+                              onEdit={setEditPerson}
+                              onDelete={deletePerson}
+                              onUpload={uploadPersonPassport}
+                              onPreview={setPreviewPassport}
                             />
 
-                            <div className="mt-4 flex gap-2">
-                              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                                <label className="flex cursor-pointer items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    checked={editPerson.is_guide ?? false}
-                                    onChange={(e) =>
-                                      setEditPerson({
-                                        ...editPerson,
-                                        is_guide: e.target.checked,
-                                      })
-                                    }
-                                    className="h-5 w-5"
-                                  />
+                            {editPerson?.id === person.id && (
+                              <div className="mt-5 rounded-xl bg-blue-50 p-5">
+                                <div className="mb-3 font-bold">
+                                  예약자 수정
+                                </div>
 
-                                  <div>
-                                    <div className="font-bold text-amber-900">
-                                      인솔자(FREE)
-                                    </div>
-                                    <div className="mt-1 text-xs text-amber-700">
-                                      정산 시 판매금액과 현지비 계산에서
-                                      제외됩니다.
-                                    </div>
+                                <PersonForm
+                                  person={editPerson}
+                                  setPerson={setEditPerson}
+                                />
+
+                                <div className="mt-4 flex gap-2">
+                                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                    <label className="flex cursor-pointer items-center gap-3">
+                                      <input
+                                        type="checkbox"
+                                        checked={editPerson.is_guide ?? false}
+                                        onChange={(e) =>
+                                          setEditPerson({
+                                            ...editPerson,
+                                            is_guide: e.target.checked,
+                                          })
+                                        }
+                                        className="h-5 w-5"
+                                      />
+
+                                      <div>
+                                        <div className="font-bold text-amber-900">
+                                          인솔자(FREE)
+                                        </div>
+                                        <div className="mt-1 text-xs text-amber-700">
+                                          정산 시 판매금액과 현지비 계산에서
+                                          제외됩니다.
+                                        </div>
+                                      </div>
+                                    </label>
                                   </div>
-                                </label>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={updatePerson}
-                                className="
-        rounded-lg
-        bg-blue-600
-        px-4
-        py-2
-        font-bold
-        text-white
-        "
-                              >
-                                저장
-                              </button>
 
-                              <button
-                                type="button"
-                                onClick={() => setEditPerson(null)}
-                                className="
-        rounded-lg
-        border
-        px-4
-        py-2
-        font-bold
-        "
-                              >
-                                취소
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </Fragment>
-                    ))}
+                                  <button
+                                    type="button"
+                                    onClick={updatePerson}
+                                    className="
+                  rounded-lg
+                  bg-blue-600
+                  px-4
+                  py-2
+                  font-bold
+                  text-white
+                "
+                                  >
+                                    저장
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditPerson(null)}
+                                    className="
+                  rounded-lg
+                  border
+                  px-4
+                  py-2
+                  font-bold
+                "
+                                  >
+                                    취소
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </Fragment>
+                        );
+                      })}
                   </div>
                 ) : (
                   <div className="mt-4 text-sm text-gray-400">
