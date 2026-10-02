@@ -212,8 +212,6 @@ function getRosterProgress(reservation: Reservation) {
   const people = reservation.people ?? reservation.reservation_people ?? [];
 
   const completedCount = people.filter((person) => {
-    if (person.is_guide) return false;
-
     const name = person.name?.trim() ?? "";
 
     if (!name) return false;
