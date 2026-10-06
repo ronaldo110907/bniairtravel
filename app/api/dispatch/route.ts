@@ -21,41 +21,53 @@ export async function GET(request: Request) {
         .map((id) => id.trim())
         .filter(Boolean) ?? [];
 
-    if (!departureId) {
-      return NextResponse.json({ error: "departure id 없음" }, { status: 400 });
+    if (!departureId && reservationIds.length === 0) {
+      return NextResponse.json(
+        { error: "출발일 또는 예약 정보가 없습니다." },
+        { status: 400 },
+      );
     }
 
     // 출발일 조회
-    const { data: departure, error: departureError } = await supabase
-      .from("departures")
-      .select(
-        `
+    let departure: any = null;
+
+    if (departureId) {
+      const { data, error } = await supabase
+        .from("departures")
+        .select(
+          `
       *,
       products (
         title,
         slug
       )
     `,
-      )
-      .eq("id", departureId)
-      .single();
+        )
+        .eq("id", departureId)
+        .single();
 
-    if (departureError) {
-      return NextResponse.json(
-        { error: departureError.message },
-        { status: 500 },
-      );
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      departure = data;
     }
 
     // 객실 조회
-    const { data: rooms, error: roomsError } = await supabase
-      .from("rooms")
-      .select("*")
-      .eq("departure_id", departureId)
-      .order("created_at", { ascending: true });
+    let rooms: any[] = [];
 
-    if (roomsError) {
-      return NextResponse.json({ error: roomsError.message }, { status: 500 });
+    if (departureId) {
+      const { data, error } = await supabase
+        .from("rooms")
+        .select("*")
+        .eq("departure_id", departureId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      rooms = data ?? [];
     }
 
     const roomIds = (rooms ?? []).map((room: any) => room.id);
@@ -99,13 +111,16 @@ export async function GET(request: Request) {
       .from("reservations")
       .select(
         `
-      *,
-      people:reservation_people(*)
-    `,
+    *,
+    people:reservation_people(*)
+  `,
       )
-      .eq("departure_id", departureId)
       .neq("status", "취소")
       .order("created_at");
+
+    if (departureId) {
+      reservationQuery = reservationQuery.eq("departure_id", departureId);
+    }
 
     if (reservationIds.length > 0) {
       reservationQuery = reservationQuery.in("id", reservationIds);
@@ -120,6 +135,15 @@ export async function GET(request: Request) {
         { status: 500 },
       );
     }
+    const firstReservation = reservations?.[0];
+
+    const productName =
+      departure?.products?.title || firstReservation?.product || "기타 예약";
+
+    const departureDate =
+      departure?.departure_date || firstReservation?.departure_date || "";
+
+    const course = departure?.course || "";
     const includedReservationIds = new Set(
       (reservations ?? []).map((reservation: any) => String(reservation.id)),
     );
@@ -163,19 +187,29 @@ export async function GET(request: Request) {
       };
     });
 
-    function formatTravelPeriod(departureDate: string, course: string) {
+    function formatTravelPeriod(departureDate: string, course?: string) {
+      if (!departureDate) return "";
+
       const start = new Date(departureDate);
+
+      const week = ["일", "월", "화", "수", "목", "금", "토"];
+
+      const format = (date: Date) =>
+        `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(
+          2,
+          "0",
+        )}.${String(date.getDate()).padStart(2, "0")}(${week[date.getDay()]})`;
+
+      // 기타예약처럼 코스 정보가 없으면 출발일만 표시
+      if (!course) {
+        return format(start);
+      }
 
       const end = new Date(start);
 
       const nights = course === "4N5D" ? 4 : 3;
 
       end.setDate(end.getDate() + nights);
-
-      const week = ["일", "월", "화", "수", "목", "금", "토"];
-
-      const format = (date: Date) =>
-        `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}(${week[date.getDay()]})`;
 
       return `${format(start)} ~ ${format(end)} ${nights}박 ${nights + 1}일`;
     }
@@ -198,7 +232,7 @@ export async function GET(request: Request) {
     }
     let flightInfo = null;
 
-    switch (departure.products?.slug) {
+    switch (departure?.products?.slug) {
       case "zhangjiajie":
         flightInfo = zhangjiajieFlightInfo;
         break;
@@ -207,10 +241,12 @@ export async function GET(request: Request) {
         flightInfo = baekduFlightInfo;
         break;
     }
-    sheet.getCell("A1").value =
-      `■ 여행기간 : ${formatTravelPeriod(departure.departure_date, departure.course)}`;
+    sheet.getCell("A1").value = `■ 여행기간 : ${formatTravelPeriod(
+      departureDate,
+      course,
+    )}`;
 
-    sheet.getCell("A2").value = `■ 피켓명 : ${departure.products?.title}`;
+    sheet.getCell("A2").value = `■ 피켓명 : ${productName}`;
 
     sheet.getCell("A3").value = `■ 인원 : ${rows.length}명 PKG`;
 
@@ -303,12 +339,10 @@ export async function GET(request: Request) {
 
     // 기본 정보
     roomingSheet.mergeCells("A2:B2");
-    roomingSheet.getCell("A2").value =
-      `상품명 : ${departure.products?.title ?? ""}`;
+    roomingSheet.getCell("A2").value = `상품명 : ${productName}`;
 
     roomingSheet.mergeCells("C2:D2");
-    roomingSheet.getCell("C2").value =
-      `출발일 : ${departure.departure_date ?? ""}`;
+    roomingSheet.getCell("C2").value = `출발일 : ${departureDate}`;
 
     roomingSheet.mergeCells("A3:B3");
     roomingSheet.getCell("A3").value = `총 인원 : ${rows.length}명`;
@@ -545,7 +579,7 @@ export async function GET(request: Request) {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(
-          `수배의뢰서_${departure.products?.title}_${departure.departure_date}.xlsx`,
+          `수배의뢰서_${productName}_${departureDate}.xlsx`,
         )}`,
       },
     });

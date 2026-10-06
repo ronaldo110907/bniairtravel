@@ -46,6 +46,43 @@ export default function ReservationSettlementPage() {
     return <div className="p-6">예약 정보를 찾을 수 없습니다.</div>;
   }
 
+  async function downloadDispatch() {
+    if (!reservation) return;
+
+    try {
+      const query = new URLSearchParams({
+        reservationIds: String(reservation.id),
+      });
+
+      const res = await fetch(`/api/dispatch?${query.toString()}`);
+
+      if (!res.ok) {
+        const result = await res.json().catch(() => null);
+
+        console.error("DISPATCH ERROR:", result);
+
+        alert("수배의뢰서 생성 실패");
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+
+      a.href = url;
+      a.download = `수배의뢰서_${reservation.product}_${reservation.departure_date}.xlsx`;
+
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("DISPATCH DOWNLOAD ERROR:", error);
+
+      alert("수배의뢰서 다운로드 실패");
+    }
+  }
+
   const customDeparture = reservation
     ? {
         products: {
@@ -83,6 +120,23 @@ export default function ReservationSettlementPage() {
             {reservation.people?.length || 0}명
           </div>
         </div>
+      </div>
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => void downloadDispatch()}
+          className="
+      rounded-xl
+      bg-emerald-600
+      px-6
+      py-3
+      font-bold
+      text-white
+      hover:bg-emerald-700
+    "
+        >
+          📥 수배의뢰서 다운로드
+        </button>
       </div>
       <Settlement reservations={[reservation]} departure={customDeparture} />
     </div>
