@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import CancellationSection from "@/components/sections/CancellationSection";
+import { supabase } from "@/lib/supabase";
 
 type ReservationPeople = {
   id: string;
@@ -15,6 +16,7 @@ type ReservationPeople = {
 };
 
 type Reservation = {
+  id: string;
   name: string;
   product: string;
   departure_date: string;
@@ -74,41 +76,75 @@ export default function InvoiceModal({
   const [sender, setSender] = useState("이민우 부장");
   const [receiver, setReceiver] = useState("");
   const [totalPrice, setTotalPrice] = useState("");
-  const [deposit, setDeposit] = useState("");
+  const [previousInvoiceAmount, setPreviousInvoiceAmount] = useState(0);
+  const [currentInvoiceAmount, setCurrentInvoiceAmount] = useState("");
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
   const [commission, setCommission] = useState("");
   const [paymentDueDate, setPaymentDueDate] = useState("");
   const [invoiceNotice, setInvoiceNotice] = useState("");
   const [customerType, setCustomerType] = useState<"individual" | "agency">(
     "individual",
   );
-  const [invoiceType, setInvoiceType] = useState<"deposit" | "balance">(
-    "deposit",
-  );
+  const [invoiceType, setInvoiceType] = useState<
+    "deposit" | "interim" | "balance"
+  >("deposit");
   const [account, setAccount] = useState("전세기계좌");
 
   const peopleCount = reservation?.people?.length ?? 0;
   const totalAmount = (reservation?.departure_price ?? 0) * peopleCount;
   const enteredTotalPrice = parseMoney(totalPrice);
-  const enteredDeposit = parseMoney(deposit);
+  const enteredCurrentInvoiceAmount = parseMoney(currentInvoiceAmount);
+
   const enteredCommission =
     customerType === "agency" ? parseMoney(commission) : 0;
 
   const balance = Math.max(
-    enteredTotalPrice - enteredDeposit - enteredCommission,
+    enteredTotalPrice -
+      previousInvoiceAmount -
+      enteredCurrentInvoiceAmount -
+      enteredCommission,
     0,
   );
 
-  const amountToPay = invoiceType === "deposit" ? enteredDeposit : balance;
-
+  const amountToPay = enteredCurrentInvoiceAmount;
   const today = new Date().toISOString().split("T")[0];
   const selectedAccount =
     accounts.find((item) => item.label === account) ?? accounts[0];
 
   useEffect(() => {
     setTotalPrice(totalAmount.toLocaleString());
-    setDeposit("");
+    setCurrentInvoiceAmount("");
     setCommission("");
-  }, [totalAmount, reservation?.departure_id]);
+    setPreviousInvoiceAmount(0);
+
+    if (!open || !reservation?.id) return;
+
+    const loadPreviousInvoices = async () => {
+      setInvoiceLoading(true);
+
+      const { data, error } = await supabase
+        .from("reservation_invoices")
+        .select("amount")
+        .eq("reservation_id", reservation.id);
+
+      if (error) {
+        console.error("INVOICE HISTORY ERROR:", error);
+        setPreviousInvoiceAmount(0);
+        setInvoiceLoading(false);
+        return;
+      }
+
+      const total = (data ?? []).reduce(
+        (sum, item) => sum + Number(item.amount || 0),
+        0,
+      );
+
+      setPreviousInvoiceAmount(total);
+      setInvoiceLoading(false);
+    };
+
+    void loadPreviousInvoices();
+  }, [open, totalAmount, reservation?.id]);
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
@@ -166,6 +202,37 @@ export default function InvoiceModal({
   });
   const [isPrinting, setIsPrinting] = useState(false);
   const printInvoice = async () => {
+    if (!reservation?.id) {
+      alert("예약 정보를 확인할 수 없습니다.");
+      return;
+    }
+
+    const amount = parseMoney(currentInvoiceAmount);
+
+    if (amount <= 0) {
+      alert("이번 청구금액을 입력해주세요.");
+      return;
+    }
+
+    if (amount > enteredTotalPrice - previousInvoiceAmount) {
+      alert("이번 청구금액이 남은 여행경비보다 큽니다.");
+      return;
+    }
+
+    const { error } = await supabase.from("reservation_invoices").insert({
+      reservation_id: reservation.id,
+      invoice_type: invoiceType,
+      amount,
+    });
+
+    if (error) {
+      console.error("INVOICE SAVE ERROR:", error);
+      alert("인보이스 청구 이력을 저장하지 못했습니다.");
+      return;
+    }
+
+    setPreviousInvoiceAmount((prev) => prev + amount);
+
     setIsPrinting(true);
 
     setTimeout(async () => {
@@ -383,15 +450,34 @@ export default function InvoiceModal({
 
                   <tr className="border-b">
                     <td className="bg-gray-50 px-4 py-3 font-semibold">
-                      계약금
+                      이전 청구금액
+                    </td>
+
+                    <td className="px-4 py-2">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="w-56 px-3 py-2 text-right font-semibold">
+                          {invoiceLoading
+                            ? "불러오는 중..."
+                            : previousInvoiceAmount.toLocaleString()}
+                        </span>
+                        <span className="font-medium">원</span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr className="border-b">
+                    <td className="bg-gray-50 px-4 py-3 font-semibold">
+                      이번 청구금액
                     </td>
 
                     <td className="px-4 py-2">
                       <div className="flex items-center justify-end gap-2">
                         <input
-                          value={deposit}
+                          value={currentInvoiceAmount}
                           onChange={(event) =>
-                            setDeposit(formatMoney(event.target.value))
+                            setCurrentInvoiceAmount(
+                              formatMoney(event.target.value),
+                            )
                           }
                           className="w-56 rounded-md border border-gray-300 px-3 py-2 text-right outline-none"
                         />
