@@ -23,119 +23,17 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  // Vercel Cron의 인증된 호출이면 실제 파기 실행
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-    return POST(request);
-  }
-
-  // 일반 GET은 기존처럼 조회만
-  try {
-    // 1. 예약자 + 예약 정보 조회
-    const { data: people, error: peopleError } = await supabaseAdmin.from(
-      "reservation_people",
-    ).select(`
-        id,
-        name,
-        passport_image,
-        passport_name,
-        passport_number,
-        passport_birth,
-        passport_expiry,
-        passport_issue,
-        passport_nationality,
-        passport_sex,
-        reservations!inner (
-          id,
-          departure_id
-        )
-      `);
-
-    if (peopleError) {
-      throw peopleError;
-    }
-
-    // 2. 출발일 정보 별도 조회
-    const { data: departures, error: departureError } = await supabaseAdmin
-      .from("departures")
-      .select("id, departure_date, course");
-
-    if (departureError) {
-      throw departureError;
-    }
-
-    const departureMap = new Map(
-      (departures ?? []).map((departure) => [departure.id, departure]),
-    );
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const targets = (people ?? [])
-      .map((person: any) => {
-        const reservation = person.reservations;
-
-        const departure = departureMap.get(reservation?.departure_id);
-
-        if (!departure?.departure_date) {
-          return null;
-        }
-
-        const travelDays = getTravelDays(departure.course);
-
-        if (!travelDays) {
-          return null;
-        }
-
-        const departureDate = new Date(`${departure.departure_date}T00:00:00`);
-
-        const returnDate = new Date(departureDate);
-        returnDate.setDate(returnDate.getDate() + travelDays);
-
-        const purgeDate = new Date(returnDate);
-        purgeDate.setDate(purgeDate.getDate() + 7);
-
-        const hasPassportData =
-          person.passport_image ||
-          person.passport_name ||
-          person.passport_number ||
-          person.passport_birth ||
-          person.passport_expiry ||
-          person.passport_issue ||
-          person.passport_nationality ||
-          person.passport_sex;
-
-        if (!hasPassportData || purgeDate > today) {
-          return null;
-        }
-
-        return {
-          id: person.id,
-          name: person.name,
-          departureDate: departure.departure_date,
-          course: departure.course,
-          returnDate: returnDate.toISOString().slice(0, 10),
-          purgeDate: purgeDate.toISOString().slice(0, 10),
-          passportImage: person.passport_image,
-        };
-      })
-      .filter(Boolean);
-
-    return NextResponse.json({
-      success: true,
-      targetCount: targets.length,
-      targets,
-    });
-  } catch (error: any) {
-    console.error("PASSPORT CLEANUP CHECK ERROR", error);
-
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json(
       {
         success: false,
-        error: error?.message ?? "Unknown error",
+        error: "Unauthorized",
       },
-      { status: 500 },
+      { status: 401 },
     );
   }
+
+  return POST(request);
 }
 
 export async function POST(request: Request) {
@@ -160,13 +58,15 @@ export async function POST(request: Request) {
         id,
         name,
         passport_image,
-        passport_name,
-        passport_number,
-        passport_birth,
-        passport_expiry,
-        passport_issue,
-        passport_nationality,
-        passport_sex,
+passport_name,
+passport_last_name,
+passport_first_name,
+passport_number,
+passport_birth,
+passport_expiry,
+passport_issue,
+passport_nationality,
+passport_sex,
         reservations!inner (
           id,
           departure_id
@@ -232,7 +132,7 @@ export async function POST(request: Request) {
 
       // 4박5일:
       // 7/14 출발 → 7/18 귀국
-      returnDate.setDate(returnDate.getDate() + travelDays);
+      returnDate.setDate(returnDate.getDate() + travelDays - 1);
 
       const purgeDate = new Date(returnDate);
       purgeDate.setDate(purgeDate.getDate() + 7);
@@ -240,6 +140,8 @@ export async function POST(request: Request) {
       const hasPassportData =
         person.passport_image ||
         person.passport_name ||
+        person.passport_last_name ||
+        person.passport_first_name ||
         person.passport_number ||
         person.passport_birth ||
         person.passport_expiry ||
@@ -272,6 +174,8 @@ export async function POST(request: Request) {
           .update({
             passport_image: null,
             passport_name: null,
+            passport_last_name: null,
+            passport_first_name: null,
             passport_number: null,
             passport_birth: null,
             passport_expiry: null,
@@ -283,6 +187,32 @@ export async function POST(request: Request) {
 
         if (updateError) {
           throw new Error(`DB 파기 실패: ${updateError.message}`);
+        }
+
+        const reservation = Array.isArray(person.reservations)
+          ? person.reservations[0]
+          : person.reservations;
+
+        if (reservation?.id) {
+          const { error: legacyReservationUpdateError } = await supabaseAdmin
+            .from("reservations")
+            .update({
+              passport_image: null,
+              passport_name: null,
+              passport_number: null,
+              passport_birth: null,
+              passport_expiry: null,
+              passport_sex: null,
+              passport_issue: null,
+              passport_nationality: null,
+            })
+            .eq("id", reservation.id);
+
+          if (legacyReservationUpdateError) {
+            throw new Error(
+              `예약 레거시 여권정보 파기 실패: ${legacyReservationUpdateError.message}`,
+            );
+          }
         }
 
         results.push({
