@@ -4,6 +4,7 @@ import ExcelJS from "exceljs";
 import path from "path";
 import { flightInfo as zhangjiajieFlightInfo } from "@/data/zhangjiajie";
 import { flightInfo as baekduFlightInfo } from "@/data/baekdu";
+import { flightInfo as xiamenFlightInfo } from "@/data/xiamen";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -239,6 +240,10 @@ export async function GET(request: Request) {
 
       case "baekdu":
         flightInfo = baekduFlightInfo;
+        break;
+
+      case "xiamen":
+        flightInfo = xiamenFlightInfo;
         break;
     }
     sheet.getCell("A1").value = `■ 여행기간 : ${formatTravelPeriod(
