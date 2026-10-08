@@ -269,6 +269,9 @@ function ReservationsContent() {
   const [passportUploading, setPassportUploading] = useState(false);
   const [ocrRunning, setOcrRunning] = useState(false);
   const [memoDraft, setMemoDraft] = useState("");
+  const [messageDraft, setMessageDraft] = useState("");
+  const [isEditingMessage, setIsEditingMessage] = useState(false);
+  const [savingMessage, setSavingMessage] = useState(false);
   const [showPersonForm, setShowPersonForm] = useState(false);
   const [showBulkPersonForm, setShowBulkPersonForm] = useState(false);
   const [bulkPersonCount, setBulkPersonCount] = useState("");
@@ -1650,6 +1653,43 @@ function ReservationsContent() {
     }
   }
 
+  async function saveMessage() {
+    if (!selected || savingMessage) return;
+
+    setSavingMessage(true);
+
+    try {
+      const newMessage = messageDraft.trim();
+
+      const { data, error } = await supabase
+        .from("reservations")
+        .update({ message: newMessage })
+        .eq("id", selected.id)
+        .select("id, message")
+        .single();
+
+      if (error) {
+        console.error("SAVE MESSAGE ERROR", error);
+        alert(error.message);
+        return;
+      }
+
+      patchReservation(selected.id, {
+        message: data.message ?? "",
+      });
+
+      setMessageDraft(data.message ?? "");
+      setIsEditingMessage(false);
+
+      alert("고객 문의가 저장되었습니다.");
+    } catch (error) {
+      console.error("SAVE MESSAGE ERROR", error);
+      alert("고객 문의 저장 중 오류가 발생했습니다.");
+    } finally {
+      setSavingMessage(false);
+    }
+  }
+
   async function saveMemo() {
     if (!selected) return;
 
@@ -1851,6 +1891,8 @@ function ReservationsContent() {
     setSelected(item);
     setShowPersonForm(false);
     setMemoDraft(item.memo || "");
+    setMessageDraft(item.message || "");
+    setIsEditingMessage(false);
     await loadPeople(item.id);
     await loadDeparturePrice(item.departure_id);
     await loadChecklist(item.id);
@@ -3762,22 +3804,63 @@ px-4 py-2
 
               {/* 문의내용 */}
 
+              {/* 문의내용 */}
               <div>
-                <h3 className="mb-3 font-black text-gray-900">📝 고객 문의</h3>
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-black text-gray-900">📝 고객 문의</h3>
 
-                <div
-                  className="
-                  min-h-32
-                  rounded-2xl
-                  border
-                  p-5
-                  text-sm
-                  leading-7
-                  text-gray-700
-                  "
-                >
-                  {selected.message || "문의내용 없음"}
+                  {!isEditingMessage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMessageDraft(selected.message || "");
+                        setIsEditingMessage(true);
+                      }}
+                      className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100"
+                    >
+                      ✏️ 수정
+                    </button>
+                  )}
                 </div>
+
+                {isEditingMessage ? (
+                  <div>
+                    <textarea
+                      value={messageDraft}
+                      onChange={(e) => setMessageDraft(e.target.value)}
+                      placeholder="고객 문의 내용을 입력해주세요."
+                      rows={5}
+                      className="min-h-32 w-full resize-y rounded-2xl border border-blue-300 bg-white p-5 text-sm leading-7 outline-none focus:border-blue-600"
+                    />
+
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        disabled={savingMessage}
+                        onClick={() => {
+                          setMessageDraft(selected.message || "");
+                          setIsEditingMessage(false);
+                        }}
+                        className="rounded-xl border px-5 py-2 text-sm font-bold text-gray-600 disabled:opacity-50"
+                      >
+                        취소
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={savingMessage}
+                        onClick={() => void saveMessage()}
+                        className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {savingMessage ? "저장 중..." : "💾 저장"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="min-h-32 whitespace-pre-wrap rounded-2xl border p-5 text-sm leading-7 text-gray-700">
+                    {selected.message || "문의내용 없음"}
+                  </div>
+                )}
               </div>
 
               {/* 메모 */}
