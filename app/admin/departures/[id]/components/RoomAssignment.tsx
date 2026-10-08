@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Props = {
-  departureId: string;
+  departureId?: string;
+  reservationId?: string;
 };
 
-export default function RoomAssignment({ departureId }: Props) {
+export default function RoomAssignment({ departureId, reservationId }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [showBulkForm, setShowBulkForm] = useState(false);
 
@@ -53,12 +54,12 @@ export default function RoomAssignment({ departureId }: Props) {
       error = result.error;
     } else {
       const result = await supabase.from("rooms").insert({
-        departure_id: departureId,
+        departure_id: departureId ?? null,
+        reservation_id: reservationId ?? null,
         room_name: roomName,
         room_type: roomType,
         memo,
       });
-
       error = result.error;
     }
 
@@ -112,7 +113,8 @@ export default function RoomAssignment({ departureId }: Props) {
 
     for (let i = 0; i < singleCount; i++) {
       newRooms.push({
-        departure_id: departureId,
+        departure_id: departureId ?? null,
+        reservation_id: reservationId ?? null,
         room_name: `싱글${singleStart + i}`,
         room_type: "1인실",
         memo: null,
@@ -154,11 +156,19 @@ export default function RoomAssignment({ departureId }: Props) {
     alert(`${newRooms.length}개 객실이 생성되었습니다.`);
   }
   async function loadRooms() {
-    const { data } = await supabase
-      .from("rooms")
-      .select("*")
-      .eq("departure_id", departureId)
-      .order("created_at");
+    const query = supabase.from("rooms").select("*");
+
+    const { data, error } = await (
+      reservationId
+        ? query.eq("reservation_id", reservationId)
+        : query.eq("departure_id", departureId!)
+    ).order("created_at");
+
+    if (error) {
+      console.error("LOAD ROOMS ERROR:", error);
+      setRooms([]);
+      return;
+    }
 
     setRooms(data ?? []);
   }
@@ -176,7 +186,30 @@ export default function RoomAssignment({ departureId }: Props) {
   }
 
   async function loadPeople() {
-    // 현재 출발일에 속한 예약만 조회
+    // 기타 예약: 해당 예약의 인원만 조회
+    if (reservationId) {
+      const { data, error } = await supabase
+        .from("reservation_people")
+        .select("id, reservation_id, name")
+        .eq("reservation_id", reservationId)
+        .order("name");
+
+      if (error) {
+        console.error("LOAD RESERVATION PEOPLE ERROR:", error);
+        setPeople([]);
+        return;
+      }
+
+      setPeople(data ?? []);
+      return;
+    }
+
+    // 정규 상품: 기존 출발일 기준 조회
+    if (!departureId) {
+      setPeople([]);
+      return;
+    }
+
     const { data: reservations, error: reservationError } = await supabase
       .from("reservations")
       .select("id")
@@ -192,13 +225,11 @@ export default function RoomAssignment({ departureId }: Props) {
       (reservation) => reservation.id,
     );
 
-    // 현재 출발일에 예약이 없으면 예약자도 없음
     if (reservationIds.length === 0) {
       setPeople([]);
       return;
     }
 
-    // 위 예약들에 소속된 예약자만 조회
     const { data, error } = await supabase
       .from("reservation_people")
       .select("id, reservation_id, name")
@@ -291,7 +322,7 @@ export default function RoomAssignment({ departureId }: Props) {
     loadRooms();
     loadRoomMembers();
     loadPeople();
-  }, [departureId]);
+  }, [departureId, reservationId]);
 
   const currentRoomIds = new Set(rooms.map((room) => room.id));
 

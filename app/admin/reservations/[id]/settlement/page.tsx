@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Settlement from "@/app/admin/departures/[id]/components/Settlement";
+import RoomAssignment from "@/app/admin/departures/[id]/components/RoomAssignment";
 
 export default function ReservationSettlementPage() {
   const params = useParams();
@@ -138,6 +139,8 @@ export default function ReservationSettlementPage() {
           📥 수배의뢰서 다운로드
         </button>
       </div>
+      <RoomAssignment reservationId={String(reservation.id)} />
+
       <Settlement reservations={[reservation]} departure={customDeparture} />
     </div>
   );
