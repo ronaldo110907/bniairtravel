@@ -250,6 +250,9 @@ function ReservationsContent() {
   const [createdFrom, setCreatedFrom] = useState("");
   const [createdTo, setCreatedTo] = useState("");
   const [page, setPage] = useState(1);
+  const [openDepartureDate, setOpenDepartureDate] = useState<string | null>(
+    null,
+  );
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1953,12 +1956,50 @@ function ReservationsContent() {
     createdTo,
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  // 전체 상품 예약을 출발일별로 그룹화
+  const departureGroups = useMemo(() => {
+    const groups = new Map<string, Reservation[]>();
+
+    filtered.forEach((reservation) => {
+      const date = toDateInputValue(reservation.departure_date) || "미지정";
+
+      if (!groups.has(date)) {
+        groups.set(date, []);
+      }
+
+      groups.get(date)!.push(reservation);
+    });
+
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, reservations]) => ({
+        date,
+        reservations,
+        count: reservations.length,
+        productNames: Array.from(
+          new Set(
+            reservations.map((reservation) => reservation.product || "기타"),
+          ),
+        ),
+        peopleCount: reservations.reduce((sum, reservation) => {
+          const progress = getRosterProgress(reservation);
+          return sum + progress.expectedCount;
+        }, 0),
+      }));
+  }, [filtered]);
+
+  // 페이지당 출발일 20개 표시
+  const totalPages = Math.max(1, Math.ceil(departureGroups.length / PAGE_SIZE));
+
   const safePage = Math.min(page, totalPages);
-  const paginated = filtered.slice(
+
+  const paginatedGroups = departureGroups.slice(
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
+
+  // 기존 목록 렌더링과의 연결 유지
+  const paginated = paginatedGroups.flatMap((group) => group.reservations);
 
   useEffect(() => {
     setPage(1);
@@ -2285,90 +2326,133 @@ function ReservationsContent() {
               </thead>
 
               <tbody>
-                {paginated.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="
+                {paginatedGroups.map((group) => (
+                  <Fragment key={group.date}>
+                    <tr className="border-t-2 border-blue-200 bg-blue-50">
+                      <td colSpan={10} className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenDepartureDate((current) =>
+                              current === group.date ? null : group.date,
+                            )
+                          }
+                          className="grid w-full grid-cols-[30%_40%_30%] items-center text-left"
+                        >
+                          <div className="flex items-center gap-2 font-bold text-blue-900">
+                            <span>
+                              {openDepartureDate === group.date ? "▼" : "▶"}
+                            </span>
+                            <span>
+                              {group.date === "미지정"
+                                ? "출발일 미지정"
+                                : group.date}
+                            </span>
+                          </div>
+
+                          <div className="text-center text-sm font-semibold text-blue-700">
+                            예약 {group.count}건 · 총 {group.peopleCount}명
+                          </div>
+
+                          <div className="flex flex-wrap justify-end gap-1.5">
+                            {group.productNames.map((product) => (
+                              <span
+                                key={product}
+                                className="rounded-full border border-blue-200 bg-white px-2.5 py-1 text-xs font-bold text-blue-700 whitespace-nowrap"
+                              >
+                                ✈ {product}
+                              </span>
+                            ))}
+                          </div>
+                        </button>
+                      </td>
+                    </tr>
+
+                    {openDepartureDate === group.date &&
+                      group.reservations.map((item) => (
+                        <tr
+                          key={item.id}
+                          className="
                    border-t border-gray-100
                    text-sm
                    transition
                    hover:bg-blue-50/40
                    "
-                  >
-                    <td className="px-4 py-4 text-center text-gray-500">
-                      #{item.id.slice(0, 6)}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-4 font-semibold text-gray-900">
-                      {item.name || "-"}
-                    </td>
+                        >
+                          <td className="px-4 py-4 text-center text-gray-500">
+                            #{item.id.slice(0, 6)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-4 font-semibold text-gray-900">
+                            {item.name || "-"}
+                          </td>
 
-                    <td className="whitespace-nowrap px-4 py-4 text-center">
-                      {(() => {
-                        const roster = getRosterProgress(item);
+                          <td className="whitespace-nowrap px-4 py-4 text-center">
+                            {(() => {
+                              const roster = getRosterProgress(item);
 
-                        return roster.isComplete ? (
-                          <div>
-                            <div className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                              ✅ 명단 {roster.completedCount}/
-                              {roster.expectedCount}
+                              return roster.isComplete ? (
+                                <div>
+                                  <div className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                                    ✅ 명단 {roster.completedCount}/
+                                    {roster.expectedCount}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div>
+                                  <div className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
+                                    ⚠ 명단 {roster.completedCount}/
+                                    {roster.expectedCount}
+                                  </div>
+
+                                  <div className="mt-1 text-xs font-semibold text-red-500">
+                                    {roster.missingCount}명 미입력
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-4">
+                            <div className="space-y-1">
+                              {item.phone && (
+                                <a
+                                  href={`tel:${item.phone}`}
+                                  className="block text-blue-600 hover:underline"
+                                >
+                                  ☎ {formatPhoneNumber(item.phone)}
+                                </a>
+                              )}
+
+                              {item.mobile && (
+                                <a
+                                  href={`tel:${item.mobile}`}
+                                  className="block text-blue-600 hover:underline"
+                                >
+                                  📱 {formatPhoneNumber(item.mobile)}
+                                </a>
+                              )}
+
+                              {!item.phone && !item.mobile && (
+                                <span className="text-gray-300">-</span>
+                              )}
                             </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <div className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
-                              ⚠ 명단 {roster.completedCount}/
-                              {roster.expectedCount}
-                            </div>
+                          </td>
 
-                            <div className="mt-1 text-xs font-semibold text-red-500">
-                              {roster.missingCount}명 미입력
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-4">
-                      <div className="space-y-1">
-                        {item.phone && (
-                          <a
-                            href={`tel:${item.phone}`}
-                            className="block text-blue-600 hover:underline"
-                          >
-                            ☎ {formatPhoneNumber(item.phone)}
-                          </a>
-                        )}
-
-                        {item.mobile && (
-                          <a
-                            href={`tel:${item.mobile}`}
-                            className="block text-blue-600 hover:underline"
-                          >
-                            📱 {formatPhoneNumber(item.mobile)}
-                          </a>
-                        )}
-
-                        {!item.phone && !item.mobile && (
-                          <span className="text-gray-300">-</span>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="max-w-[260px] px-4 py-4">
-                      <div
-                        className="
+                          <td className="max-w-[260px] px-4 py-4">
+                            <div
+                              className="
     font-bold
     text-gray-900
     truncate
     "
-                        title={item.product}
-                      >
-                        ✈ {item.product || "-"}
-                      </div>
-                    </td>
+                              title={item.product}
+                            >
+                              ✈ {item.product || "-"}
+                            </div>
+                          </td>
 
-                    <td className="whitespace-nowrap px-4 py-4">
-                      <span
-                        className="
+                          <td className="whitespace-nowrap px-4 py-4">
+                            <span
+                              className="
     rounded-full
     bg-blue-50
     px-3
@@ -2377,66 +2461,68 @@ function ReservationsContent() {
     font-bold
     text-blue-700
     "
-                      >
-                        {formatDate(item.departure_date)}
-                      </span>
-                    </td>
+                            >
+                              {formatDate(item.departure_date)}
+                            </span>
+                          </td>
 
-                    <td className="whitespace-nowrap px-4 py-4 text-gray-500">
-                      {formatDateTime(item.created_at)}
-                    </td>
+                          <td className="whitespace-nowrap px-4 py-4 text-gray-500">
+                            {formatDateTime(item.created_at)}
+                          </td>
 
-                    <td className="max-w-[300px] px-4 py-4">
-                      <button
-                        type="button"
-                        onClick={() => void openDetail(item)}
-                        className="block w-full truncate text-left text-gray-700 hover:text-black hover:underline"
-                        title={item.message}
-                      >
-                        {item.message || "문의내용 없음"}
-                      </button>
-                    </td>
+                          <td className="max-w-[300px] px-4 py-4">
+                            <button
+                              type="button"
+                              onClick={() => void openDetail(item)}
+                              className="block w-full truncate text-left text-gray-700 hover:text-black hover:underline"
+                              title={item.message}
+                            >
+                              {item.message || "문의내용 없음"}
+                            </button>
+                          </td>
 
-                    <td className="whitespace-nowrap px-4 py-4">
-                      <select
-                        value={item.status || "대기"}
-                        disabled={savingId === item.id}
-                        onChange={(event) =>
-                          void updateStatus(item.id, event.target.value)
-                        }
-                        className={`rounded-full border px-3 py-2 text-sm font-semibold outline-none ${statusClass(
-                          item.status || "대기",
-                        )}`}
-                      >
-                        {STATUS_OPTIONS.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
+                          <td className="whitespace-nowrap px-4 py-4">
+                            <select
+                              value={item.status || "대기"}
+                              disabled={savingId === item.id}
+                              onChange={(event) =>
+                                void updateStatus(item.id, event.target.value)
+                              }
+                              className={`rounded-full border px-3 py-2 text-sm font-semibold outline-none ${statusClass(
+                                item.status || "대기",
+                              )}`}
+                            >
+                              {STATUS_OPTIONS.map((status) => (
+                                <option key={status} value={status}>
+                                  {status}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
 
-                    <td className="whitespace-nowrap px-4 py-4">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => void openDetail(item)}
-                          className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-black"
-                        >
-                          상세
-                        </button>
+                          <td className="whitespace-nowrap px-4 py-4">
+                            <div className="flex justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => void openDetail(item)}
+                                className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-black"
+                              >
+                                상세
+                              </button>
 
-                        <button
-                          type="button"
-                          disabled={deletingId === item.id}
-                          onClick={() => void remove(item.id)}
-                          className="rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50"
-                        >
-                          {deletingId === item.id ? "삭제중" : "삭제"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                              <button
+                                type="button"
+                                disabled={deletingId === item.id}
+                                onClick={() => void remove(item.id)}
+                                className="rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50"
+                              >
+                                {deletingId === item.id ? "삭제중" : "삭제"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </Fragment>
                 ))}
 
                 {paginated.length === 0 && (
