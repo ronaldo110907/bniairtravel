@@ -69,6 +69,18 @@ export async function GET(request: Request) {
       }
 
       rooms = data ?? [];
+    } else if (reservationIds.length > 0) {
+      const { data, error } = await supabase
+        .from("rooms")
+        .select("*")
+        .in("reservation_id", reservationIds)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      rooms = data ?? [];
     }
 
     const roomIds = (rooms ?? []).map((room: any) => room.id);
