@@ -123,7 +123,8 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
 
     for (let i = 0; i < twinCount; i++) {
       newRooms.push({
-        departure_id: departureId,
+        departure_id: departureId ?? null,
+        reservation_id: reservationId ?? null,
         room_name: `트윈${twinStart + i}`,
         room_type: "2인실",
         memo: null,
@@ -132,7 +133,8 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
 
     for (let i = 0; i < tripleCount; i++) {
       newRooms.push({
-        departure_id: departureId,
+        departure_id: departureId ?? null,
+        reservation_id: reservationId ?? null,
         room_name: `트리플${tripleStart + i}`,
         room_type: "3인실",
         memo: null,
