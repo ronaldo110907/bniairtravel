@@ -3257,6 +3257,7 @@ function ReservationsContent() {
                     <>
                       <Detail label="예약자" value={selected.name} />
                       <Detail label="연락처" value={selected.phone} />
+                      <Detail label="휴대폰" value={selected.mobile} />
                     </>
                   )}
                 </div>
@@ -3271,6 +3272,7 @@ function ReservationsContent() {
                           .update({
                             name: editCustomerName.trim(),
                             phone: editCustomerPhone.trim(),
+                            mobile: editCustomerMobile.trim(),
                           })
                           .eq("id", selected.id);
 
@@ -3284,6 +3286,7 @@ function ReservationsContent() {
                           ...selected,
                           name: editCustomerName.trim(),
                           phone: editCustomerPhone.trim(),
+                          mobile: editCustomerMobile.trim(),
                         });
 
                         setList((prev) =>
@@ -3293,6 +3296,7 @@ function ReservationsContent() {
                                   ...item,
                                   name: editCustomerName.trim(),
                                   phone: editCustomerPhone.trim(),
+                                  mobile: editCustomerMobile.trim(),
                                 }
                               : item,
                           ),
@@ -3322,7 +3326,7 @@ function ReservationsContent() {
 
                 <div className="mt-5 flex flex-wrap gap-3">
                   <a
-                    href={`tel:${selected.phone}`}
+                    href={`tel:${selected.mobile || selected.phone}`}
                     className="
       rounded-xl
       bg-green-600
