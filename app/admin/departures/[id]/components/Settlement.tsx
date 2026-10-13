@@ -238,7 +238,7 @@ export default function Settlement({ reservations, departure }: Props) {
       return;
     }
 
-    const fileType = settlementFileTypes[reservationId] || "기타";
+    const fileType = settlementFileTypes[reservationId] || "항공료";
     const memo = settlementFileMemos[reservationId] || "";
 
     setSettlementUploadingId(reservationId);
