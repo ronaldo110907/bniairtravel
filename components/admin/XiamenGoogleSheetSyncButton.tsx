@@ -55,7 +55,7 @@ export default function XiamenGoogleSheetSyncButton() {
         <span className="flex flex-col items-center leading-tight">
           <span>📊 구글시트 좌석 동기화</span>
           <span className="mt-1 text-[10px] font-medium text-green-100">
-            매일 13시 자동 동기화
+            매일 17시 자동 동기화
           </span>
         </span>
       )}
