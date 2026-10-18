@@ -77,6 +77,10 @@ import {
   xiamenHotels,
   wuyishanHotels,
   golfImageMap,
+  itineraryGuanzhishan4N6D,
+  includesGuanzhishan4,
+  excludesGuanzhishan4,
+  guanzhishanHotels,
 } from "@/data/xiamen";
 
 type ShareItem = {
@@ -279,7 +283,7 @@ const shareProducts: Record<string, ShareProduct> = {
         excludes: excludesValue3 as ShareListItem[],
       },
       premium3: {
-        name: "품격 3박5일",
+        name: "고품격 3박5일",
         itinerary: itineraryPremium3N5D as ShareItem[],
         hotels: xiamenHotels as ShareHotel[],
         includes: includesPremium3 as ShareListItem[],
@@ -306,8 +310,15 @@ const shareProducts: Record<string, ShareProduct> = {
         includes: includesPremium4 as ShareListItem[],
         excludes: excludesPremium4 as ShareListItem[],
       },
+      guanzhishan4: {
+        name: "고품격 관지산 4박6일",
+        itinerary: itineraryGuanzhishan4N6D,
+        hotels: guanzhishanHotels,
+        includes: includesGuanzhishan4,
+        excludes: excludesGuanzhishan4,
+      },
       wuyishan4: {
-        name: "무이산 4박6일",
+        name: "고품격 무이산 4박6일",
         itinerary: itineraryWuyishan4N6D as ShareItem[],
         hotels: wuyishanHotels as ShareHotel[],
         includes: includesWuyishan4 as ShareListItem[],

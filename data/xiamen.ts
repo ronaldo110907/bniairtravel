@@ -4,6 +4,7 @@ export type XiamenProductType =
   | "value4"
   | "premium4"
   | "wuyishan4"
+  | "guanzhishan4"
   | "golf3"
   | "golf4";
 
@@ -53,6 +54,11 @@ export const productTabs = [
     description: "알찬 샤먼 핵심 관광",
   },
   {
+    id: "guanzhishan4" as const,
+    label: "관지산 4박6일",
+    description: "노쇼핑 · 노팁 · 노옵션 프리미엄 관광",
+  },
+  {
     id: "premium4" as const,
     label: "고품격 4박6일",
     description: "샤먼을 여유롭게 즐기는 일정",
@@ -75,7 +81,7 @@ export const productTabs = [
 ];
 
 export const publicProductTabs = productTabs.filter(
-  (tab) => tab.id !== "premium4",
+  (tab) => tab.id !== "premium4" && tab.id !== "value3" && tab.id !== "value4",
 );
 
 export const flightInfo = {
@@ -175,6 +181,22 @@ export const xiamenHotels = [
     image: `${xiamenHotelBaseUrl}marriot.jpg`,
     roomImage: `${xiamenHotelBaseUrl}marriotroom.jpg`,
     desc: "편안한 객실과 안정적인 숙박 환경을 갖춘 준5성급 호텔입니다.",
+  },
+];
+
+// ======================================================
+// 관지산 호텔
+// ======================================================
+
+export const guanzhishanHotels = [
+  ...xiamenHotels,
+  {
+    id: 5,
+    name: "관지산 천일호텔 (준5성급)",
+    grade: "★★★★☆",
+    image: `${xiamenHotelBaseUrl}chunil.jpg`,
+    roomImage: `${xiamenHotelBaseUrl}chunilroom.jpg`,
+    desc: "관지산 관광 중 이용하는 호텔로, 온천욕과 편안한 휴식을 즐길 수 있습니다.",
   },
 ];
 
@@ -1075,6 +1097,222 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
 ]);
 
 // ======================================================
+// 관지산 고품격 4박 6일
+// 노쇼핑 · 노팁 · 노옵션
+// ======================================================
+
+export const itineraryGuanzhishan4N6D: ItineraryItem[] = attachXiamenImages([
+  {
+    day: "DAY 1",
+    icon: "✈️",
+    title: "청주공항 출발 · 샤먼 도착",
+    description:
+      "이스타항공 직항편으로 샤먼에 도착하여 가이드 미팅 후 호텔로 이동합니다.",
+    region: "청주 · 하문",
+    transport: "ZE827 · 전용차량",
+    time: "23:00 / 01:20+1",
+    schedule: `20:30 청주 국제공항 미팅
+23:00 청주 국제공항 출발 (ZE827)
+01:20+1 하문 국제공항 도착
+현지 가이드 미팅 후 호텔 이동
+호텔 투숙 및 휴식`,
+    places: ["청주 국제공항", "샤먼 국제공항"],
+    meals: {
+      breakfast: "-----",
+      lunch: "-----",
+      dinner: "-----",
+    },
+    hotel: "화렉스 호텔 또는 동급(정5성급) ★★★★★",
+  },
+  {
+    day: "DAY 2",
+    icon: "🛕",
+    title: "남보타사 · 백성해변 · 호리산포대 · 증조안",
+    description:
+      "오전 휴식 후 샤먼을 대표하는 사찰과 해안 관광지를 둘러봅니다.",
+    region: "하문",
+    transport: "전용차량",
+    time: "전일",
+    schedule: `호텔 조식 후 오전 자유일정 및 휴식
+
+중식 후
+▶ 1,000년 이상의 역사를 간직한 남보타사
+▶ 아름다운 바다 풍경의 백성해변
+▶ 청나라 시대 해안 방어시설인 호리산포대
+▶ 현지 먹거리와 상점이 모여 있는 증조안 미식거리
+
+석식 후 호텔 이동 및 투숙`,
+    places: ["남보타사", "백성해변", "호리산포대", "증조안 미식거리"],
+    meals: {
+      breakfast: "호텔식",
+      lunch: "쇼우딤섬",
+      dinner: "호남요리",
+    },
+    hotel: "화렉스 호텔 또는 동급(정5성급) ★★★★★",
+  },
+  {
+    day: "DAY 3",
+    icon: "🏯",
+    title: "남정토루 · 용공동굴 · 호텔 온천욕",
+    description:
+      "남정토루의 전통 건축물을 관광하고 관지산으로 이동해 용공동굴과 호텔 온천욕을 즐깁니다.",
+    region: "하문 · 남정토루 · 관지산",
+    transport: "전용차량",
+    time: "전일",
+    schedule: `호텔 조식 후 남정토루 이동 (약 2시간)
+
+▶ 전라갱토루 관광
+▶ 탑하촌 토루마을
+▶ 600~700년 역사의 원형토루 유창루
+
+중식 후 관지산 이동 (약 1시간 30분)
+
+▶ 약 3억 년 전에 형성된 종유석 동굴 용공동굴
+▶ [특전] 호텔 온천욕 (수영복 필수 지참)
+
+호텔 특식으로 석식
+관지산 천일호텔 투숙 및 휴식`,
+    places: [
+      "전라갱토루",
+      "탑하촌 토루마을",
+      "유창루",
+      "용공동굴",
+      "호텔 온천욕",
+    ],
+    meals: {
+      breakfast: "호텔식",
+      lunch: "토루 객가요리(남정호텔)",
+      dinner: "호텔특식",
+    },
+    hotel: "관지산 천일호텔 또는 동급(준5성급) ★★★★☆",
+  },
+  {
+    day: "DAY 4",
+    icon: "⛰️",
+    title: "관지산 절경 관광 · 샤먼 이동",
+    description:
+      "유람선과 현수교, 케이블카를 이용해 관지산의 절경을 감상한 뒤 샤먼으로 돌아옵니다.",
+    region: "관지산 · 하문",
+    transport: "전용차량",
+    time: "전일",
+    schedule: `호텔 조식 후 관지산 관광 (약 5시간)
+
+▶ 관지산 남문 출발
+▶ 유람선 부두
+▶ 향량정 부두
+▶ 에스컬레이터 상행
+▶ 현수교
+▶ 케이블카
+▶ 고적 유적지
+▶ 수성암
+▶ 머탠령
+▶ 북문 하산
+
+중식 후 하문 이동 (약 3시간)
+
+하문 도착 후 석식
+호텔 투숙 및 휴식`,
+    places: [
+      "관지산",
+      "관지산 유람선",
+      "향량정 부두",
+      "현수교",
+      "케이블카",
+      "수성암",
+      "머탠령",
+    ],
+    spotImages: [
+      {
+        name: "관지산 전경",
+        image: `${xiamenImageBaseUrl}guanzhishan.png`,
+      },
+      {
+        name: "관지산 관광 1",
+        image: `${xiamenImageBaseUrl}guanzhishan1.png`,
+      },
+      {
+        name: "관지산 관광 2",
+        image: `${xiamenImageBaseUrl}guanzhishan2.jpg`,
+      },
+      {
+        name: "관지산 관광 3",
+        image: `${xiamenImageBaseUrl}guanzhishan3.jpg`,
+      },
+    ],
+    meals: {
+      breakfast: "호텔식",
+      lunch: "객가요리",
+      dinner: "삼겹살 무제한",
+    },
+    hotel: "화렉스 호텔 또는 동급(정5성급) ★★★★★",
+  },
+  {
+    day: "DAY 5",
+    icon: "🏝️",
+    title: "고랑서 · 화교박물관 · 중산로 · 야경유람선",
+    description:
+      "고랑서의 명소와 화교박물관, 중산로를 둘러보고 루장강 나이트크루즈를 즐깁니다.",
+    region: "하문",
+    transport: "전용차량",
+    time: "전일",
+    schedule: `호텔 조식 후 고랑서 부두 이동 (약 20분)
+
+▶ 해상의 화원이라 불리는 고랑서 관광
+▶ 숙장화원 (전동카 편도)
+▶ 고랑서의 대표 전망 명소 일광암
+▶ 피아노 박물관
+
+중식 후 선악산 방향 이동 (약 20분)
+
+▶ 화교박물관 관람
+▶ 하문의 대표 보행자 거리 중산로 관광
+
+석식 후
+▶ [특전] 신야경유람선
+   루장강 나이트크루즈 탑승 (약 1시간)
+
+23:00경 공항으로 이동`,
+    places: [
+      "고랑서",
+      "숙장화원",
+      "일광암",
+      "피아노 박물관",
+      "화교박물관",
+      "중산로",
+      "루장강 나이트크루즈",
+      "공항 이동",
+    ],
+    meals: {
+      breakfast: "호텔식",
+      lunch: "민남요리",
+      dinner: "샤브샤브 무제한",
+    },
+    hotel: "기내 숙박",
+  },
+  {
+    day: "DAY 6",
+    icon: "🛬",
+    title: "샤먼 출발 · 청주공항 도착",
+    description:
+      "샤먼 국제공항에서 귀국편에 탑승하여 청주 국제공항에 도착합니다.",
+    region: "하문 · 청주",
+    transport: "ZE828",
+    time: "02:20 / 06:20",
+    schedule: `02:20 하문 국제공항 출발 (ZE828)
+06:20 청주 국제공항 도착 후 해산
+
+♣ 즐거운 여행 되세요. 감사합니다. ♣`,
+    places: ["샤먼 국제공항", "청주 국제공항"],
+    meals: {
+      breakfast: "-----",
+      lunch: "-----",
+      dinner: "-----",
+    },
+    hotel: "해당없음",
+  },
+]);
+
+// ======================================================
 // 무이산 품격 4박 6일
 // ======================================================
 
@@ -1649,14 +1887,13 @@ export const includesPremium3 = [
     id: 6,
     text: "특전[발+전신마사지 90분 1회(매너팁별도), 숙장화원(전동카 편도),민남전기쇼, 신야경 유람선]",
   },
-  { id: 7, text: "기사 · 가이드팁" },
+  { id: 7, text: "노쇼핑 · 노팁 · 노옵션" },
 ];
 
 export const excludesPremium3 = [
   { id: 1, text: "마사지 매너팁" },
   { id: 2, text: "기타 개인경비" },
   { id: 3, text: "싱글차지 160,000 / 1인(3박)" },
-  { id: 4, text: "단독행사기준 노쇼핑시-1인 50$ 추가" },
 ];
 
 export const includesValue4 = [
@@ -1691,12 +1928,35 @@ export const includesPremium4 = [
     id: 6,
     text: "특전[발+전신마사지 90분 1회(매너팁별도),숙장화원(전동카 편도),민남전기쇼,해상명주탑,일월곡 온천욕,야경 유람선]",
   },
-  { id: 7, text: "기사 · 가이드팁" },
+  { id: 7, text: "노쇼핑 · 노팁 · 노옵션" },
 ];
 
 export const excludesPremium4 = [
   { id: 1, text: "마사지 매너팁" },
   { id: 2, text: "기타 개인경비" },
+  { id: 3, text: "싱글차지 200,000원 / 1인(4박)" },
+];
+
+// ======================================================
+// 관지산 고품격 4박 6일 포함 / 불포함
+// ======================================================
+
+export const includesGuanzhishan4 = [
+  { id: 1, text: "청주-하문 왕복항공료(TAX · 유류할증료)" },
+  { id: 2, text: "하문 정5성급 3박 + 관지산 준5성급 1박(2인 1실)" },
+  { id: 3, text: "전 일정 식사 및 특식 8회" },
+  { id: 4, text: "전 일정 전용차량 · 관광지 입장료" },
+  { id: 5, text: "여행자보험(2억원)" },
+  {
+    id: 6,
+    text: "특전: 호텔 온천욕, 관지산 유람선, 숙장화원 전동카 편도, 신야경 유람선",
+  },
+  { id: 7, text: "노쇼핑 · 노팁 · 노옵션" },
+];
+
+export const excludesGuanzhishan4 = [
+  { id: 1, text: "개인경비 및 매너팁" },
+  { id: 2, text: "유류할증료 변동금액" },
   { id: 3, text: "싱글차지 200,000원 / 1인(4박)" },
 ];
 
@@ -1716,7 +1976,7 @@ export const includesWuyishan4 = [
     id: 6,
     text: "[특전] 발+전신마사지 90분 1회(매너팁별도), 숙장화원(전동카 편도),무이산 왕복고속열차, 무이산 뗏목투어, 신야경 유람선",
   },
-  { id: 7, text: "스루가이드 및 기사 · 가이드팁" },
+  { id: 7, text: "노쇼핑 · 노팁 · 노옵션" },
 ];
 
 export const excludesWuyishan4 = [

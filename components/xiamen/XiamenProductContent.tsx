@@ -24,6 +24,8 @@ import {
   excludesPremium3,
   includesPremium4,
   excludesPremium4,
+  includesGuanzhishan4,
+  excludesGuanzhishan4,
   includesWuyishan4,
   excludesWuyishan4,
   includesGolf3,
@@ -32,8 +34,10 @@ import {
   excludesGolf4,
   shoppingXiamen,
   xiamenHotels,
+  guanzhishanHotels,
   wuyishanHotels,
   golfImageMap,
+  itineraryGuanzhishan4N6D,
 } from "@/data/xiamen";
 
 const itineraryMap: Record<XiamenProductType, ItineraryItem[]> = {
@@ -41,6 +45,7 @@ const itineraryMap: Record<XiamenProductType, ItineraryItem[]> = {
   premium3: itineraryPremium3N5D,
   value4: itineraryValue4N6D,
   premium4: itineraryPremium4N6D,
+  guanzhishan4: itineraryGuanzhishan4N6D,
   wuyishan4: itineraryWuyishan4N6D,
   golf3: itineraryGolf3N5D,
   golf4: itineraryGolf4N6D,
@@ -51,6 +56,7 @@ const includesMap: Record<XiamenProductType, { id: number; text: string }[]> = {
   premium3: includesPremium3,
   value4: includesValue4,
   premium4: includesPremium4,
+  guanzhishan4: includesGuanzhishan4,
   wuyishan4: includesWuyishan4,
   golf3: includesGolf3,
   golf4: includesGolf4,
@@ -61,13 +67,14 @@ const excludesMap: Record<XiamenProductType, { id: number; text: string }[]> = {
   premium3: excludesPremium3,
   value4: excludesValue4,
   premium4: excludesPremium4,
+  guanzhishan4: excludesGuanzhishan4,
   wuyishan4: excludesWuyishan4,
   golf3: excludesGolf3,
   golf4: excludesGolf4,
 };
 
 export default function XiamenProductContent() {
-  const [activeType, setActiveType] = useState<XiamenProductType>("value3");
+  const [activeType, setActiveType] = useState<XiamenProductType>("premium3");
 
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
@@ -153,14 +160,28 @@ export default function XiamenProductContent() {
       ? "※ 찻집 · 라텍스 · 침향 중 2곳을 방문합니다. 구매는 고객님의 자율적인 선택이며, 노쇼핑 진행 시 현지비가 추가될 수 있습니다."
       : "※ 찻집 · 라텍스 · 침향 중 2곳을 방문합니다. 구매는 고객님의 자율적인 선택입니다.";
 
-  const hotels = activeType === "wuyishan4" ? wuyishanHotels : xiamenHotels;
+  const hotels =
+    activeType === "wuyishan4"
+      ? wuyishanHotels
+      : activeType === "guanzhishan4"
+        ? guanzhishanHotels
+        : xiamenHotels;
 
   const tabs3N5D = productTabs.filter((tab) =>
-    ["value3", "premium3", "golf3"].includes(tab.id),
+    [
+      // "value3", // 실속상품 임시 비노출
+      "premium3",
+      "golf3",
+    ].includes(tab.id),
   );
 
   const tabs4N6D = productTabs.filter((tab) =>
-    ["value4", "wuyishan4", "golf4"].includes(tab.id),
+    [
+      // "value4", // 실속상품 임시 비노출
+      "guanzhishan4",
+      "wuyishan4",
+      "golf4",
+    ].includes(tab.id),
   );
 
   return (
@@ -842,9 +863,9 @@ export default function XiamenProductContent() {
         {/* ==================== 쇼핑 ==================== */}
 
         <ShoppingSection
-          shopping={isGolf ? [] : shoppingXiamen}
-          noShopping={isGolf}
-          noticeText={shoppingNotice}
+          shopping={[]}
+          noShopping={true}
+          noticeText="전 상품 쇼핑센터 방문 없이 진행됩니다."
         />
       </div>
       {zoomImage && (

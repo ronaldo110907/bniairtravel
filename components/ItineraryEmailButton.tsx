@@ -33,7 +33,7 @@ export default function ItineraryEmailButton({ product }: Props) {
   const [course, setCourse] = useState<Course>("3박4일");
   const [phuquocCourse, setPhuquocCourse] = useState<PhuquocCourse>("premium");
   const [guilinCourse, setGuilinCourse] = useState<GuilinCourse>("guilin3N5D");
-  const [xiamenCourse, setXiamenCourse] = useState<XiamenCourse>("value3");
+  const [xiamenCourse, setXiamenCourse] = useState<XiamenCourse>("premium3");
 
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -358,8 +358,8 @@ export default function ItineraryEmailButton({ product }: Props) {
                 {/* 3박5일 */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
-                    { key: "value3", label: "실속 3박5일" },
-                    { key: "premium3", label: "품격 3박5일" },
+                    //{ key: "value3", label: "실속 3박5일" },
+                    { key: "premium3", label: "고품격 3박5일" },
                     { key: "golf3", label: "골프 3박5일" },
                   ].map((item) => (
                     <button
@@ -380,9 +380,10 @@ export default function ItineraryEmailButton({ product }: Props) {
                 {/* 4박6일 */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {[
-                    { key: "value4", label: "실속 4박6일" },
+                    //{ key: "value4", label: "실속 4박6일" },
                     { key: "premium4", label: "고품격 4박6일" },
-                    { key: "wuyishan4", label: "무이산 4박6일" },
+                    { key: "guanzhishan4", label: "고품격 관지산 4박6일" },
+                    { key: "wuyishan4", label: "고품격 무이산 4박6일" },
                     { key: "golf4", label: "골프 4박6일" },
                   ]
                     .filter((item) => item.key !== "premium4")
