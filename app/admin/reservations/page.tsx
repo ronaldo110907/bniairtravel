@@ -418,7 +418,125 @@ function ReservationsContent() {
       setLoadingTransfer(false);
     }
   }
+  async function handleTransferExecute() {
+    if (!selected || !targetTransferId || loadingTransfer) return;
 
+    const target = transferDepartures.find((d) => d.id === targetTransferId);
+
+    if (!target) {
+      alert("이동할 출발일을 다시 선택해주세요.");
+      return;
+    }
+
+    setLoadingTransfer(true);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        throw new Error("관리자 로그인을 다시 확인해주세요.");
+      }
+
+      const requestTransfer = async (mode: "validate" | "execute") => {
+        const response = await fetch("/api/admin/reservations/transfer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            reservationId: selected.id,
+            targetDepartureId: targetTransferId,
+            mode,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || result.success !== true) {
+          throw new Error(result.error || "예약 이동 처리에 실패했습니다.");
+        }
+
+        return result;
+      };
+
+      // 1. 실제 이동 전에 좌석현황 조회
+      const validation = await requestTransfer("validate");
+
+      const checks = validation.checks;
+
+      if (!checks.sameProduct) {
+        throw new Error("동일한 상품의 출발일로만 이동할 수 있습니다.");
+      }
+
+      if (checks.sharedSeatMismatch) {
+        throw new Error("공유 출발일의 좌석 설정이 일치하지 않습니다.");
+      }
+
+      if (checks.sharedRooms > 0) {
+        throw new Error(
+          "다른 예약과 공유 중인 객실이 있어 이동할 수 없습니다.",
+        );
+      }
+
+      // 2. 좌석 초과 수량 계산
+      const remaining = checks.targetRemainingAfter;
+
+      const excessSeats =
+        typeof remaining === "number" ? Math.max(0, -remaining) : null;
+
+      const seatWarning =
+        excessSeats === null
+          ? "⚠️ 대상 출발일의 좌석 수를 확인할 수 없습니다."
+          : excessSeats > 0
+            ? `⚠️ 이동 후 ${excessSeats}석이 초과됩니다.\n부족한 좌석은 별도로 확보해야 합니다.`
+            : "✅ 이동 후 좌석 초과 없음";
+
+      // 3. 최종 확인
+      const confirmed = window.confirm(
+        [
+          "예약을 실제로 이동하시겠습니까?",
+          "",
+          `예약자: ${selected.name}`,
+          `상품: ${selected.product}`,
+          `기존 출발일: ${selected.departure_date}`,
+          `변경 출발일: ${target.departure_date}`,
+          `변경 코스: ${target.course}`,
+          "",
+          `이동 인원: ${checks.movingPeople}명`,
+          seatWarning,
+          "",
+          "확인하면 실제 예약 정보가 변경됩니다.",
+        ].join("\n"),
+      );
+
+      if (!confirmed) return;
+
+      // 4. 실제 예약 이동 실행
+      const result = await requestTransfer("execute");
+
+      setShowTransfer(false);
+      setTargetTransferId("");
+      setSelected(null);
+
+      await loadReservations();
+
+      alert("예약 이동이 완료되었습니다.");
+    } catch (error) {
+      console.error("TRANSFER EXECUTE ERROR", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "예약 이동 중 오류가 발생했습니다.",
+      );
+    } finally {
+      setLoadingTransfer(false);
+    }
+  }
   const selectedProduct = useMemo(() => {
     if (!selected) return null;
 
@@ -3344,6 +3462,16 @@ function ReservationsContent() {
              disabled:opacity-50"
                       >
                         {loadingTransfer ? "확인 중..." : "이동 대상 확인"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!targetTransferId || loadingTransfer}
+                        onClick={handleTransferExecute}
+                        className="rounded-lg bg-emerald-600 px-4 py-2
+    text-sm font-bold text-white
+    disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {loadingTransfer ? "처리 중..." : "✅ 예약 이동 확정"}
                       </button>
                     </div>
                   </div>
