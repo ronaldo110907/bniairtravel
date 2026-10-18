@@ -312,6 +312,113 @@ function ReservationsContent() {
   const [showPartnerSuggestions, setShowPartnerSuggestions] = useState(false);
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [transferDepartures, setTransferDepartures] = useState<Departure[]>([]);
+  const [targetTransferId, setTargetTransferId] = useState("");
+  const [loadingTransfer, setLoadingTransfer] = useState(false);
+
+  async function openTransfer() {
+    if (!selected) return;
+
+    const currentProduct = products.find((p) => p.title === selected.product);
+
+    if (!currentProduct) {
+      alert("등록된 상품 정보를 확인할 수 없습니다.");
+      return;
+    }
+
+    setLoadingTransfer(true);
+    setTargetTransferId("");
+
+    try {
+      const { data, error } = await supabase
+        .from("departures")
+        .select("id, product_id, departure_date, course, variant, price")
+        .eq("product_id", currentProduct.id)
+        .neq("id", selected.departure_id)
+        .order("departure_date");
+
+      if (error) throw error;
+
+      setTransferDepartures(data ?? []);
+      setShowTransfer(true);
+    } catch (error) {
+      console.error("TRANSFER DEPARTURES ERROR", error);
+      alert("이동할 출발일을 조회하지 못했습니다.");
+    } finally {
+      setLoadingTransfer(false);
+    }
+  }
+
+  async function handleTransferValidation() {
+    if (!selected || !targetTransferId || loadingTransfer) return;
+
+    setLoadingTransfer(true);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        alert("관리자 로그인을 다시 확인해주세요.");
+        return;
+      }
+
+      const response = await fetch("/api/admin/reservations/transfer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          reservationId: selected.id,
+          targetDepartureId: targetTransferId,
+          mode: "validate",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "예약 이동 사전 검증에 실패했습니다.");
+      }
+
+      const checks = result.checks;
+      const linked = result.linkedData;
+
+      alert(
+        [
+          "✅ 예약 이동 사전 검증 완료",
+          "",
+          `기존 출발일: ${result.current.departureDate}`,
+          `변경 출발일: ${result.target.departureDate}`,
+          "",
+          `이동 인원: ${checks.movingPeople}명 (인솔자 포함)`,
+          `현재 대상 모객: ${checks.existingPeople}명`,
+          `이동 후 모객: ${checks.projectedPeopleCount}명`,
+          `이동 후 잔여 좌석: ${checks.targetRemainingAfter ?? "미확인"}석`,
+          "",
+          `연결 객실: ${linked.linkedRoomCount}개`,
+          `공유 객실: ${checks.sharedRooms}개`,
+          "",
+          "※ 실제 예약은 이동하지 않았습니다.",
+        ].join("\n"),
+      );
+    } catch (error) {
+      console.error("TRANSFER VALIDATION ERROR", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "예약 이동 검증 중 오류가 발생했습니다.",
+      );
+    } finally {
+      setLoadingTransfer(false);
+    }
+  }
+
   const selectedProduct = useMemo(() => {
     if (!selected) return null;
 
@@ -3185,7 +3292,62 @@ function ReservationsContent() {
                 <h2 className="text-2xl font-black text-gray-900">
                   ✈ 예약 상세
                 </h2>
+                <button
+                  type="button"
+                  disabled={loadingTransfer || selected.status === "취소"}
+                  onClick={openTransfer}
+                  className="mt-3 rounded-lg bg-blue-600 px-4 py-2
+             text-sm font-bold text-white
+             disabled:opacity-50"
+                >
+                  {loadingTransfer ? "조회 중..." : "🔄 예약 이동"}
+                </button>
+                {showTransfer && (
+                  <div className="mt-4 rounded-xl border bg-blue-50 p-4">
+                    <p className="mb-2 text-sm font-bold text-gray-800">
+                      이동할 출발일 선택
+                    </p>
 
+                    <select
+                      value={targetTransferId}
+                      onChange={(e) => setTargetTransferId(e.target.value)}
+                      className="w-full rounded-lg border bg-white p-3 text-sm"
+                    >
+                      <option value="">출발일을 선택하세요</option>
+
+                      {transferDepartures.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.departure_date} / {d.course}
+                          {d.variant ? ` / ${d.variant}` : ""}
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowTransfer(false);
+                          setTargetTransferId("");
+                        }}
+                        className="rounded-lg border bg-white px-4 py-2 text-sm"
+                      >
+                        취소
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={!targetTransferId || loadingTransfer}
+                        onClick={handleTransferValidation}
+                        className="rounded-lg bg-blue-600 px-4 py-2
+             text-sm font-bold text-white
+             disabled:opacity-50"
+                      >
+                        {loadingTransfer ? "확인 중..." : "이동 대상 확인"}
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <p className="mt-1 text-sm text-gray-500">
                   접수일 {formatDateTime(selected.created_at)}
                 </p>
