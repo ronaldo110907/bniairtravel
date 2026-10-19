@@ -235,7 +235,7 @@ export default function XiamenProductContent() {
 
         <div className="mb-6 space-y-3">
           {/* 3박5일 */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {tabs3N5D.map((tab) => {
               const active = activeType === tab.id;
 
@@ -269,7 +269,7 @@ export default function XiamenProductContent() {
           </div>
 
           {/* 4박6일 */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             {tabs4N6D.map((tab) => {
               const active = activeType === tab.id;
 
@@ -457,10 +457,15 @@ export default function XiamenProductContent() {
                   activeMaps.length > 1 ? "md:grid-cols-2" : "grid-cols-1",
                 ].join(" ")}
               >
-                {activeMaps.map((map) => (
+                {activeMaps.map((map, index) => (
                   <div
                     key={map.src}
-                    className="overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-4 shadow-sm"
+                    className={[
+                      "overflow-hidden rounded-[30px] border border-[#ECE7DF] bg-white p-4 shadow-sm",
+                      activeMaps.length === 3 && index === 2
+                        ? "md:col-span-2"
+                        : "",
+                    ].join(" ")}
                   >
                     <button
                       type="button"
