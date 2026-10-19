@@ -47,7 +47,7 @@ export default async function PhuQuocPage() {
 
       {/* ==================== 수정씨 포스터 ==================== */}
 
-      <SectionReveal className="relative z-20 mx-auto -mt-16 max-w-3xl px-6">
+      {/* <SectionReveal className="relative z-20 mx-auto -mt-16 max-w-3xl px-6">
         <div className="overflow-hidden rounded-[36px] bg-white p-5 shadow-2xl">
           <img
             src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/phuquoc.png"
@@ -55,7 +55,7 @@ export default async function PhuQuocPage() {
             className="w-full rounded-2xl"
           />
         </div>
-      </SectionReveal>
+      </SectionReveal> */}
 
       {/* ==================== 동계 전세기 미운항 안내 ==================== */}
 
