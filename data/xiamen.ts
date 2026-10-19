@@ -55,7 +55,7 @@ export const productTabs = [
   },
   {
     id: "guanzhishan4" as const,
-    label: "관지산 4박6일",
+    label: "고품격관지산 4박6일",
     description: "노쇼핑 · 노팁 · 노옵션 프리미엄 관광",
   },
   {
@@ -1205,7 +1205,7 @@ export const itineraryGuanzhishan4N6D: ItineraryItem[] = attachXiamenImages([
 ▶ 케이블카
 ▶ 고적 유적지
 ▶ 수성암
-▶ 머탠령
+▶ 모천령
 ▶ 북문 하산
 
 중식 후 하문 이동 (약 3시간)
@@ -1219,7 +1219,7 @@ export const itineraryGuanzhishan4N6D: ItineraryItem[] = attachXiamenImages([
       "현수교",
       "케이블카",
       "수성암",
-      "머탠령",
+      "모천령",
     ],
     spotImages: [
       {

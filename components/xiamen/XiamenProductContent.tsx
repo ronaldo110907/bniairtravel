@@ -400,7 +400,30 @@ export default function XiamenProductContent() {
               },
             ],
 
+            guanzhishan4: [
+              {
+                src: `${baseUrl}/xiamenmap.png`,
+                alt: "하문 호텔 및 주요 관광지 위치 안내",
+              },
+              {
+                src: `${baseUrl}/xiamentorumap.png`,
+                alt: "남정토루 핵심 관광지 위치 안내",
+              },
+              {
+                src: `${baseUrl}/guanzhishanmap.png`,
+                alt: "관지산 및 석문호 관광 안내도",
+              },
+            ],
+
             wuyishan4: [
+              {
+                src: `${baseUrl}/xiamenmap.png`,
+                alt: "하문 호텔 및 주요 관광지 위치 안내",
+              },
+              {
+                src: `${baseUrl}/xiamentorumap.png`,
+                alt: "남정토루 핵심 관광지 위치 안내",
+              },
               {
                 src: `${baseUrl}/wuyishanmap.png`,
                 alt: "무이산 주요 관광지 위치 안내",
