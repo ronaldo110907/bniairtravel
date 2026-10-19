@@ -22,10 +22,10 @@ const destinations = [
   },
   {
     title: "푸꾸옥",
-    subtitle: "DISCOVER VIETNAM",
-    period: "2026.12.24 ~ 2027.02.18",
+    subtitle: "PHU QUOC · VIETNAM",
+    period: "2026~2027 동계 전세기 미운항",
     description:
-      "에메랄드빛 바다와 아름다운 석양을 품은 선셋 타운까지. 낭만이 가득한 곳으로 당신을 초대합니다.",
+      "2026년 12월부터 2027년 2월까지 예정되었던 청주공항 출발 푸꾸옥 전세기는 운항하지 않습니다. 관심과 성원을 보내주신 고객 여러분께 감사드립니다.",
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/phuquoc/phuquoc1.jpg",
     href: "/phuquoc",
@@ -135,7 +135,9 @@ export default function Discover() {
                 href={item.href}
                 className="mt-10 inline-flex rounded-full bg-black px-8 py-4 font-semibold text-white transition hover:bg-yellow-600"
               >
-                자세히 보기 →
+                {item.href === "/phuquoc"
+                  ? "운항 안내 확인 →"
+                  : "자세히 보기 →"}
               </a>
             </motion.div>
           </div>

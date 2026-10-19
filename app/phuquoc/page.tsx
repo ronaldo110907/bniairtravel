@@ -57,48 +57,29 @@ export default async function PhuQuocPage() {
         </div>
       </SectionReveal>
 
-      {/* ==================== 예약 BAR ==================== */}
+      {/* ==================== 동계 전세기 미운항 안내 ==================== */}
 
-      <div className="mt-10">
-        <StickyBookingBar
-          product={product?.title}
-          departure={product?.departure_airport}
-          price="출발일 확인"
-        />
-      </div>
-
-      {/* ==================== 출발일 ==================== */}
-
-      <section
-        id="departure-calendar"
-        className="mx-auto max-w-7xl scroll-mt-28 px-4 py-24"
-      >
-        <ItineraryEmailButton product="phuquoc" />
-        <SectionReveal>
-          <SectionTitle
-            eyebrow="DEPARTURE DATE"
-            title="출발일 선택"
-            description="원하는 출발일을 선택하여 가격과 잔여석을 확인하세요."
-          />
-
-          {product?.id && (
-            <DepartureCalendar
-              productId={product.id}
-              productName={product.title}
-            />
-          )}
-
-          <p className="mt-3 text-center text-sm font-bold text-red-600">
-            ⚠️ 특가상품은 기본 일정과 차이가 있으니 꼭 확인해주세요!
+      <section className="mx-auto mt-12 max-w-5xl px-6">
+        <div className="rounded-[28px] border border-amber-300 bg-amber-50 px-6 py-12 text-center shadow-sm">
+          <p className="text-sm font-bold tracking-widest text-amber-700">
+            FLIGHT OPERATION NOTICE
           </p>
-        </SectionReveal>
+
+          <h2 className="mt-5 text-2xl font-black text-gray-900 md:text-4xl">
+            2026~2027 동계 푸꾸옥 전세기 미운항 안내
+          </h2>
+
+          <p className="mt-6 leading-8 text-gray-700">
+            2026년 12월부터 2027년 2월까지 예정되었던
+            <br className="hidden sm:block" />
+            청주공항 출발 푸꾸옥 전세기는 운항하지 않습니다.
+          </p>
+
+          <p className="mt-5 text-sm text-gray-500">
+            관심과 성원을 보내주신 고객 여러분께 감사드립니다.
+          </p>
+        </div>
       </section>
-
-      {/* ==================== 상품 가격 ==================== */}
-
-      <SectionReveal>
-        <PriceCard product={product} />
-      </SectionReveal>
 
       {/* ==================== 푸꾸옥 관광지 지도 ==================== */}
 
@@ -156,7 +137,7 @@ export default async function PhuQuocPage() {
 
       {/* ==================== 모바일 예약 ==================== */}
 
-      <MobileBookingButton product={product?.title ?? "푸꾸옥"} />
+      {/* <MobileBookingButton product={product?.title ?? "푸꾸옥"} /> */}
     </main>
   );
 }
