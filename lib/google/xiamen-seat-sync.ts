@@ -47,6 +47,7 @@ const XIAMEN_VARIANTS = [
   "하문실속",
   "하문고품격",
   "하문골프54H",
+  "고품격관지산",
   "고품격무이산",
   "하문골프72H",
 ] as const;
@@ -215,9 +216,9 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
   // --------------------------------
 
   const threeNightSeats: number[] = [];
-  const threeNightValue: number[] = [];
   const threeNightPremium: number[] = [];
   const threeNightGolf: number[] = [];
+  const threeNightLegacyValue: number[] = [];
 
   for (const date of THURSDAY_DATES) {
     const valueDeparture = getDeparture(departures, date, "하문실속");
@@ -225,10 +226,6 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
     const premiumDeparture = getDeparture(departures, date, "하문고품격");
 
     const golfDeparture = getDeparture(departures, date, "하문골프54H");
-
-    if (!valueDeparture) {
-      throw new Error(`${date} 하문실속 출발일이 없습니다.`);
-    }
 
     if (!premiumDeparture) {
       throw new Error(`${date} 하문고품격 출발일이 없습니다.`);
@@ -240,8 +237,10 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
 
     threeNightSeats.push(getSharedSeat(departures, date));
 
-    threeNightValue.push(
-      getVariantReservationCount(valueDeparture, reservations),
+    threeNightLegacyValue.push(
+      valueDeparture
+        ? getVariantReservationCount(valueDeparture, reservations)
+        : 0,
     );
 
     threeNightPremium.push(
@@ -258,19 +257,19 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
   // --------------------------------
 
   const fourNightSeats: number[] = [];
-  const fourNightValue: number[] = [];
+  const fourNightGuanzhishan: number[] = [];
   const fourNightMuisan: number[] = [];
   const fourNightGolf: number[] = [];
 
   for (const date of SUNDAY_DATES) {
-    const valueDeparture = getDeparture(departures, date, "하문실속");
+    const guanzhishanDeparture = getDeparture(departures, date, "고품격관지산");
 
     const muisanDeparture = getDeparture(departures, date, "고품격무이산");
 
     const golfDeparture = getDeparture(departures, date, "하문골프72H");
 
-    if (!valueDeparture) {
-      throw new Error(`${date} 하문실속 출발일이 없습니다.`);
+    if (!guanzhishanDeparture) {
+      throw new Error(`${date} 고품격관지산 출발일이 없습니다.`);
     }
 
     if (!muisanDeparture) {
@@ -283,8 +282,8 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
 
     fourNightSeats.push(getSharedSeat(departures, date));
 
-    fourNightValue.push(
-      getVariantReservationCount(valueDeparture, reservations),
+    fourNightGuanzhishan.push(
+      getVariantReservationCount(guanzhishanDeparture, reservations),
     );
 
     fourNightMuisan.push(
@@ -315,15 +314,15 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
         // 3박5일 상품별 모객
         {
           range: `${SHEET_NAME}!C10:S10`,
-          values: [threeNightValue],
-        },
-        {
-          range: `${SHEET_NAME}!C11:S11`,
           values: [threeNightPremium],
         },
         {
-          range: `${SHEET_NAME}!C12:S12`,
+          range: `${SHEET_NAME}!C11:S11`,
           values: [threeNightGolf],
+        },
+        {
+          range: `${SHEET_NAME}!C12:S12`,
+          values: [Array(THURSDAY_DATES.length).fill("")],
         },
 
         // 4박6일 보유좌석
@@ -335,7 +334,7 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
         // 4박6일 상품별 모객
         {
           range: `${SHEET_NAME}!C20:R20`,
-          values: [fourNightValue],
+          values: [fourNightGuanzhishan],
         },
         {
           range: `${SHEET_NAME}!C21:R21`,
@@ -354,12 +353,12 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
   // --------------------------------
 
   const threeNightBooked =
-    threeNightValue.reduce((sum, count) => sum + count, 0) +
+    threeNightLegacyValue.reduce((sum, count) => sum + count, 0) +
     threeNightPremium.reduce((sum, count) => sum + count, 0) +
     threeNightGolf.reduce((sum, count) => sum + count, 0);
 
   const fourNightBooked =
-    fourNightValue.reduce((sum, count) => sum + count, 0) +
+    fourNightGuanzhishan.reduce((sum, count) => sum + count, 0) +
     fourNightMuisan.reduce((sum, count) => sum + count, 0) +
     fourNightGolf.reduce((sum, count) => sum + count, 0);
 
