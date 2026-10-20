@@ -329,90 +329,114 @@ export default function XiamenNameTagButton() {
 
         document.body.appendChild(printPage);
 
-        for (let index = 0; index < 10; index++) {
-          const person = pagePeople[index];
+        try {
+          for (let index = 0; index < ITEMS_PER_PAGE; index++) {
+            const person = pagePeople[index];
 
-          const row = Math.floor(index / 2);
-          const column = index % 2;
+            const row = Math.floor(index / 2);
+            const column = index % 2;
 
-          const label = document.createElement("div");
+            const label = document.createElement("div");
 
-          label.style.position = "absolute";
-          label.style.width = "88.9mm";
-          label.style.height = "52mm";
+            label.style.position = "absolute";
+            label.style.width = "88.9mm";
+            label.style.height = "52mm";
+            label.style.left = column === 0 ? "12mm" : "109.1mm";
+            label.style.top = `${18.5 + row * 52}mm`;
 
-          label.style.left = column === 0 ? "12mm" : "109.1mm";
+            label.style.display = "flex";
+            label.style.flexDirection = "column";
+            label.style.alignItems = "center";
+            label.style.justifyContent = "center";
 
-          label.style.top = `${18.5 + row * 52}mm`;
+            label.style.boxSizing = "border-box";
+            label.style.overflow = "hidden";
+            label.style.whiteSpace = "nowrap";
+            label.style.padding = "0 8px";
 
-          label.style.display = "flex";
-          label.style.flexDirection = "column";
-          label.style.alignItems = "center";
-          label.style.justifyContent = "center";
+            if (person) {
+              const koreanName = document.createElement("div");
 
-          label.style.boxSizing = "border-box";
-          label.style.overflow = "hidden";
-          label.style.whiteSpace = "nowrap";
+              koreanName.textContent = person.name;
+              koreanName.style.fontWeight = "900";
+              koreanName.style.lineHeight = "1.1";
+              koreanName.style.textAlign = "center";
+              koreanName.style.color = "#111827";
+              koreanName.style.maxWidth = "100%";
 
-          if (person) {
-            const koreanName = document.createElement("div");
+              const koreanLength = person.name.replace(/\s/g, "").length;
 
-            koreanName.textContent = person.name;
-            koreanName.style.fontWeight = "800";
-            koreanName.style.lineHeight = "1.15";
-            koreanName.style.textAlign = "center";
+              if (koreanLength >= 8) {
+                koreanName.style.fontSize = "30px";
+              } else if (koreanLength >= 6) {
+                koreanName.style.fontSize = "38px";
+              } else if (koreanLength >= 5) {
+                koreanName.style.fontSize = "44px";
+              } else {
+                koreanName.style.fontSize = "52px";
+              }
 
-            if (person.name.length >= 8) {
-              koreanName.style.fontSize = "26px";
-            } else if (person.name.length >= 6) {
-              koreanName.style.fontSize = "30px";
-            } else {
-              koreanName.style.fontSize = "38px";
+              const englishName = formatEnglishName(person);
+
+              const english = document.createElement("div");
+
+              english.textContent = englishName || "영문명 미등록";
+
+              english.style.marginTop = "12px";
+              english.style.fontWeight = "700";
+              english.style.lineHeight = "1.1";
+              english.style.textAlign = "center";
+              english.style.letterSpacing = "0.5px";
+              english.style.color = "#1D4ED8";
+              english.style.maxWidth = "100%";
+
+              const englishLength = englishName.replace(/\s/g, "").length;
+
+              if (englishLength >= 20) {
+                english.style.fontSize = "16px";
+              } else if (englishLength >= 16) {
+                english.style.fontSize = "18px";
+              } else if (englishLength >= 12) {
+                english.style.fontSize = "21px";
+              } else {
+                english.style.fontSize = "24px";
+              }
+
+              const phone = document.createElement("div");
+
+              phone.textContent = "HP:+82-10";
+              phone.style.marginTop = "14px";
+              phone.style.fontSize = "16px";
+              phone.style.fontWeight = "700";
+              phone.style.lineHeight = "1.1";
+              phone.style.color = "#4B5563";
+              phone.style.whiteSpace = "nowrap";
+              phone.style.alignSelf = "stretch";
+              phone.style.textAlign = "left";
+              phone.style.paddingLeft = "18px";
+              phone.style.transform = "none";
+
+              label.appendChild(koreanName);
+              label.appendChild(english);
+              label.appendChild(phone);
             }
 
-            const englishName = formatEnglishName(person);
-
-            const english = document.createElement("div");
-
-            english.textContent = englishName || "영문명 미등록";
-
-            english.style.marginTop = "8px";
-            english.style.fontWeight = "700";
-            english.style.lineHeight = "1.1";
-            english.style.textAlign = "center";
-            english.style.letterSpacing = "0.5px";
-
-            const englishLength = englishName.replace(/\s/g, "").length;
-
-            if (englishLength >= 20) {
-              english.style.fontSize = "16px";
-            } else if (englishLength >= 16) {
-              english.style.fontSize = "18px";
-            } else if (englishLength >= 12) {
-              english.style.fontSize = "21px";
-            } else {
-              english.style.fontSize = "24px";
-            }
-
-            label.appendChild(koreanName);
-            label.appendChild(english);
+            printPage.appendChild(label);
           }
 
-          printPage.appendChild(label);
+          const canvas = await html2canvas(printPage, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            useCORS: true,
+            logging: false,
+          });
+
+          const imageData = canvas.toDataURL("image/jpeg", 0.98);
+
+          pdf.addImage(imageData, "JPEG", 0, 0, 210, 297, undefined, "FAST");
+        } finally {
+          document.body.removeChild(printPage);
         }
-
-        const canvas = await html2canvas(printPage, {
-          scale: 2,
-          backgroundColor: "#ffffff",
-          useCORS: true,
-          logging: false,
-        });
-
-        const imageData = canvas.toDataURL("image/jpeg", 0.98);
-
-        pdf.addImage(imageData, "JPEG", 0, 0, 210, 297, undefined, "FAST");
-
-        document.body.removeChild(printPage);
       }
 
       const safeProductName = makeSafeFileName(selectedGroup.product);
@@ -423,7 +447,6 @@ export default function XiamenNameTagButton() {
       pdf.save(fileName);
     } catch (error) {
       console.error("NAMETAG PDF ERROR", error);
-
       alert("네임택 PDF 생성 중 오류가 발생했습니다.");
     } finally {
       setPdfGenerating(false);
@@ -453,69 +476,138 @@ export default function XiamenNameTagButton() {
 
       const sheetData: string[][] = [];
 
+      // 네임택 1칸당 한글 / 영문 / 휴대폰 3줄
       for (let row = 0; row < 5; row++) {
         const leftPerson = pagePeople[row * 2];
         const rightPerson = pagePeople[row * 2 + 1];
 
-        const leftText = leftPerson
-          ? `${leftPerson.name}\n${formatEnglishName(leftPerson)}`
-          : "";
+        sheetData.push([leftPerson?.name ?? "", "", rightPerson?.name ?? ""]);
 
-        const rightText = rightPerson
-          ? `${rightPerson.name}\n${formatEnglishName(rightPerson)}`
-          : "";
+        sheetData.push([
+          leftPerson ? formatEnglishName(leftPerson) : "",
+          "",
+          rightPerson ? formatEnglishName(rightPerson) : "",
+        ]);
 
-        sheetData.push([leftText, "", rightText]);
+        sheetData.push([
+          leftPerson ? "HP:+82-10" : "",
+          "",
+          rightPerson ? "HP:+82-10" : "",
+        ]);
       }
 
       const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
 
-      // V3250 : 좌측 라벨 / 중앙 간격 / 우측 라벨
+      // 기존 2열 네임택 구조 유지
       worksheet["!cols"] = [{ wch: 47 }, { wch: 4.5 }, { wch: 47 }];
 
-      // 52mm ≒ 147.4pt
-      worksheet["!rows"] = Array.from({ length: 5 }, () => ({
-        hpt: 147.4,
-      }));
+      // 3줄 높이 합계 147.4pt = 약 52mm
+      worksheet["!rows"] = Array.from({ length: 15 }, (_, index) => {
+        const position = index % 3;
+
+        if (position === 0) return { hpt: 60 };
+        if (position === 1) return { hpt: 50 };
+
+        return { hpt: 37.4 };
+      });
 
       for (let row = 0; row < 5; row++) {
         for (const col of [0, 2]) {
-          const address = XLSX.utils.encode_cell({
-            r: row,
+          const person = pagePeople[row * 2 + (col === 0 ? 0 : 1)];
+
+          if (!person) continue;
+
+          const koreanRow = row * 3;
+          const englishRow = koreanRow + 1;
+          const phoneRow = koreanRow + 2;
+
+          const koreanAddress = XLSX.utils.encode_cell({
+            r: koreanRow,
             c: col,
           });
 
-          if (!worksheet[address]) continue;
+          const englishAddress = XLSX.utils.encode_cell({
+            r: englishRow,
+            c: col,
+          });
 
-          const value = String(worksheet[address].v || "");
+          const phoneAddress = XLSX.utils.encode_cell({
+            r: phoneRow,
+            c: col,
+          });
 
-          const englishName = value.split("\n")[1] || "";
+          const koreanLength = person.name.replace(/\s/g, "").length;
+          const englishName = formatEnglishName(person);
+          const englishLength = englishName.replace(/\s/g, "").length;
 
-          let fontSize = 22;
+          let koreanFontSize = 39;
 
-          if (englishName.length >= 20) {
-            fontSize = 14;
-          } else if (englishName.length >= 16) {
-            fontSize = 16;
-          } else if (englishName.length >= 12) {
-            fontSize = 18;
+          if (koreanLength >= 8) {
+            koreanFontSize = 22;
+          } else if (koreanLength >= 6) {
+            koreanFontSize = 28;
+          } else if (koreanLength >= 5) {
+            koreanFontSize = 33;
           }
 
-          worksheet[address].s = {
+          let englishFontSize = 18;
+
+          if (englishLength >= 20) {
+            englishFontSize = 12;
+          } else if (englishLength >= 16) {
+            englishFontSize = 14;
+          } else if (englishLength >= 12) {
+            englishFontSize = 16;
+          }
+
+          // 한글 이름
+          worksheet[koreanAddress].s = {
             font: {
               name: "맑은 고딕",
-              sz: fontSize,
+              sz: koreanFontSize,
               bold: true,
+              color: { rgb: "111827" },
+            },
+            alignment: {
+              horizontal: "center",
+              vertical: "bottom",
+              shrinkToFit: true,
+            },
+          };
+
+          // 영문 이름
+          worksheet[englishAddress].s = {
+            font: {
+              name: "맑은 고딕",
+              sz: englishFontSize,
+              bold: true,
+              color: { rgb: "1D4ED8" },
             },
             alignment: {
               horizontal: "center",
               vertical: "center",
-              wrapText: true,
+              shrinkToFit: true,
+            },
+          };
+
+          // 휴대폰 표시
+          worksheet[phoneAddress].s = {
+            font: {
+              name: "맑은 고딕",
+              sz: 12,
+              bold: true,
+              color: { rgb: "4B5563" },
+            },
+            alignment: {
+              horizontal: "left",
+              vertical: "top",
+              indent: 2,
             },
           };
         }
       }
 
+      // A4 기존 여백 유지
       worksheet["!margins"] = {
         left: 12 / 25.4,
         right: 12 / 25.4,
@@ -533,7 +625,7 @@ export default function XiamenNameTagButton() {
         fitToHeight: 0,
       };
 
-      worksheet["!printArea"] = "A1:C5";
+      worksheet["!printArea"] = "A1:C15";
 
       XLSX.utils.book_append_sheet(
         workbook,
@@ -694,7 +786,7 @@ export default function XiamenNameTagButton() {
                             >
                               {person ? (
                                 <div className="min-w-0">
-                                  <div className="truncate text-2xl font-black text-gray-900">
+                                  <div className="max-w-full truncate text-[52px] font-black leading-tight text-gray-900">
                                     {person.name}
                                   </div>
 
@@ -707,13 +799,14 @@ export default function XiamenNameTagButton() {
                                       <>
                                         <div
                                           className={`
-          mt-1 truncate font-bold tracking-wide text-gray-600
-          ${nameStyle.className}
-        `}
+  mt-1 truncate font-bold tracking-wide text-[24px] text-blue-700
+`}
                                         >
                                           {englishName || "영문명 미등록"}
                                         </div>
-
+                                        <div className="mt-2 -translate-x-18 text-[18px] font-bold tracking-wide text-gray-600">
+                                          HP:+82-10
+                                        </div>
                                         {englishName && nameStyle.warning && (
                                           <div className="mt-1 text-[10px] font-semibold text-amber-500">
                                             ⚠ 긴 영문명 · 자동 축소
