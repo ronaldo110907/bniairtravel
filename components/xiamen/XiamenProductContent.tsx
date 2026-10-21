@@ -358,6 +358,49 @@ export default function XiamenProductContent() {
           </div>
         )}
 
+        {/* ==================== 관지산 홍보영상 ==================== */}
+
+        {activeType === "guanzhishan4" && (
+          <div className="mx-auto mb-16 max-w-5xl">
+            <div className="mb-8 text-center">
+              <p className="text-sm font-bold tracking-[0.3em] text-[#B88A44]">
+                GUANZHISHAN TRAVEL FILM
+              </p>
+
+              <h3 className="mt-3 text-3xl font-bold text-[#1f1f1f] md:text-4xl">
+                🎬 60초로 미리 만나는 관지산
+              </h3>
+
+              <p className="mt-4 text-sm leading-7 text-gray-500 md:text-base">
+                아직은 낯선 여행지, 관지산의 아름다운 풍경을
+                <br className="hidden md:block" />
+                60초 영상으로 먼저 만나보세요.
+              </p>
+            </div>
+
+            <div className="overflow-hidden rounded-[30px] border border-[#E8DCC4] bg-white p-3 shadow-xl md:p-5">
+              <video
+                controls
+                controlsList="nodownload noremoteplayback"
+                disablePictureInPicture
+                playsInline
+                preload="metadata"
+                className="aspect-video w-full rounded-2xl bg-black object-contain"
+              >
+                <source
+                  src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/movie/guanzhishan60.mp4"
+                  type="video/mp4"
+                />
+                사용 중인 브라우저에서 영상을 재생할 수 없습니다.
+              </video>
+            </div>
+
+            <p className="mt-4 text-center text-xs text-gray-400">
+              ※ 영상은 관광지 이해를 돕기 위한 참고 자료입니다.
+            </p>
+          </div>
+        )}
+
         {/* ==================== 관광 지도 ==================== */}
 
         {(() => {
