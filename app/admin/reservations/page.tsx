@@ -205,8 +205,8 @@ function formatPhoneNumber(phone?: string | null) {
 
 function getRosterProgress(reservation: Reservation) {
   const expectedCount = Math.max(
-    1,
-    Number((reservation as any).people_count) || 1,
+    0,
+    Number((reservation as any).people_count) || 0,
   );
 
   const people = reservation.people ?? reservation.reservation_people ?? [];
@@ -229,7 +229,7 @@ function getRosterProgress(reservation: Reservation) {
     expectedCount,
     completedCount,
     missingCount,
-    isComplete: missingCount === 0,
+    isComplete: expectedCount > 0 && missingCount === 0,
   };
 }
 
@@ -699,7 +699,34 @@ function ReservationsContent() {
     alert("예약자가 추가되었습니다.");
 
     setShowPersonForm(false);
+    // 실제 고객 인원 다시 계산
+    const { count, error: countError } = await supabase
+      .from("reservation_people")
+      .select("id", { count: "exact", head: true })
+      .eq("reservation_id", selected.id)
+      .eq("is_guide", false);
+
+    if (countError || count === null) {
+      console.error("PERSON COUNT ERROR", countError);
+      alert("예약자는 추가됐지만 인원 동기화에 실패했습니다.");
+      return;
+    }
+
+    // 예약 기본 인원 동기화
+    const { error: syncError } = await supabase
+      .from("reservations")
+      .update({ people_count: count })
+      .eq("id", selected.id);
+
+    if (syncError) {
+      console.error("PEOPLE COUNT SYNC ERROR", syncError);
+      alert("예약자는 추가됐지만 총인원 동기화에 실패했습니다.");
+      return;
+    }
+
+    // 예약 상세와 메인 목록 갱신
     await loadPeople(selected.id);
+    await loadReservations();
     setPersonDraft({
       name: "",
 
@@ -760,7 +787,36 @@ function ReservationsContent() {
       return;
     }
 
+    // 실제 예약자 명단에서 고객 인원 확인
+    const { count, error: countError } = await supabase
+      .from("reservation_people")
+      .select("id", { count: "exact", head: true })
+      .eq("reservation_id", selected.id)
+      .eq("is_guide", false);
+
+    if (countError || count === null) {
+      console.error("PERSON COUNT ERROR", countError);
+      alert("예약자는 추가됐지만 인원 동기화에 실패했습니다.");
+      await loadPeople(selected.id);
+      return;
+    }
+
+    // 예약 기본 인원 자동 동기화
+    const { error: syncError } = await supabase
+      .from("reservations")
+      .update({ people_count: count })
+      .eq("id", selected.id);
+
+    if (syncError) {
+      console.error("PEOPLE COUNT SYNC ERROR", syncError);
+      alert("예약자는 추가됐지만 총인원 저장에 실패했습니다.");
+      await loadPeople(selected.id);
+      return;
+    }
+
+    // 상세 및 메인 목록 새로고침
     await loadPeople(selected.id);
+    await loadReservations();
 
     setShowBulkPersonForm(false);
     setBulkPersonCount("");
@@ -808,7 +864,36 @@ function ReservationsContent() {
     }
 
     if (selected) {
+      // 실제 고객 인원 다시 계산
+      const { count, error: countError } = await supabase
+        .from("reservation_people")
+        .select("id", { count: "exact", head: true })
+        .eq("reservation_id", selected.id)
+        .eq("is_guide", false);
+
+      if (countError || count === null) {
+        console.error("DELETE PERSON COUNT ERROR", countError);
+        alert("예약자는 삭제됐지만 인원 확인에 실패했습니다.");
+        await loadPeople(selected.id);
+        return;
+      }
+
+      // 예약 기본 인원 동기화
+      const { error: syncError } = await supabase
+        .from("reservations")
+        .update({ people_count: count })
+        .eq("id", selected.id);
+
+      if (syncError) {
+        console.error("DELETE PEOPLE COUNT SYNC ERROR", syncError);
+        alert("예약자는 삭제됐지만 총인원 동기화에 실패했습니다.");
+        await loadPeople(selected.id);
+        return;
+      }
+
+      // 예약 상세와 메인 목록 갱신
       await loadPeople(selected.id);
+      await loadReservations();
     }
   }
   async function updatePerson() {
