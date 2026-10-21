@@ -298,7 +298,21 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
   // --------------------------------
 
   const { sheets, spreadsheetId } = getGoogleSheetsClient();
+  // 좌석현황 시트의 실제 sheetId 조회
+  const spreadsheetInfo = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets(properties(sheetId,title))",
+  });
 
+  const targetSheet = spreadsheetInfo.data.sheets?.find(
+    (sheet) => sheet.properties?.title === SHEET_NAME,
+  );
+
+  const sheetId = targetSheet?.properties?.sheetId;
+
+  if (sheetId === undefined || sheetId === null) {
+    throw new Error("구글시트 좌석현황 탭을 찾을 수 없습니다.");
+  }
   await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId,
     requestBody: {
@@ -347,7 +361,112 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
       ],
     },
   });
+  // --------------------------------
+  // 5-1. 잔여석 자동 마감 표시 및 색상
+  // --------------------------------
 
+  const soldOutRanges = [
+    { startRowIndex: 8, endRowIndex: 9, endColumnIndex: 19 }, // C9:S9
+    { startRowIndex: 18, endRowIndex: 19, endColumnIndex: 18 }, // C19:R19
+  ];
+
+  // 기존 조건부 서식 조회
+  const formatInfo = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets(properties(sheetId),conditionalFormats)",
+  });
+
+  const existingRules =
+    formatInfo.data.sheets?.find(
+      (sheet) => sheet.properties?.sheetId === sheetId,
+    )?.conditionalFormats ?? [];
+
+  const formatRequests = soldOutRanges.flatMap((range) => {
+    const gridRange = {
+      sheetId,
+      startRowIndex: range.startRowIndex,
+      endRowIndex: range.endRowIndex,
+      startColumnIndex: 2,
+      endColumnIndex: range.endColumnIndex,
+    };
+
+    const firstCell = range.startRowIndex === 8 ? "C9" : "C19";
+
+    const formula = `=AND(ISNUMBER(${firstCell}),${firstCell}=0)`;
+
+    // 이미 같은 범위에 마감 규칙이 있는지 확인
+    const ruleExists = existingRules.some(
+      (rule) =>
+        rule.booleanRule?.condition?.type === "CUSTOM_FORMULA" &&
+        rule.booleanRule.condition.values?.[0]?.userEnteredValue === formula &&
+        rule.ranges?.some(
+          (r) =>
+            r.sheetId === sheetId &&
+            r.startRowIndex === gridRange.startRowIndex &&
+            r.endRowIndex === gridRange.endRowIndex &&
+            r.startColumnIndex === gridRange.startColumnIndex &&
+            r.endColumnIndex === gridRange.endColumnIndex,
+        ),
+    );
+
+    const requests: any[] = [
+      {
+        repeatCell: {
+          range: gridRange,
+          cell: {
+            userEnteredFormat: {
+              numberFormat: {
+                type: "NUMBER",
+                pattern: '0;-0;"마감"',
+              },
+            },
+          },
+          fields: "userEnteredFormat.numberFormat",
+        },
+      },
+    ];
+
+    // 기존 규칙이 없을 때만 새로 생성
+    if (!ruleExists) {
+      requests.push({
+        addConditionalFormatRule: {
+          rule: {
+            ranges: [gridRange],
+            booleanRule: {
+              condition: {
+                type: "CUSTOM_FORMULA",
+                values: [{ userEnteredValue: formula }],
+              },
+              format: {
+                backgroundColor: {
+                  red: 0.85,
+                  green: 0.1,
+                  blue: 0.1,
+                },
+                textFormat: {
+                  foregroundColor: {
+                    red: 1,
+                    green: 1,
+                    blue: 1,
+                  },
+                },
+              },
+            },
+          },
+          index: 0,
+        },
+      });
+    }
+
+    return requests;
+  });
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: formatRequests,
+    },
+  });
   // --------------------------------
   // 6. 결과 요약
   // --------------------------------
