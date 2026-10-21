@@ -148,7 +148,7 @@ export default function InvoiceModal({
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
-    documentTitle: `BNI_Invoice_${reservation?.name ?? ""}`,
+    documentTitle: `${(reservation?.departure_date ?? "").replaceAll("-", "").slice(2)}_BNI_Invoice_${reservation?.name ?? ""}_${invoiceType === "deposit" ? "계약금" : invoiceType === "interim" ? "중도금" : "잔금"}`,
     pageStyle: `
   @page {
     size: A4 portrait;
