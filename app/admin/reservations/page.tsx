@@ -8,6 +8,7 @@ import PersonForm from "@/components/PersonForm";
 import { Fragment } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import InvoiceModal from "@/components/InvoiceModal";
+import ReservationConfirmationDownload from "@/components/admin/ReservationConfirmationDownload";
 import TravelContractModal from "@/components/contract/TravelContractModal";
 
 type ReservationPeople = {
@@ -3865,6 +3866,9 @@ function ReservationsContent() {
                           <div>
                             <div className="font-semibold text-gray-800">
                               📋 일정표(확정서)
+                            </div>
+                            <div className="mt-2">
+                              <ReservationConfirmationDownload key={selected.id + selected.departure_id} reservation={selected} />
                             </div>
 
                             <div className="mt-1 text-xs text-gray-500">
