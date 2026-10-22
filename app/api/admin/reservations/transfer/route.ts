@@ -1,28 +1,9 @@
+import { getAdminUser } from "@/lib/auth/server";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 
-async function checkAdmin(request: NextRequest) {
-  const adminCookie = request.cookies.get("admin_user")?.value;
-
-  if (adminCookie !== "true") return null;
-
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader?.startsWith("Bearer ")) return null;
-
-  const token = authHeader.slice(7);
-
-  const {
-    data: { user },
-    error,
-  } = await supabaseAdmin.auth.getUser(token);
-
-  if (error || !user) return null;
-
-  return user;
-}
 
 function failure(error: string, status: number) {
   return NextResponse.json({ success: false, error }, { status });
@@ -30,7 +11,7 @@ function failure(error: string, status: number) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await checkAdmin(request);
+    const user = await getAdminUser(request);
 
     if (!user) {
       return failure("관리자 인증이 필요합니다.", 401);

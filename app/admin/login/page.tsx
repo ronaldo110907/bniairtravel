@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { assertAdminSession } from "@/lib/auth/client";
 
 export default function LoginPage() {
-  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,8 +32,14 @@ export default function LoginPage() {
       return;
     }
 
-    document.cookie = "admin_user=true; path=/";
-    document.cookie = `admin_email=${encodeURIComponent(loginEmail)}; path=/`;
+    try {
+      await assertAdminSession();
+    } catch {
+      await supabase.auth.signOut();
+      setLoading(false);
+      alert("관리자 권한이 있는 계정으로 로그인해주세요.");
+      return;
+    }
 
     setLoading(false);
     setPreparing(true);

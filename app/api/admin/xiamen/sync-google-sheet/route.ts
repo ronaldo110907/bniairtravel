@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getAdminUser, unauthorized } from "@/lib/auth/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { syncXiamenSeats } from "../../../../../lib/google/xiamen-seat-sync";
@@ -7,21 +7,9 @@ import { syncXiamenSeats } from "../../../../../lib/google/xiamen-seat-sync";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    // 관리자 로그인 확인
-    const cookieStore = await cookies();
-    const adminUser = cookieStore.get("admin_user")?.value;
-
-    if (!adminUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "관리자 로그인이 필요합니다.",
-        },
-        { status: 401 },
-      );
-    }
+    if (!await getAdminUser(request)) return unauthorized();
 
     // Supabase 서버 환경변수
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

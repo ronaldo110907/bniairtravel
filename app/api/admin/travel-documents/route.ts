@@ -1,3 +1,4 @@
+import { getAdminUser } from "@/lib/auth/server";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -5,34 +6,6 @@ export const runtime = "nodejs";
 
 type DocumentType = "entry" | "qcode";
 
-async function checkAdmin(request: NextRequest) {
-  // 기존 관리자 쿠키 확인
-  const adminCookie = request.cookies.get("admin_user")?.value;
-
-  if (adminCookie !== "true") {
-    return null;
-  }
-
-  // 실제 Supabase 로그인 토큰 확인
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader?.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.slice(7);
-
-  const {
-    data: { user },
-    error,
-  } = await supabaseAdmin.auth.getUser(token);
-
-  if (error || !user) {
-    return null;
-  }
-
-  return user;
-}
 
 function getDocumentConfig(type: DocumentType) {
   if (type === "entry") {
@@ -79,7 +52,7 @@ function isAllowedFile(file: File) {
 ========================================================= */
 export async function POST(request: NextRequest) {
   try {
-    const user = await checkAdmin(request);
+    const user = await getAdminUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -243,7 +216,7 @@ export async function POST(request: NextRequest) {
 ========================================================= */
 export async function GET(request: NextRequest) {
   try {
-    const user = await checkAdmin(request);
+    const user = await getAdminUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -330,7 +303,7 @@ export async function GET(request: NextRequest) {
 ========================================================= */
 export async function DELETE(request: NextRequest) {
   try {
-    const user = await checkAdmin(request);
+    const user = await getAdminUser(request);
 
     if (!user) {
       return NextResponse.json(

@@ -1,3 +1,4 @@
+import { getAdminUser, unauthorized } from "@/lib/auth/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import ExcelJS from "exceljs";
@@ -13,6 +14,7 @@ const supabase = createClient(
 
 export async function GET(request: Request) {
   try {
+    if (!await getAdminUser(request)) return unauthorized();
     const { searchParams } = new URL(request.url);
     const departureId = searchParams.get("id");
     const reservationIds =
@@ -593,6 +595,7 @@ export async function GET(request: Request) {
 
     return new NextResponse(buffer, {
       headers: {
+        "Cache-Control": "private, no-store",
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(

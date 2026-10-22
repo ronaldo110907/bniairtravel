@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { assertAdminSession } from "@/lib/auth/client";
 import { supabase } from "@/lib/supabase";
 import { confirmationProducts } from "@/lib/confirmation/products";
 import { countPeople, matchProduct, courseDuration, summarizeRooms, safeFilename, type Departure, type Reservation, type Room, type RoomMember } from "@/lib/confirmation/model";
@@ -63,6 +64,7 @@ export default function ConfirmationDownloadButton({ departure, reservation }: P
     if (roomError && !actualRooms.trim()) { setError("객실 정보를 직접 입력해주세요. 미정인 경우 ‘미정’으로 입력할 수 있습니다."); return; }
     setBusy(true);
     try {
+      await assertAdminSession();
       const { generateHwpx } = await import("@/lib/confirmation/generateHwpx");
       const { bytes } = await generateHwpx({ product, departureDate: departure.departure_date, ...fields, people: actualPax, rooms: actualRooms });
       const blob = new Blob([new Uint8Array(bytes)], { type: "application/hwp+zip" });

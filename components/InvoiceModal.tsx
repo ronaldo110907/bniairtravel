@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import CancellationSection from "@/components/sections/CancellationSection";
+import { assertAdminSession } from "@/lib/auth/client";
 import { supabase } from "@/lib/supabase";
 
 type ReservationPeople = {
@@ -148,6 +149,7 @@ export default function InvoiceModal({
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
+    onBeforePrint: assertAdminSession,
     documentTitle: `${(reservation?.departure_date ?? "").replaceAll("-", "").slice(2)}_BNI_Invoice_${reservation?.name ?? ""}_${invoiceType === "deposit" ? "계약금" : invoiceType === "interim" ? "중도금" : "잔금"}`,
     pageStyle: `
   @page {
@@ -218,6 +220,9 @@ export default function InvoiceModal({
       alert("이번 청구금액이 남은 여행경비보다 큽니다.");
       return;
     }
+
+    try { await assertAdminSession(); }
+    catch (error) { alert(error instanceof Error ? error.message : "관리자 로그인이 필요합니다."); return; }
 
     const { error } = await supabase.from("reservation_invoices").insert({
       reservation_id: reservation.id,

@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import ExchangeRateCard from "@/components/admin/ExchangeRateCard";
-import { cookies } from "next/headers";
+import { createServerSupabase, getAdminUser } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
 import XiamenGoogleSheetSyncButton from "../../components/admin/XiamenGoogleSheetSyncButton";
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const adminEmail = decodeURIComponent(
-    cookieStore.get("admin_email")?.value ?? "",
-  );
+  const user = await getAdminUser();
+  if (!user) redirect("/admin/login");
+  const adminEmail = user.email;
+  const supabase = await createServerSupabase();
 
   const isOfficeAccount = adminEmail === "cjjbni@cjjbni.com";
   const now = new Date();

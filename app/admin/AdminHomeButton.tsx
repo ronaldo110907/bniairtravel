@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import XiamenGoogleSheetSyncButton from "../../components/admin/XiamenGoogleSheetSyncButton";
@@ -36,8 +37,8 @@ export default function AdminHomeButton() {
         return;
       }
 
-      router.replace("/admin/login");
-      router.refresh();
+      await supabase.auth.signOut({ scope: "local" });
+      window.location.replace("/admin/login");
     } catch (error) {
       console.error(error);
       alert("로그아웃에 실패했습니다.");
