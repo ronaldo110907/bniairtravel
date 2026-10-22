@@ -3761,17 +3761,15 @@ function ReservationsContent() {
                   const roster = getRosterProgress(selected);
 
                   const rosterDone = roster.isComplete;
-                  const itineraryDone = Boolean(selected.itinerary_file);
 
                   const completedCount = [
                     rosterDone,
                     insuranceDone,
-                    itineraryDone,
                     requestDone,
                     invoiceDone,
                   ].filter(Boolean).length;
 
-                  const totalCount = 5;
+                  const totalCount = 4;
 
                   const progress = Math.round(
                     (completedCount / totalCount) * 100,
@@ -3868,23 +3866,17 @@ function ReservationsContent() {
                               📋 일정표(확정서)
                             </div>
                             <div className="mt-2">
-                              <ReservationConfirmationDownload key={selected.id + selected.departure_id} reservation={selected} />
+                              <ReservationConfirmationDownload
+                                key={selected.id + selected.departure_id}
+                                reservation={selected}
+                              />
                             </div>
 
                             <div className="mt-1 text-xs text-gray-500">
-                              일정표(확정서) 등록 여부를 자동으로 확인합니다.
+                              확정서를 생성한 후 한글에서 필요한 내용을 수정할
+                              수 있습니다.
                             </div>
                           </div>
-
-                          <span
-                            className={`text-sm font-bold ${
-                              itineraryDone
-                                ? "text-emerald-600"
-                                : "text-red-500"
-                            }`}
-                          >
-                            {itineraryDone ? "✅ 등록완료" : "⚠ 미등록"}
-                          </span>
                         </div>
 
                         {/* 수배의뢰서 */}
