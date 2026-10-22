@@ -361,13 +361,24 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
       ],
     },
   });
+
   // --------------------------------
   // 5-1. 잔여석 자동 마감 표시 및 색상
   // --------------------------------
 
   const soldOutRanges = [
-    { startRowIndex: 8, endRowIndex: 9, endColumnIndex: 19 }, // C9:S9
-    { startRowIndex: 18, endRowIndex: 19, endColumnIndex: 18 }, // C19:R19
+    {
+      startRowIndex: 8,
+      endRowIndex: 9,
+      endColumnIndex: 19,
+      firstCell: "C9",
+    },
+    {
+      startRowIndex: 18,
+      endRowIndex: 19,
+      endColumnIndex: 18,
+      firstCell: "C19",
+    },
   ];
 
   // 기존 조건부 서식 조회
@@ -381,7 +392,50 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
       (sheet) => sheet.properties?.sheetId === sheetId,
     )?.conditionalFormats ?? [];
 
-  const formatRequests = soldOutRanges.flatMap((range) => {
+  // 기존 마감 규칙만 찾아 제거
+  const deleteRequests: any[] = [];
+
+  existingRules.forEach((rule, index) => {
+    const formula =
+      rule.booleanRule?.condition?.values?.[0]?.userEnteredValue
+        ?.replace(/\s/g, "")
+        .toUpperCase() ?? "";
+
+    const isSoldOutRule = soldOutRanges.some((range) => {
+      const expectedFormula =
+        `=AND(ISNUMBER(${range.firstCell}),${range.firstCell}=0)`.toUpperCase();
+
+      const sameRange = rule.ranges?.some(
+        (r) =>
+          r.sheetId === sheetId &&
+          r.startRowIndex === range.startRowIndex &&
+          r.endRowIndex === range.endRowIndex &&
+          r.startColumnIndex === 2 &&
+          r.endColumnIndex === range.endColumnIndex,
+      );
+
+      return sameRange && formula === expectedFormula;
+    });
+
+    if (isSoldOutRule) {
+      deleteRequests.push({
+        deleteConditionalFormatRule: {
+          sheetId,
+          index,
+        },
+      });
+    }
+  });
+
+  // 뒤쪽 인덱스부터 삭제하여 순서 꼬임 방지
+  deleteRequests.sort(
+    (a, b) =>
+      b.deleteConditionalFormatRule.index - a.deleteConditionalFormatRule.index,
+  );
+
+  const formatRequests: any[] = [...deleteRequests];
+
+  for (const range of soldOutRanges) {
     const gridRange = {
       sheetId,
       startRowIndex: range.startRowIndex,
@@ -390,76 +444,73 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
       endColumnIndex: range.endColumnIndex,
     };
 
-    const firstCell = range.startRowIndex === 8 ? "C9" : "C19";
-
-    const formula = `=AND(ISNUMBER(${firstCell}),${firstCell}=0)`;
-
-    // 이미 같은 범위에 마감 규칙이 있는지 확인
-    const ruleExists = existingRules.some(
-      (rule) =>
-        rule.booleanRule?.condition?.type === "CUSTOM_FORMULA" &&
-        rule.booleanRule.condition.values?.[0]?.userEnteredValue === formula &&
-        rule.ranges?.some(
-          (r) =>
-            r.sheetId === sheetId &&
-            r.startRowIndex === gridRange.startRowIndex &&
-            r.endRowIndex === gridRange.endRowIndex &&
-            r.startColumnIndex === gridRange.startColumnIndex &&
-            r.endColumnIndex === gridRange.endColumnIndex,
-        ),
-    );
-
-    const requests: any[] = [
-      {
-        repeatCell: {
-          range: gridRange,
-          cell: {
-            userEnteredFormat: {
-              numberFormat: {
-                type: "NUMBER",
-                pattern: '0;-0;"마감"',
+    // 잔여석 기본 배경과 글자색 복구
+    formatRequests.push({
+      repeatCell: {
+        range: gridRange,
+        cell: {
+          userEnteredFormat: {
+            numberFormat: {
+              type: "NUMBER",
+              pattern: '0;-0;"마감"',
+            },
+            backgroundColor: {
+              red: 0.85,
+              green: 0.91,
+              blue: 0.98,
+            },
+            textFormat: {
+              foregroundColor: {
+                red: 0,
+                green: 0.2,
+                blue: 0.7,
               },
             },
           },
-          fields: "userEnteredFormat.numberFormat",
         },
+        fields:
+          "userEnteredFormat.numberFormat," +
+          "userEnteredFormat.backgroundColor," +
+          "userEnteredFormat.textFormat.foregroundColor",
       },
-    ];
+    });
 
-    // 기존 규칙이 없을 때만 새로 생성
-    if (!ruleExists) {
-      requests.push({
-        addConditionalFormatRule: {
-          rule: {
-            ranges: [gridRange],
-            booleanRule: {
-              condition: {
-                type: "CUSTOM_FORMULA",
-                values: [{ userEnteredValue: formula }],
-              },
-              format: {
-                backgroundColor: {
-                  red: 0.85,
-                  green: 0.1,
-                  blue: 0.1,
+    // 마감 규칙은 항상 하나만 생성
+    formatRequests.push({
+      addConditionalFormatRule: {
+        rule: {
+          ranges: [gridRange],
+          booleanRule: {
+            condition: {
+              type: "CUSTOM_FORMULA",
+              values: [
+                {
+                  userEnteredValue:
+                    `=AND(ISNUMBER(${range.firstCell}),` +
+                    `${range.firstCell}=0)`,
                 },
-                textFormat: {
-                  foregroundColor: {
-                    red: 1,
-                    green: 1,
-                    blue: 1,
-                  },
+              ],
+            },
+            format: {
+              backgroundColor: {
+                red: 0.85,
+                green: 0.1,
+                blue: 0.1,
+              },
+              textFormat: {
+                foregroundColor: {
+                  red: 1,
+                  green: 1,
+                  blue: 1,
                 },
               },
             },
           },
-          index: 0,
         },
-      });
-    }
-
-    return requests;
-  });
+        index: 0,
+      },
+    });
+  }
 
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId,
@@ -467,6 +518,7 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
       requests: formatRequests,
     },
   });
+
   // --------------------------------
   // 6. 결과 요약
   // --------------------------------
