@@ -14,7 +14,7 @@ const supabase = createClient(
 
 export async function GET(request: Request) {
   try {
-    if (!await getAdminUser(request)) return unauthorized();
+    if (!(await getAdminUser(request))) return unauthorized();
     const { searchParams } = new URL(request.url);
     const departureId = searchParams.get("id");
     const reservationIds =
@@ -205,29 +205,40 @@ export async function GET(request: Request) {
     function formatTravelPeriod(departureDate: string, course?: string) {
       if (!departureDate) return "";
 
-      const start = new Date(departureDate);
+      const datePart = departureDate.slice(0, 10);
+      const [year, month, day] = datePart.split("-").map(Number);
 
+      const start = new Date(year, month - 1, day, 12);
       const week = ["일", "월", "화", "수", "목", "금", "토"];
 
       const format = (date: Date) =>
-        `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(
-          2,
-          "0",
-        )}.${String(date.getDate()).padStart(2, "0")}(${week[date.getDay()]})`;
+        `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}(${week[date.getDay()]})`;
 
-      // 기타예약처럼 코스 정보가 없으면 출발일만 표시
-      if (!course) {
-        return format(start);
+      if (!course) return format(start);
+
+      const normalized = course.toUpperCase().replace(/\s/g, "");
+
+      const match =
+        normalized.match(/(\d+)N(\d+)D/) ?? normalized.match(/(\d+)박(\d+)일/);
+
+      // 여행기간을 확인할 수 없으면 임의로 3박 4일을 만들지 않음
+      if (!match) {
+        return `${format(start)} (여행기간 확인 필요)`;
+      }
+
+      const nights = Number(match[1]);
+      const days = Number(match[2]);
+
+      if (nights < 1 || days <= nights || days > 30) {
+        return `${format(start)} (여행기간 확인 필요)`;
       }
 
       const end = new Date(start);
+      end.setDate(end.getDate() + days - 1);
 
-      const nights = course === "4N5D" ? 4 : 3;
-
-      end.setDate(end.getDate() + nights);
-
-      return `${format(start)} ~ ${format(end)} ${nights}박 ${nights + 1}일`;
+      return `${format(start)} ~ ${format(end)} ${nights}박 ${days}일`;
     }
+
     // 템플릿 읽기
     const workbook = new ExcelJS.Workbook();
 
@@ -267,7 +278,7 @@ export async function GET(request: Request) {
 
     sheet.getCell("A2").value = `■ 피켓명 : ${productName}`;
 
-    sheet.getCell("A3").value = `■ 인원 : ${rows.length}명 PKG`;
+    sheet.getCell("A3").value = `■ 인원 : ${rows.length}명 ${productName}`;
 
     sheet.getCell("A5").value = flightInfo
       ? `■ 스케줄 :
