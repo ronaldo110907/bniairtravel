@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
+import InvoiceHistoryEditor from "@/components/admin/InvoiceHistoryEditor";
+import { invoiceHistoryTotal, isInvoiceAmount, type InvoiceHistoryItem } from "@/lib/invoices";
 import CancellationSection from "@/components/sections/CancellationSection";
 import { assertAdminSession } from "@/lib/auth/client";
 import { supabase } from "@/lib/supabase";
@@ -79,7 +81,13 @@ export default function InvoiceModal({
   const [totalPrice, setTotalPrice] = useState("");
   const [previousInvoiceAmount, setPreviousInvoiceAmount] = useState(0);
   const [currentInvoiceAmount, setCurrentInvoiceAmount] = useState("");
-  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(true);
+  const [invoices, setInvoices] = useState<InvoiceHistoryItem[]>([]);
+  const [historyError, setHistoryError] = useState("");
+  const [editingHistory, setEditingHistory] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const printingRef = useRef(false);
+  const historyRequest = useRef(0);
   const [commission, setCommission] = useState("");
   const [paymentDueDate, setPaymentDueDate] = useState("");
   const [invoiceNotice, setInvoiceNotice] = useState("");
@@ -112,44 +120,60 @@ export default function InvoiceModal({
   const selectedAccount =
     accounts.find((item) => item.label === account) ?? accounts[0];
 
+  const loadInvoices = useCallback(async () => {
+    if (!reservation?.id) return [];
+    const requestId = ++historyRequest.current;
+    setInvoiceLoading(true);
+    setHistoryError("");
+    try {
+      const response = await fetch(`/api/admin/invoices?reservationId=${encodeURIComponent(reservation.id)}`, { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "청구 이력을 불러오지 못했습니다.");
+      const rows: InvoiceHistoryItem[] = result.invoices;
+      const total = invoiceHistoryTotal(rows);
+      if (requestId === historyRequest.current) {
+        setInvoices(rows);
+        setPreviousInvoiceAmount(total);
+      }
+      return rows;
+    } catch (error) {
+      if (requestId === historyRequest.current) setHistoryError(error instanceof Error ? error.message : "청구 이력을 불러오지 못했습니다.");
+      throw error;
+    } finally { if (requestId === historyRequest.current) setInvoiceLoading(false); }
+  }, [reservation?.id]);
+
   useEffect(() => {
     setTotalPrice(totalAmount.toLocaleString());
     setCurrentInvoiceAmount("");
     setCommission("");
     setPreviousInvoiceAmount(0);
+    setInvoices([]);
+    setHistoryError("");
+    setEditingHistory(false);
+    if (open && reservation?.id) void loadInvoices().catch(() => {});
+    const requests = historyRequest;
+    return () => { requests.current++; };
+  }, [open, totalAmount, reservation?.id, loadInvoices]);
 
-    if (!open || !reservation?.id) return;
-
-    const loadPreviousInvoices = async () => {
-      setInvoiceLoading(true);
-
-      const { data, error } = await supabase
-        .from("reservation_invoices")
-        .select("amount")
-        .eq("reservation_id", reservation.id);
-
-      if (error) {
-        console.error("INVOICE HISTORY ERROR:", error);
-        setPreviousInvoiceAmount(0);
-        setInvoiceLoading(false);
-        return;
-      }
-
-      const total = (data ?? []).reduce(
-        (sum, item) => sum + Number(item.amount || 0),
-        0,
-      );
-
-      setPreviousInvoiceAmount(total);
-      setInvoiceLoading(false);
-    };
-
-    void loadPreviousInvoices();
-  }, [open, totalAmount, reservation?.id]);
+  async function finishPrint() {
+    // Only after the print snapshot is finished may this invoice enter the previous total.
+    setCurrentInvoiceAmount("");
+    try { await loadInvoices(); } catch { /* The history error is displayed and blocks further printing. */ }
+    printingRef.current = false;
+    setIsPrinting(false);
+  }
 
   const handlePrint = useReactToPrint({
     contentRef: invoiceRef,
     onBeforePrint: assertAdminSession,
+    onAfterPrint: () => {
+      if (invoiceType === "balance") onGenerated?.();
+      void finishPrint();
+    },
+    onPrintError: () => {
+      alert("청구 이력은 저장되었지만 인쇄를 완료하지 못했습니다. 이력을 확인해주세요. 잘못 저장한 금액은 정정할 수 있습니다.");
+      void finishPrint();
+    },
     documentTitle: `${(reservation?.departure_date ?? "").replaceAll("-", "").slice(2)}_BNI_Invoice_${reservation?.name ?? ""}_${invoiceType === "deposit" ? "계약금" : invoiceType === "interim" ? "중도금" : "잔금"}`,
     pageStyle: `
   @page {
@@ -202,55 +226,36 @@ export default function InvoiceModal({
   }
 `,
   });
-  const [isPrinting, setIsPrinting] = useState(false);
   const printInvoice = async () => {
-    if (!reservation?.id) {
-      alert("예약 정보를 확인할 수 없습니다.");
-      return;
-    }
-
+    if (printingRef.current || invoiceLoading || historyError || editingHistory) return;
+    if (!reservation?.id) { alert("예약 정보를 확인할 수 없습니다."); return; }
     const amount = parseMoney(currentInvoiceAmount);
-
-    if (amount <= 0) {
-      alert("이번 청구금액을 입력해주세요.");
-      return;
-    }
-
+    if (!isInvoiceAmount(amount) || amount === 0) { alert("이번 청구금액을 입력해주세요."); return; }
     if (amount > enteredTotalPrice - previousInvoiceAmount) {
-      alert("이번 청구금액이 남은 여행경비보다 큽니다.");
-      return;
+      alert("이번 청구금액이 남은 여행경비보다 큽니다."); return;
     }
-
-    try { await assertAdminSession(); }
-    catch (error) { alert(error instanceof Error ? error.message : "관리자 로그인이 필요합니다."); return; }
-
-    const { error } = await supabase.from("reservation_invoices").insert({
-      reservation_id: reservation.id,
-      invoice_type: invoiceType,
-      amount,
-    });
-
-    if (error) {
-      console.error("INVOICE SAVE ERROR:", error);
-      alert("인보이스 청구 이력을 저장하지 못했습니다.");
-      return;
-    }
-
-    setPreviousInvoiceAmount((prev) => prev + amount);
-
+    printingRef.current = true;
     setIsPrinting(true);
-
-    setTimeout(async () => {
-      await handlePrint();
-
-      if (invoiceType === "balance") {
-        onGenerated?.();
+    let saved = false;
+    try {
+      await assertAdminSession();
+      const latest = await loadInvoices();
+      if (invoiceHistoryTotal(latest) !== previousInvoiceAmount) {
+        alert("청구 이력이 변경되어 이전 청구액을 갱신했습니다. 금액을 확인한 뒤 다시 인쇄해주세요.");
+        return;
       }
-
-      setTimeout(() => {
-        setIsPrinting(false);
-      }, 300);
-    }, 50);
+      const { error } = await supabase.from("reservation_invoices").insert({
+        reservation_id: reservation.id, invoice_type: invoiceType, amount,
+      });
+      if (error) throw new Error("인보이스 청구 이력을 저장하지 못했습니다.");
+      saved = true;
+      // Let React render the print view without adding this charge to the previous amount.
+      window.setTimeout(() => handlePrint(), 50);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "인보이스를 생성하지 못했습니다.");
+    } finally {
+      if (!saved) { printingRef.current = false; setIsPrinting(false); }
+    }
   };
 
   if (!open || !reservation) return null;
@@ -264,6 +269,7 @@ export default function InvoiceModal({
           <button
             type="button"
             onClick={onClose}
+            disabled={isPrinting || editingHistory}
             className="rounded-lg border px-4 py-2"
           >
             닫기
@@ -271,6 +277,11 @@ export default function InvoiceModal({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="no-print px-6 pt-4">
+            {invoiceLoading && <p role="status" className="mb-2 text-sm text-gray-600">청구 이력 불러오는 중…</p>}
+            {historyError && <div role="alert" className="mb-3 rounded bg-red-50 p-3 text-sm text-red-700">{historyError} <button type="button" disabled={isPrinting} onClick={() => void loadInvoices().catch(() => {})} className="underline">다시 불러오기</button></div>}
+            <InvoiceHistoryEditor key={`${reservation.id}:${open}`} invoices={invoices} reservationId={reservation.id} disabled={isPrinting || invoiceLoading || !!historyError} onEditingChange={setEditingHistory} onSaved={async () => { await loadInvoices(); }} />
+          </div>
           <div ref={invoiceRef} className="invoice-page bg-white p-6">
             <img
               src="/images/invoice/BNIheader.jpg"
@@ -289,6 +300,7 @@ export default function InvoiceModal({
                 <span className="w-24">▶ 수 신</span>
 
                 <input
+                          disabled={isPrinting}
                   value={receiver}
                   onChange={(event) => setReceiver(event.target.value)}
                   className="flex-1 border-b border-gray-400 bg-transparent outline-none"
@@ -306,6 +318,7 @@ export default function InvoiceModal({
                   </span>
                 ) : (
                   <select
+                          disabled={isPrinting}
                     value={sender}
                     onChange={(event) => setSender(event.target.value)}
                     className="rounded-lg border px-3 py-2"
@@ -321,6 +334,7 @@ export default function InvoiceModal({
                 <span className="w-24">▶ 발신일</span>
 
                 <input
+                          disabled={isPrinting}
                   type="date"
                   value={today}
                   readOnly
@@ -366,7 +380,8 @@ export default function InvoiceModal({
 
                   <button
                     type="button"
-                    onClick={() => setCustomerType("individual")}
+                    disabled={isPrinting}
+                      onClick={() => setCustomerType("individual")}
                     className={`rounded-lg px-4 py-2 font-semibold ${
                       customerType === "individual"
                         ? "bg-blue-600 text-white"
@@ -378,7 +393,8 @@ export default function InvoiceModal({
 
                   <button
                     type="button"
-                    onClick={() => setCustomerType("agency")}
+                    disabled={isPrinting}
+                      onClick={() => setCustomerType("agency")}
                     className={`rounded-lg px-4 py-2 font-semibold ${
                       customerType === "agency"
                         ? "bg-blue-600 text-white"
@@ -397,6 +413,7 @@ export default function InvoiceModal({
 
                     <button
                       type="button"
+                      disabled={isPrinting}
                       onClick={() => setInvoiceType("deposit")}
                       className={`rounded-lg px-4 py-2 font-semibold ${
                         invoiceType === "deposit"
@@ -409,6 +426,7 @@ export default function InvoiceModal({
 
                     <button
                       type="button"
+                      disabled={isPrinting}
                       onClick={() => setInvoiceType("balance")}
                       className={`rounded-lg px-4 py-2 font-semibold ${
                         invoiceType === "balance"
@@ -442,6 +460,8 @@ export default function InvoiceModal({
                     <td className="px-4 py-2">
                       <div className="flex items-center justify-end gap-2">
                         <input
+                          disabled={isPrinting}
+                          aria-label="여행경비"
                           value={totalPrice}
                           onChange={(event) =>
                             setTotalPrice(formatMoney(event.target.value))
@@ -478,6 +498,8 @@ export default function InvoiceModal({
                     <td className="px-4 py-2">
                       <div className="flex items-center justify-end gap-2">
                         <input
+                          disabled={isPrinting}
+                          aria-label="이번 청구금액"
                           value={currentInvoiceAmount}
                           onChange={(event) =>
                             setCurrentInvoiceAmount(
@@ -499,6 +521,7 @@ export default function InvoiceModal({
                       <td className="px-4 py-2">
                         <div className="flex items-center justify-end gap-2">
                           <input
+                          disabled={isPrinting}
                             value={commission}
                             onChange={(event) =>
                               setCommission(formatMoney(event.target.value))
@@ -544,6 +567,7 @@ export default function InvoiceModal({
                       ) : (
                         <div className="flex justify-end">
                           <input
+                          disabled={isPrinting}
                             type="date"
                             value={paymentDueDate}
                             onChange={(event) =>
@@ -573,6 +597,7 @@ export default function InvoiceModal({
                         </div>
                       ) : (
                         <textarea
+                          disabled={isPrinting}
                           value={invoiceNotice}
                           onChange={(event) => {
                             const value = event.target.value;
@@ -605,6 +630,7 @@ export default function InvoiceModal({
               <div className="space-y-4 p-4">
                 {!isPrinting && (
                   <select
+                          disabled={isPrinting}
                     value={account}
                     onChange={(event) => setAccount(event.target.value)}
                     className="w-56 rounded-md border border-gray-300 px-3 py-2"
@@ -753,6 +779,7 @@ export default function InvoiceModal({
           <button
             type="button"
             onClick={onClose}
+            disabled={isPrinting || editingHistory}
             className="rounded-lg border bg-white px-5 py-2"
           >
             닫기
@@ -761,9 +788,10 @@ export default function InvoiceModal({
           <button
             type="button"
             onClick={printInvoice}
+            disabled={isPrinting || invoiceLoading || !!historyError || editingHistory}
             className="rounded-lg bg-blue-600 px-5 py-2 text-white"
           >
-            인쇄&amp;저장
+            {isPrinting ? "인쇄 준비 중…" : "인쇄&저장"}
           </button>
         </div>
       </div>
