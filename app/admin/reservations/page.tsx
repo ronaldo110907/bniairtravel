@@ -1704,17 +1704,27 @@ sort_order: currentTotalCount + index,
 
     try {
       // 1. 예약 목록 먼저 조회
-      const { data: reservationData, error: reservationError } = await supabase
-        .from("reservations")
-        .select("*")
-        .order("departure_date", { ascending: true });
+      const reservationData: any[] = [];
 
-      if (reservationError) {
-        console.error("RESERVATIONS ERROR", reservationError);
-        alert(reservationError.message);
-        setList([]);
-        return;
-      }
+for (let from = 0; ; from += 1000) {
+  const { data, error } = await supabase
+    .from("reservations")
+    .select("*")
+    .order("departure_date", { ascending: true })
+    .order("id", { ascending: true })
+    .range(from, from + 999);
+
+  if (error) {
+    console.error("RESERVATIONS ERROR", error);
+    alert(error.message);
+    setList([]);
+    return;
+  }
+
+  reservationData.push(...(data ?? []));
+
+  if (!data || data.length < 1000) break;
+}
 
       const reservations = reservationData ?? [];
 
