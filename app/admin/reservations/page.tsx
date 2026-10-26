@@ -279,6 +279,31 @@ function ReservationsContent() {
   const [showPersonForm, setShowPersonForm] = useState(false);
   const [showBulkPersonForm, setShowBulkPersonForm] = useState(false);
   const [bulkPersonCount, setBulkPersonCount] = useState("");
+
+
+const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
+
+const bulkReduction = useMemo(() => {
+  const people = selected?.people ?? [];
+
+  const { customers, temporaryPeople } =
+    getBulkReductionCandidates(people);
+
+  const targetCount =
+    bulkPersonCount.trim() === "" ? NaN : Number(bulkPersonCount);
+
+  const reduceCount =
+    Number.isInteger(targetCount) && targetCount >= 1
+      ? Math.max(0, customers.length - targetCount)
+      : 0;
+
+  return {
+    currentCount: customers.length,
+    reduceCount,
+    temporaryPeople,
+  };
+}, [selected?.people, bulkPersonCount]);
+
   const [editPerson, setEditPerson] = useState<ReservationPeople | null>(null);
   const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -744,16 +769,190 @@ function ReservationsContent() {
       passport_nationality: "KOR",
     });
   }
+
+  
+function getBulkReductionCandidates(people: ReservationPeople[]) {
+  const customers = people.filter((person) => !person.is_guide);
+
+  const temporaryPeople = customers
+    .filter((person) => {
+      const isTemporaryName = /^예약자\s*\d+$/i.test(
+        person.name.trim(),
+      );
+
+      const hasPassportData = Boolean(
+        person.passport_image ||
+        person.passport_name ||
+        person.passport_last_name ||
+        person.passport_first_name ||
+        person.passport_number ||
+        person.passport_birth ||
+        person.passport_issue ||
+        person.passport_expiry ||
+        person.passport_sex ||
+        (
+          person.passport_nationality &&
+          person.passport_nationality.toUpperCase() !== "KOR"
+        ),
+      );
+
+      return isTemporaryName && !hasPassportData;
+    })
+    .sort((a, b) => b.sort_order - a.sort_order);
+
+  return {
+    customers,
+    temporaryPeople,
+  };
+}
+
+
   async function saveBulkPeople() {
     if (!selected) return;
 
-    const targetCount = Number(bulkPersonCount);
-    const currentCount = selected.people?.length ?? 0;
+    
+const targetCount = Number(bulkPersonCount);
 
-    if (!targetCount || targetCount < 1) {
-      alert("총 예약인원을 입력해주세요.");
-      return;
-    }
+// 인원 맞추기 기준은 일반 고객 수
+const currentCount =
+  selected.people?.filter((person) => !person.is_guide).length ?? 0;
+
+// 인솔자를 포함한 실제 명단 수 (신규 명단 순번용)
+const currentTotalCount = selected.people?.length ?? 0;
+
+
+    
+if (!Number.isInteger(targetCount) || targetCount < 1) {
+  alert("총 예약인원은 1명 이상의 정수로 입력해주세요.");
+  return;
+}
+
+const customers = (selected.people ?? []).filter(
+  (person) => !person.is_guide,
+);
+
+const customerCount = customers.length;
+
+if (targetCount < customerCount) {
+  const reductionCount = customerCount - targetCount;
+
+  const validIds = new Set(customers.map((person) => person.id));
+
+  const selectedIds = [...new Set(bulkDeleteIds)];
+
+  if (
+    selectedIds.length !== reductionCount ||
+    selectedIds.some((id) => !validIds.has(id))
+  ) {
+    alert(
+      `감축할 고객 ${reductionCount}명을 정확히 선택해주세요.`,
+    );
+    return;
+  }
+
+  
+try {
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (sessionError || !session?.access_token) {
+    alert("관리자 로그인을 다시 확인해주세요.");
+    return;
+  }
+
+  const response = await fetch(
+    "/api/admin/reservations/bulk-people",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+  reservationId: selected.id,
+  targetCount,
+  deleteIds: selectedIds,
+  mode: "validate",
+}),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok || result.success !== true) {
+    throw new Error(
+      result.error || "인원 감축 검증에 실패했습니다.",
+    );
+  }
+
+  
+const confirmed = window.confirm(
+  `인원 감축 사전 검증 완료\n\n` +
+  `현재 고객: ${result.currentCount}명\n` +
+  `변경 인원: ${result.targetCount}명\n` +
+  `삭제 대상: ${result.reductionCount}명\n\n` +
+  `선택한 임시 예약자를 실제 삭제하시겠습니까?\n` +
+  `삭제 후 복구할 수 없습니다.`
+);
+
+if (!confirmed) return;
+
+const executeResponse = await fetch(
+  "/api/admin/reservations/bulk-people",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      reservationId: selected.id,
+      targetCount,
+      deleteIds: selectedIds,
+      mode: "execute",
+    }),
+  },
+);
+
+const executed = await executeResponse.json();
+
+if (!executeResponse.ok || executed.success !== true) {
+  throw new Error(
+    executed.error || "인원 감축 실행에 실패했습니다.",
+  );
+}
+
+await loadPeople(selected.id);
+await loadReservations();
+
+setBulkDeleteIds([]);
+setBulkPersonCount("");
+setShowBulkPersonForm(false);
+
+alert(
+  `인원 감축 완료!\n` +
+  `${executed.deletedCount}명 삭제\n` +
+  `남은 고객 ${executed.customerCount}명\n` +
+  `인솔자 ${executed.guideCount}명\n` +
+  `전체 ${executed.totalPassengerCount}명`
+);
+
+} catch (error) {
+  console.error("BULK PEOPLE VALIDATION ERROR", error);
+
+  alert(
+    error instanceof Error
+      ? error.message
+      : "인원 감축 검증 중 오류가 발생했습니다.",
+  );
+}
+
+return;
+
+}
+
 
     if (targetCount <= currentCount) {
       alert(`현재 이미 ${currentCount}명이 등록되어 있습니다.`);
@@ -764,8 +963,8 @@ function ReservationsContent() {
 
     const newPeople = Array.from({ length: addCount }, (_, index) => ({
       reservation_id: selected.id,
-      name: `예약자 ${currentCount + index + 1}`,
-      sort_order: currentCount + index,
+      name: `예약자 ${currentTotalCount + index + 1}`,
+sort_order: currentTotalCount + index,
 
       passport_name: null,
       passport_last_name: null,
@@ -792,8 +991,7 @@ function ReservationsContent() {
     const { count, error: countError } = await supabase
       .from("reservation_people")
       .select("id", { count: "exact", head: true })
-      .eq("reservation_id", selected.id)
-      .eq("is_guide", false);
+      .eq("reservation_id", selected.id);
 
     if (countError || count === null) {
       console.error("PERSON COUNT ERROR", countError);
@@ -2298,7 +2496,10 @@ function ReservationsContent() {
         }, 0),
       }));
   }, [filtered]);
-
+  // 현재 필터에 해당하는 전체 출발일의 예약 인원 합계
+  const totalPeopleCount = useMemo(() => {
+    return departureGroups.reduce((sum, group) => sum + group.peopleCount, 0);
+  }, [departureGroups]);
   // 페이지당 출발일 20개 표시
   const totalPages = Math.max(1, Math.ceil(departureGroups.length / PAGE_SIZE));
 
@@ -2852,7 +3053,8 @@ function ReservationsContent() {
 
           <div className="flex flex-col gap-3 border-t border-gray-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-gray-500">
-              총 {filtered.length}건 · {safePage}/{totalPages} 페이지
+              총 {filtered.length}건 · 총 {totalPeopleCount}명 · {safePage}/
+              {totalPages} 페이지
             </p>
 
             <div className="flex items-center gap-2">
@@ -4034,7 +4236,12 @@ function ReservationsContent() {
                           type="number"
                           min="1"
                           value={bulkPersonCount}
-                          onChange={(e) => setBulkPersonCount(e.target.value)}
+                          
+onChange={(e) => {
+  setBulkPersonCount(e.target.value);
+  setBulkDeleteIds([]);
+}}
+
                           placeholder="예) 20"
                           className="w-32 rounded-lg border bg-white px-3 py-2"
                         />
@@ -4050,10 +4257,13 @@ function ReservationsContent() {
 
                       <button
                         type="button"
-                        onClick={() => {
-                          setShowBulkPersonForm(false);
-                          setBulkPersonCount("");
-                        }}
+                        
+onClick={() => {
+  setShowBulkPersonForm(false);
+  setBulkPersonCount("");
+  setBulkDeleteIds([]);
+}}
+
                         className="rounded-lg border bg-white px-4 py-2"
                       >
                         취소
@@ -4061,8 +4271,93 @@ function ReservationsContent() {
                     </div>
 
                     <div className="mt-2 text-sm text-gray-500">
-                      현재 {selected?.people?.length ?? 0}명
+                      현재 고객{" "}
+                      {selected?.people?.filter((person) => !person.is_guide)
+                        .length ?? 0}
+                      명{" · "}
+                      인솔자{" "}
+                      {selected?.people?.filter((person) => person.is_guide)
+                        .length ?? 0}
+                      명
                     </div>
+
+{bulkReduction.reduceCount > 0 && (
+  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+    <div className="font-bold text-amber-900">
+      예약 인원 감축: {bulkReduction.reduceCount}명
+    </div>
+
+    <p className="mt-1 text-sm text-amber-800">
+      삭제할 고객을 선택해주세요. 인솔자는 제외됩니다.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => {
+        const ids = bulkReduction.temporaryPeople
+          .slice(0, bulkReduction.reduceCount)
+          .map((person) => person.id);
+
+        setBulkDeleteIds(ids);
+      }}
+      className="mt-3 rounded-lg border border-amber-400 bg-white px-3 py-2 text-sm font-bold text-amber-900"
+    >
+      임시 예약자 자동 선택
+    </button>
+
+    <div className="mt-3 max-h-64 space-y-2 overflow-y-auto">
+      {(selected?.people ?? [])
+        .filter((person) => !person.is_guide)
+        .map((person) => {
+          const isTemporary = bulkReduction.temporaryPeople.some(
+            (item) => item.id === person.id,
+          );
+
+          return (
+            <label
+              key={person.id}
+              className="flex cursor-pointer items-center gap-3 rounded-lg border bg-white p-3"
+            >
+              <input
+                type="checkbox"
+                checked={bulkDeleteIds.includes(person.id)}
+                onChange={(e) => {
+                  setBulkDeleteIds((prev) =>
+                    e.target.checked
+                      ? [...prev, person.id]
+                      : prev.filter((id) => id !== person.id),
+                  );
+                }}
+                className="h-4 w-4"
+              />
+
+              <span className="text-sm font-medium">
+                {person.name}
+              </span>
+
+              {isTemporary && (
+                <span className="text-xs text-emerald-700">
+                  임시 명단
+                </span>
+              )}
+            </label>
+          );
+        })}
+    </div>
+
+    <div className="mt-3 text-sm font-bold text-amber-900">
+      선택 {bulkDeleteIds.length}명 / 감축 필요{" "}
+      {bulkReduction.reduceCount}명
+    </div>
+
+    {bulkDeleteIds.length !== bulkReduction.reduceCount && (
+      <p className="mt-1 text-xs text-red-600">
+        감축할 인원과 선택한 인원이 일치해야 합니다.
+      </p>
+    )}
+  </div>
+)}
+
                   </div>
                 )}
                 {showPersonForm && (
