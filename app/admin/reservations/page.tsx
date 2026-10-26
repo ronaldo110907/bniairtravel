@@ -248,13 +248,6 @@ function ReservationsContent() {
     defaultDepartureRange.from,
   );
   const [departureTo, setDepartureTo] = useState(defaultDepartureRange.to);
-  // 화면에서 날짜를 입력하는 값
-const [draftDepartureFrom, setDraftDepartureFrom] = useState(
-  defaultDepartureRange.from,
-);
-const [draftDepartureTo, setDraftDepartureTo] = useState(
-  defaultDepartureRange.to,
-);
   const [createdFrom, setCreatedFrom] = useState("");
   const [createdTo, setCreatedTo] = useState("");
   const [page, setPage] = useState(1);
@@ -2427,35 +2420,18 @@ for (let from = 0; ; from += 1000) {
     await loadChecklist(item.id);
   }
 
- function applyDepartureSearch() {
-  if (
-    draftDepartureFrom &&
-    draftDepartureTo &&
-    draftDepartureFrom > draftDepartureTo
-  ) {
-    alert("출발 시작일이 종료일보다 늦을 수 없습니다.");
-    return;
-  }
-
-  setDepartureFrom(draftDepartureFrom);
-  setDepartureTo(draftDepartureTo);
-  setPage(1);
-}
-
 function resetFilters() {
-  const defaultRange = getDefaultDepartureRange();
-
   setSearch("");
   setProductFilter("전체");
 
-  setDraftDepartureFrom(defaultRange.from);
-  setDraftDepartureTo(defaultRange.to);
+  const defaultRange = getDefaultDepartureRange();
 
   setDepartureFrom(defaultRange.from);
   setDepartureTo(defaultRange.to);
 
   setCreatedFrom("");
   setCreatedTo("");
+
   setPage(1);
 }
 
@@ -2784,7 +2760,7 @@ function resetFilters() {
 
               <input
                 type="date"
-                value={draftDepartureFrom}
+                value={departureFrom}
                 min="1900-01-01"
                 max="9999-12-31"
                 onChange={(event) => {
@@ -2793,7 +2769,7 @@ function resetFilters() {
 
                   if (year.length > 4) return;
 
-                  setDraftDepartureFrom(value);
+                  setDepartureFrom(value);
                 }}
                 className="
     w-full rounded-xl
@@ -2811,7 +2787,7 @@ function resetFilters() {
 
               <input
                 type="date"
-                value={draftDepartureTo}
+                value={departureTo}
                 min="1900-01-01"
                 max="9999-12-31"
                 onChange={(event) => {
@@ -2820,7 +2796,7 @@ function resetFilters() {
 
                   if (year.length > 4) return;
 
-                  setDraftDepartureTo(value);
+                  setDepartureTo(value);
                 }}
                 className="
     w-full rounded-xl
@@ -2837,15 +2813,11 @@ function resetFilters() {
               접수일 필터와 출발일 필터를 함께 사용할 수 있습니다.
             </div>
             <button
-  type="button"
-  onClick={applyDepartureSearch}
-  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
->
-  🔍 검색
-</button>
-            <button
               type="button"
-              onClick={resetFilters}
+              onClick={() => {
+  alert("초기화 버튼 클릭 확인");
+  resetFilters();
+}}
               className="
           rounded-xl
           border border-gray-200
