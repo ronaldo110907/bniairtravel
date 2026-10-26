@@ -248,6 +248,13 @@ function ReservationsContent() {
     defaultDepartureRange.from,
   );
   const [departureTo, setDepartureTo] = useState(defaultDepartureRange.to);
+  // 화면에서 날짜를 입력하는 값
+const [draftDepartureFrom, setDraftDepartureFrom] = useState(
+  defaultDepartureRange.from,
+);
+const [draftDepartureTo, setDraftDepartureTo] = useState(
+  defaultDepartureRange.to,
+);
   const [createdFrom, setCreatedFrom] = useState("");
   const [createdTo, setCreatedTo] = useState("");
   const [page, setPage] = useState(1);
@@ -2410,18 +2417,37 @@ sort_order: currentTotalCount + index,
     await loadChecklist(item.id);
   }
 
-  function resetFilters() {
-    setSearch("");
-    setProductFilter("전체");
-    const defaultRange = getDefaultDepartureRange();
-
-    setDepartureFrom(defaultRange.from);
-    setDepartureTo(defaultRange.to);
-
-    setCreatedFrom("");
-    setCreatedTo("");
-    setPage(1);
+ function applyDepartureSearch() {
+  if (
+    draftDepartureFrom &&
+    draftDepartureTo &&
+    draftDepartureFrom > draftDepartureTo
+  ) {
+    alert("출발 시작일이 종료일보다 늦을 수 없습니다.");
+    return;
   }
+
+  setDepartureFrom(draftDepartureFrom);
+  setDepartureTo(draftDepartureTo);
+  setPage(1);
+}
+
+function resetFilters() {
+  const defaultRange = getDefaultDepartureRange();
+
+  setSearch("");
+  setProductFilter("전체");
+
+  setDraftDepartureFrom(defaultRange.from);
+  setDraftDepartureTo(defaultRange.to);
+
+  setDepartureFrom(defaultRange.from);
+  setDepartureTo(defaultRange.to);
+
+  setCreatedFrom("");
+  setCreatedTo("");
+  setPage(1);
+}
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -2748,7 +2774,7 @@ sort_order: currentTotalCount + index,
 
               <input
                 type="date"
-                value={departureFrom}
+                value={draftDepartureFrom}
                 min="1900-01-01"
                 max="9999-12-31"
                 onChange={(event) => {
@@ -2757,7 +2783,7 @@ sort_order: currentTotalCount + index,
 
                   if (year.length > 4) return;
 
-                  setDepartureFrom(value);
+                  setDraftDepartureFrom(value);
                 }}
                 className="
     w-full rounded-xl
@@ -2775,7 +2801,7 @@ sort_order: currentTotalCount + index,
 
               <input
                 type="date"
-                value={departureTo}
+                value={draftDepartureTo}
                 min="1900-01-01"
                 max="9999-12-31"
                 onChange={(event) => {
@@ -2784,7 +2810,7 @@ sort_order: currentTotalCount + index,
 
                   if (year.length > 4) return;
 
-                  setDepartureTo(value);
+                  setDraftDepartureTo(value);
                 }}
                 className="
     w-full rounded-xl
@@ -2800,7 +2826,13 @@ sort_order: currentTotalCount + index,
             <div className="text-sm text-gray-500">
               접수일 필터와 출발일 필터를 함께 사용할 수 있습니다.
             </div>
-
+            <button
+  type="button"
+  onClick={applyDepartureSearch}
+  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
+>
+  🔍 검색
+</button>
             <button
               type="button"
               onClick={resetFilters}
