@@ -3,6 +3,13 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { estimateProducts } from "@/data/estimateProducts";
+import { supabase } from "@/lib/supabase";
+
+type Partner = {
+  id: string;
+  name: string;
+  is_active: boolean;
+};
 
 type EstimateMode = "product" | "free" | null;
 type PriceMode = "combined" | "split";
@@ -31,6 +38,28 @@ function getToday() {
 export default function EstimatePage() {
   const [mode, setMode] = useState<EstimateMode>(null);
   const [priceMode, setPriceMode] = useState<PriceMode>("split");
+    // 거래처 자동검색
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [showPartnerSuggestions, setShowPartnerSuggestions] = useState(false);
+
+  useEffect(() => {
+    async function loadPartners() {
+      const { data, error } = await supabase
+        .from("partners")
+        .select("id, name, is_active")
+        .eq("is_active", true)
+        .order("name");
+
+      if (error) {
+        console.error("거래처 불러오기 오류:", error);
+        return;
+      }
+
+      setPartners(data ?? []);
+    }
+
+    loadPartners();
+  }, []);
   const estimateRef = useRef<HTMLDivElement>(null);
   const estimateContentRef = useRef<HTMLDivElement>(null);
 
@@ -575,7 +604,7 @@ thead {
             <h2 className="mb-5 text-xl font-bold">📌 기본 정보</h2>
 
             <div className="grid gap-5 md:grid-cols-2">
-              <div>
+                            <div className="relative">
                 <label className="mb-1 block text-sm font-semibold text-gray-700">
                   수신
                 </label>
@@ -583,10 +612,57 @@ thead {
                 <input
                   type="text"
                   value={form.recipient}
-                  onChange={(e) => updateForm("recipient", e.target.value)}
-                  placeholder="예: 000여행사 대표님"
-                  className="w-full rounded-lg border px-3 py-3"
+                  onFocus={() => {
+                    if (form.recipient.trim()) {
+                      setShowPartnerSuggestions(true);
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    updateForm("recipient", value);
+                    setShowPartnerSuggestions(value.trim().length > 0);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setShowPartnerSuggestions(false);
+                    }, 150);
+                  }}
+                  placeholder="거래처명 검색 또는 직접 입력"
+                  autoComplete="off"
+                  className="w-full rounded-lg border px-3 py-3 outline-none focus:border-blue-500"
                 />
+
+                {showPartnerSuggestions &&
+                  form.recipient.trim() &&
+                  partners.filter((partner) =>
+                    partner.name
+                      .toLowerCase()
+                      .includes(form.recipient.trim().toLowerCase()),
+                  ).length > 0 && (
+                    <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-xl border bg-white shadow-xl">
+                      {partners
+                        .filter((partner) =>
+                          partner.name
+                            .toLowerCase()
+                            .includes(form.recipient.trim().toLowerCase()),
+                        )
+                        .slice(0, 10)
+                        .map((partner) => (
+                          <button
+                            key={partner.id}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              updateForm("recipient", partner.name);
+                              setShowPartnerSuggestions(false);
+                            }}
+                            className="flex w-full items-center border-b px-4 py-3 text-left text-sm last:border-b-0 hover:bg-blue-50"
+                          >
+                            🏢 {partner.name}
+                          </button>
+                        ))}
+                    </div>
+                  )}
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-gray-700">
