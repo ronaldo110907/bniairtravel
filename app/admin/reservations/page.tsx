@@ -9,6 +9,7 @@ import { Fragment } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import InvoiceModal from "@/components/InvoiceModal";
 import ReservationConfirmationDownload from "@/components/admin/ReservationConfirmationDownload";
+import { useDispatchRequestStatus } from "@/lib/useDispatchRequestStatus";
 import TravelContractModal from "@/components/contract/TravelContractModal";
 
 type ReservationPeople = {
@@ -266,7 +267,8 @@ function ReservationsContent() {
   const [insuranceDone, setInsuranceDone] = useState(false);
   const [savingInsurance, setSavingInsurance] = useState(false);
   const [invoiceDone, setInvoiceDone] = useState(false);
-  const [requestDone, setRequestDone] = useState(false);
+  const { status: requestStatus, refresh: refreshRequestStatus } = useDispatchRequestStatus(selected?.id);
+  const requestDone = requestStatus === "done";
 
   const [openPersonId, setOpenPersonId] = useState<string | null>(null);
   const [previewPassport, setPreviewPassport] = useState<string | null>(null);
@@ -4108,13 +4110,12 @@ function resetFilters() {
                             </div>
                           </div>
 
-                          <span
-                            className={`text-sm font-bold ${
-                              requestDone ? "text-emerald-600" : "text-red-500"
-                            }`}
-                          >
-                            {requestDone ? "✅ 생성완료" : "⚠ 미생성"}
-                          </span>
+                          <div className="text-right" aria-live="polite">
+                            <span className={`text-sm font-bold ${requestDone ? "text-emerald-600" : requestStatus === "loading" ? "text-gray-500" : "text-red-500"}`}>
+                              {requestStatus === "loading" ? "확인 중…" : requestStatus === "error" ? "⚠ 확인 실패" : requestDone ? "✅ 생성완료" : "⚠ 미생성"}
+                            </span>
+                            {requestStatus === "error" && <button type="button" onClick={refreshRequestStatus} className="ml-2 text-xs text-blue-600 underline">다시 확인</button>}
+                          </div>
                         </div>
 
                         {/* 인보이스 */}

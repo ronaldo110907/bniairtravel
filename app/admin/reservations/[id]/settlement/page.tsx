@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { markDispatchRequestDone } from "@/lib/markDispatchRequestDone";
 import Settlement from "@/app/admin/departures/[id]/components/Settlement";
 import RoomAssignment from "@/app/admin/departures/[id]/components/RoomAssignment";
 
@@ -77,6 +78,11 @@ export default function ReservationSettlementPage() {
       a.click();
 
       window.URL.revokeObjectURL(url);
+      try {
+        await markDispatchRequestDone(String(reservation.id));
+      } catch {
+        alert("파일은 생성되었지만 완료 표시를 저장하지 못했습니다. 잠시 후 다시 다운로드해주세요.");
+      }
     } catch (error) {
       console.error("DISPATCH DOWNLOAD ERROR:", error);
 

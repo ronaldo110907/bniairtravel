@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import ExcelJS from "exceljs";
 import path from "path";
+import { fillDispatchRoster } from "@/lib/dispatchRoster";
 import { flightInfo as zhangjiajieFlightInfo } from "@/data/zhangjiajie";
 import { flightInfo as baekduFlightInfo } from "@/data/baekdu";
 import { flightInfo as xiamenFlightInfo } from "@/data/xiamen";
@@ -286,7 +287,6 @@ export async function GET(request: Request) {
 귀국 : ${flightInfo.inbound.flight} ${flightInfo.inbound.from} ${flightInfo.inbound.departure} → ${flightInfo.inbound.to} ${flightInfo.inbound.arrival}`
       : "";
 
-    let row = 8;
     sheet.getCell("A5").alignment = {
       vertical: "top",
       wrapText: true,
@@ -294,20 +294,7 @@ export async function GET(request: Request) {
 
     sheet.getRow(5).height = 70;
 
-    rows.forEach((person) => {
-      sheet.getCell(`A${row}`).value = person.no;
-      sheet.getCell(`B${row}`).value = person.name;
-      sheet.getCell(`C${row}`).value = person.lastName;
-      sheet.getCell(`D${row}`).value = person.firstName;
-      sheet.getCell(`E${row}`).value = person.sex;
-      sheet.getCell(`F${row}`).value = person.birth;
-      sheet.getCell(`G${row}`).value = "";
-      sheet.getCell(`H${row}`).value = person.passportNo;
-      sheet.getCell(`I${row}`).value = person.expiry;
-      sheet.getCell(`J${row}`).value = "";
-
-      row++;
-    });
+    fillDispatchRoster(sheet, rows);
 
     // ======================================================
     // ROOMING LIST 시트
