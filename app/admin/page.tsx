@@ -3,6 +3,8 @@ import ExchangeRateCard from "@/components/admin/ExchangeRateCard";
 import { createServerSupabase, getAdminUser } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
 import XiamenGoogleSheetSyncButton from "../../components/admin/XiamenGoogleSheetSyncButton";
+import DepartureTaskBriefing from "@/components/admin/DepartureTaskBriefing";
+import { getDepartureTaskBriefing } from "@/lib/admin/getDepartureTaskBriefing";
 
 export default async function AdminPage() {
   const user = await getAdminUser();
@@ -244,7 +246,19 @@ export default async function AdminPage() {
       };
     },
   );
+    // 출발 전 미처리 업무 브리핑
+  let briefingItems: Awaited<
+    ReturnType<typeof getDepartureTaskBriefing>
+  > = [];
 
+  let briefingError = false;
+
+  try {
+    briefingItems = await getDepartureTaskBriefing(today);
+  } catch (error) {
+    console.error("DEPARTURE BRIEFING ERROR:", error);
+    briefingError = true;
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(280px,0.8fr)_minmax(420px,1.5fr)_auto] xl:items-stretch">
@@ -293,7 +307,23 @@ export default async function AdminPage() {
           <ExchangeRateCard today={today} />
         </div>
       </div>
-
+      
+            {/* 출발 전 업무 브리핑 */}
+      {briefingError ? (
+        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
+          ⚠️ 출발 전 업무 브리핑을 불러오지 못했습니다.
+          관리자 페이지를 새로고침하여 다시 확인해주세요.
+        </div>
+      ) : (
+        <div className="mb-5">
+          <DepartureTaskBriefing
+            today={today}
+            viewerId={user.id}
+            items={briefingItems}
+          />
+        </div>
+      )}
+      
       <div className="grid gap-6">
         <div className="rounded-xl bg-white p-6 shadow">
           <h2 className="text-xl font-bold">📌 오늘 출발</h2>
