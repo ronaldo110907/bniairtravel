@@ -79,6 +79,7 @@ export default function InvoiceModal({
   const [sender, setSender] = useState("이민우 부장");
   const [receiver, setReceiver] = useState("");
   const [totalPrice, setTotalPrice] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
   const [previousInvoiceAmount, setPreviousInvoiceAmount] = useState(0);
   const [currentInvoiceAmount, setCurrentInvoiceAmount] = useState("");
   const [invoiceLoading, setInvoiceLoading] = useState(true);
@@ -154,6 +155,13 @@ export default function InvoiceModal({
     const requests = historyRequest;
     return () => { requests.current++; };
   }, [open, totalAmount, reservation?.id, loadInvoices]);
+
+  useEffect(() => {
+    const price = reservation?.departure_price;
+    setUnitPrice(price != null && Number.isFinite(price) && price >= 0
+      ? price.toLocaleString()
+      : "");
+  }, [open, reservation?.id, reservation?.departure_price]);
 
   async function finishPrint() {
     // Only after the print snapshot is finished may this invoice enter the previous total.
@@ -458,18 +466,36 @@ export default function InvoiceModal({
                     </td>
 
                     <td className="px-4 py-2">
-                      <div className="flex items-center justify-end gap-2">
-                        <input
-                          disabled={isPrinting}
-                          aria-label="여행경비"
-                          value={totalPrice}
-                          onChange={(event) =>
-                            setTotalPrice(formatMoney(event.target.value))
-                          }
-                          className="w-56 rounded-md border border-gray-300 px-3 py-2 text-right outline-none"
-                        />
-                        <span className="font-medium">원</span>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <label className="flex flex-wrap items-center gap-2">
+                          <span className="whitespace-nowrap">1인 금액</span>
+                          <input
+                            disabled={isPrinting}
+                            aria-label="1인 금액"
+                            inputMode="numeric"
+                            value={unitPrice}
+                            onChange={(event) => setUnitPrice(formatMoney(event.target.value))}
+                            placeholder="직접 입력"
+                            className="w-28 rounded-md border border-gray-300 px-2 py-2 text-right outline-none"
+                          />
+                          <span className="whitespace-nowrap">원 × {peopleCount}명</span>
+                        </label>
+                        <div className="ml-auto flex items-center gap-2">
+                          <input
+                            disabled={isPrinting}
+                            aria-label="여행경비"
+                            value={totalPrice}
+                            onChange={(event) =>
+                              setTotalPrice(formatMoney(event.target.value))
+                            }
+                            className="w-56 rounded-md border border-gray-300 px-3 py-2 text-right outline-none"
+                          />
+                          <span className="font-medium">원</span>
+                        </div>
                       </div>
+                      <p className="no-print mt-1 text-xs text-gray-500">
+                        1인 금액은 표시용이며, 여행경비 총액은 오른쪽에서 직접 수정합니다.
+                      </p>
                     </td>
                   </tr>
 
