@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Reservation = {
   id: string | number;
@@ -48,6 +48,36 @@ export default function TravelContractModal({
   const [transport, setTransport] = useState("항공기");
   const [contractDate, setContractDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
+  const [roomOccupancy, setRoomOccupancy] = useState("");
+  const [businessInfo, setBusinessInfo] = useState({
+  name: "",
+  address: "",
+  representative: "",
+  phone: "",
+  registrationNumber: "",
+  manager: "",
+});
+  
+  const [travelerInfo, setTravelerInfo] = useState({
+  name: "",
+  phone: "",
+  address: "",
+});
+
+useEffect(() => {
+  if (!open || !reservation) return;
+
+  setTravelerInfo({
+    name: reservation.name || "",
+    phone: reservation.phone || "",
+    address: "",
+  });
+}, [
+  open,
+  reservation?.id,
+  reservation?.name,
+  reservation?.phone,
+]);
 
   function printContract() {
     const contract = document.getElementById("travel-contract-print");
@@ -56,6 +86,27 @@ export default function TravelContractModal({
       alert("계약서 영역을 찾을 수 없습니다.");
       return;
     }
+    
+      // 인쇄용 계약서 복사
+  const printCopy = contract.cloneNode(true) as HTMLElement;
+
+  const originalInputs = contract.querySelectorAll("input");
+  const copiedInputs = printCopy.querySelectorAll("input");
+
+  originalInputs.forEach((input, index) => {
+    const copy = copiedInputs[index];
+    if (!copy) return;
+
+    if (input.type === "checkbox" || input.type === "radio") {
+      if (input.checked) {
+        copy.setAttribute("checked", "");
+      } else {
+        copy.removeAttribute("checked");
+      }
+    } else {
+      copy.setAttribute("value", input.value);
+    }
+  });
 
     const printWindow = window.open("", "_blank", "width=900,height=1200");
 
@@ -102,10 +153,11 @@ export default function TravelContractModal({
             background: white;
           }
 
-         #print-page {
+        #print-page {
   width: 210mm;
-  height: 297mm;
-  overflow: hidden;
+  min-height: 297mm;
+  height: auto;
+  overflow: visible;
   background: white;
   padding: 8mm;
   margin: 0 auto;
@@ -128,24 +180,31 @@ export default function TravelContractModal({
           }
 
           @media print {
-            html,
-            body {
-              width: 210mm;
-              height: 297mm;
-              overflow: hidden;
-            }
+  html,
+  body {
+    width: 210mm;
+    height: auto;
+    overflow: visible !important;
+  }
 
-            #print-page {
-             margin: 0 auto;
-            }
-          }
+  #print-page {
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 auto;
+  }
+
+  .contract-bottom-section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
         </style>
       </head>
 
       <body>
         <div id="print-page">
           <div id="print-content">
-            ${contract.innerHTML}
+            ${printCopy.innerHTML}
           </div>
         </div>
 
@@ -156,8 +215,11 @@ export default function TravelContractModal({
 
     if (!page || !content) return;
 
-    const availableHeight = page.clientHeight - 20;
-    const contentHeight = content.scrollHeight;
+    // A4 한 장의 실제 사용 가능한 높이 계산
+// A4 높이 297mm - 상하 여백 16mm = 281mm
+const availableHeight = (page.clientWidth * 281) / 210 - 20;
+
+const contentHeight = content.scrollHeight;
 
     let scale = availableHeight / contentHeight;
 
@@ -535,7 +597,18 @@ export default function TravelContractModal({
                       <ContractCheck label="일반호텔" />
                       <ContractCheck label="기타" />
 
-                      <span className="ml-2">1실 투숙인원 : ______ 명</span>
+                      <span className="ml-2 flex items-center gap-1">
+  1실 투숙인원 :
+  <input
+    type="number"
+    min="1"
+    value={roomOccupancy}
+    onChange={(e) => setRoomOccupancy(e.target.value)}
+    placeholder="인원"
+    className="w-14 border-b border-gray-400 bg-transparent text-center outline-none"
+  />
+  명
+</span>
                     </div>
                   </td>
                 </tr>
@@ -685,6 +758,7 @@ export default function TravelContractModal({
             <table
               className="
                 mt-3
+                contract-bottom-section
                 w-full
                 table-fixed
                 border-collapse
@@ -701,84 +775,198 @@ export default function TravelContractModal({
 
               <tbody>
                 {/* 여행업자 */}
-                <tr>
-                  <th rowSpan={5} className={thClass}>
-                    여행업자
-                  </th>
+<tr>
+  <th rowSpan={5} className={thClass}>
+    여행업자
+  </th>
 
-                  <th className={thClass}>상호</th>
+  <th className={thClass}>상호</th>
 
-                  <td className={tdClass}>
-                    __________________________________________
-                  </td>
-                </tr>
+  <td className={tdClass}>
+    <input
+      type="text"
+      value={businessInfo.name}
+      onChange={(e) =>
+        setBusinessInfo((prev) => ({
+          ...prev,
+          name: e.target.value,
+        }))
+      }
+      placeholder="여행사 상호 입력"
+      className={inputClass}
+    />
+  </td>
+</tr>
 
-                <tr>
-                  <th className={thClass}>주소</th>
+<tr>
+  <th className={thClass}>주소</th>
 
-                  <td className={tdClass}>
-                    __________________________________________
-                  </td>
-                </tr>
+  <td className={tdClass}>
+    <input
+      type="text"
+      value={businessInfo.address}
+      onChange={(e) =>
+        setBusinessInfo((prev) => ({
+          ...prev,
+          address: e.target.value,
+        }))
+      }
+      placeholder="여행사 주소 입력"
+      className={inputClass}
+    />
+  </td>
+</tr>
 
-                <tr>
-                  <th className={thClass}>대표자</th>
+<tr>
+  <th className={thClass}>대표자</th>
 
-                  <td className={tdClass}>
-                    ______________________________ (인)
-                  </td>
-                </tr>
+  <td className={tdClass}>
+    <div className="flex items-center gap-2">
+      <input
+        type="text"
+        value={businessInfo.representative}
+        onChange={(e) =>
+          setBusinessInfo((prev) => ({
+            ...prev,
+            representative: e.target.value,
+          }))
+        }
+        placeholder="대표자명"
+        className={inputClass}
+      />
+      <span className="shrink-0">(인)</span>
+    </div>
+  </td>
+</tr>
 
-                <tr>
-                  <th className={thClass}>전화</th>
+<tr>
+  <th className={thClass}>전화</th>
 
-                  <td className={tdClass}>
-                    __________________________________________
-                  </td>
-                </tr>
+  <td className={tdClass}>
+    <input
+      type="text"
+      value={businessInfo.phone}
+      onChange={(e) =>
+        setBusinessInfo((prev) => ({
+          ...prev,
+          phone: e.target.value,
+        }))
+      }
+      placeholder="전화번호 입력"
+      className={inputClass}
+    />
+  </td>
+</tr>
 
-                <tr>
-                  <th className={thClass}>
-                    등록번호 /
-                    <br />
-                    담당자
-                  </th>
+<tr>
+  <th className={thClass}>
+    등록번호 /
+    <br />
+    담당자
+  </th>
 
-                  <td className={tdClass}>
-                    등록번호 ____________________ &nbsp;&nbsp;&nbsp; 담당자
-                    ____________________ (인)
-                  </td>
-                </tr>
+  <td className={tdClass}>
+    <div className="flex items-center gap-2">
+      <span className="shrink-0">등록번호</span>
 
-                {/* 여행자 */}
-                <tr>
-                  <th rowSpan={3} className={thClass}>
-                    여행자
-                  </th>
+      <input
+        type="text"
+        value={businessInfo.registrationNumber}
+        onChange={(e) =>
+          setBusinessInfo((prev) => ({
+            ...prev,
+            registrationNumber: e.target.value,
+          }))
+        }
+        className={`${inputClass} border-b border-gray-300`}
+      />
 
-                  <th className={thClass}>이름</th>
+      <span className="shrink-0">담당자</span>
 
-                  <td className={tdClass}>
-                    <div className="flex justify-between gap-4">
-                      <span>{reservation.name}</span>
-                      <span>(서명) ____________________</span>
-                    </div>
-                  </td>
-                </tr>
+      <input
+        type="text"
+        value={businessInfo.manager}
+        onChange={(e) =>
+          setBusinessInfo((prev) => ({
+            ...prev,
+            manager: e.target.value,
+          }))
+        }
+        className={`${inputClass} border-b border-gray-300`}
+      />
 
-                <tr>
-                  <th className={thClass}>전화</th>
+      <span className="shrink-0">(인)</span>
+    </div>
+  </td>
+</tr>
 
-                  <td className={tdClass}>{reservation.phone}</td>
-                </tr>
+               {/* 여행자 */}
+<tr>
+  <th rowSpan={3} className={thClass}>
+    여행자
+  </th>
 
-                <tr>
-                  <th className={thClass}>주소</th>
+  <th className={thClass}>이름</th>
 
-                  <td className={tdClass}>
-                    __________________________________________
-                  </td>
-                </tr>
+  <td className={tdClass}>
+    <div className="flex items-center justify-between gap-3">
+      <input
+        type="text"
+        value={travelerInfo.name}
+        onChange={(e) =>
+          setTravelerInfo((prev) => ({
+            ...prev,
+            name: e.target.value,
+          }))
+        }
+        placeholder="여행자 이름"
+        className={`${inputClass} flex-1`}
+      />
+
+      <span className="shrink-0">
+        (서명) ______________
+      </span>
+    </div>
+  </td>
+</tr>
+
+<tr>
+  <th className={thClass}>전화</th>
+
+  <td className={tdClass}>
+    <input
+      type="text"
+      value={travelerInfo.phone}
+      onChange={(e) =>
+        setTravelerInfo((prev) => ({
+          ...prev,
+          phone: e.target.value,
+        }))
+      }
+      placeholder="여행자 연락처"
+      className={inputClass}
+    />
+  </td>
+</tr>
+
+<tr>
+  <th className={thClass}>주소</th>
+
+  <td className={tdClass}>
+    <input
+      type="text"
+      value={travelerInfo.address}
+      onChange={(e) =>
+        setTravelerInfo((prev) => ({
+          ...prev,
+          address: e.target.value,
+        }))
+      }
+      placeholder="여행자 주소 입력"
+      className={inputClass}
+    />
+  </td>
+</tr>
               </tbody>
             </table>
           </div>
