@@ -203,7 +203,7 @@ export default function InvoiceModal({
       overflow: visible !important;
       box-shadow: none !important;
       border-radius: 0 !important;
-      zoom: 0.75;
+      zoom: 0.68;
     }
 
     .invoice-box,
