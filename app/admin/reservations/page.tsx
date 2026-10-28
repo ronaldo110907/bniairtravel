@@ -307,6 +307,7 @@ const bulkReduction = useMemo(() => {
 }, [selected?.people, bulkPersonCount]);
 
   const [editPerson, setEditPerson] = useState<ReservationPeople | null>(null);
+  const [savingPerson, setSavingPerson] = useState(false);
   const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newReservation, setNewReservation] = useState({
@@ -1097,51 +1098,80 @@ sort_order: currentTotalCount + index,
       await loadReservations();
     }
   }
-  async function updatePerson() {
-    if (!editPerson) return;
+  async function updatePerson(openNext = false) {
+    if (!editPerson || savingPerson) return;
 
-    const { data, error } = await supabase
-      .from("reservation_people")
-      .update({
-        name: editPerson.name,
+    setSavingPerson(true);
+    try {
 
-        passport_name:
-          `${editPerson.passport_last_name || ""} ${
-            editPerson.passport_first_name || ""
-          }`.trim() ||
-          editPerson.passport_name ||
-          null,
-        passport_last_name: editPerson.passport_last_name || null,
-        passport_first_name: editPerson.passport_first_name || null,
+      const { data, error } = await supabase
+        .from("reservation_people")
+        .update({
+          name: editPerson.name,
 
-        passport_number: editPerson.passport_number || null,
+          passport_name:
+            `${editPerson.passport_last_name || ""} ${
+              editPerson.passport_first_name || ""
+            }`.trim() ||
+            editPerson.passport_name ||
+            null,
+          passport_last_name: editPerson.passport_last_name || null,
+          passport_first_name: editPerson.passport_first_name || null,
 
-        passport_birth: editPerson.passport_birth || null,
-        passport_issue: editPerson.passport_issue || null,
-        passport_expiry: editPerson.passport_expiry || null,
+          passport_number: editPerson.passport_number || null,
 
-        passport_sex: editPerson.passport_sex || null,
-        passport_nationality: editPerson.passport_nationality || null,
+          passport_birth: editPerson.passport_birth || null,
+          passport_issue: editPerson.passport_issue || null,
+          passport_expiry: editPerson.passport_expiry || null,
 
-        is_guide: editPerson.is_guide ?? false,
-      })
-      .eq("id", editPerson.id)
-      .select()
-      .single();
+          passport_sex: editPerson.passport_sex || null,
+          passport_nationality: editPerson.passport_nationality || null,
 
-    if (error) {
+          is_guide: editPerson.is_guide ?? false,
+        })
+        .eq("id", editPerson.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("UPDATE PERSON ERROR", error);
+        alert(error.message);
+        return;
+      }
+
+      const people = selected ? await loadPeople(selected.id) : undefined;
+
+      if (openNext) {
+        if (!people) {
+          alert("저장은 완료됐지만 예약자 목록을 불러오지 못했습니다. 다시 확인해 주세요.");
+          return;
+        }
+        const currentIndex = people.findIndex((person) => person.id === editPerson.id);
+        if (currentIndex < 0) {
+          alert("저장은 완료됐지만 현재 예약자를 목록에서 찾지 못했습니다.");
+          return;
+        }
+        const nextPerson = people[currentIndex + 1];
+        if (nextPerson) {
+          setPersonSearch("");
+          setOpenPersonId(nextPerson.id);
+          setEditPerson(nextPerson);
+          return;
+        }
+        setEditPerson(null);
+        alert("마지막 예약자까지 저장했습니다.");
+        return;
+      }
+
+      setEditPerson(null);
+
+      alert("예약자가 수정되었습니다.");
+    } catch (error) {
       console.error("UPDATE PERSON ERROR", error);
-      alert(error.message);
-      return;
+      alert("예약자 저장 중 오류가 발생했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setSavingPerson(false);
     }
-
-    if (selected) {
-      await loadPeople(selected.id);
-    }
-
-    setEditPerson(null);
-
-    alert("예약자가 수정되었습니다.");
   }
 
   async function makePrimaryPerson(person: any) {
@@ -1426,13 +1456,14 @@ sort_order: currentTotalCount + index,
       )) || [];
 
     setSelected((prev) => {
-      if (!prev) return prev;
+      if (!prev || prev.id !== reservationId) return prev;
 
       return {
         ...prev,
         people,
       };
     });
+    return people;
   }
   async function loadDeparturePrice(departureId: string) {
     const { data, error } = await supabase
@@ -4442,7 +4473,7 @@ px-4 py-2
                             />
 
                             {editPerson?.id === person.id && (
-                              <div className="mt-5 rounded-xl bg-blue-50 p-5">
+                              <fieldset disabled={savingPerson} className="mt-5 rounded-xl bg-blue-50 p-5">
                                 <div className="mb-3 font-bold">
                                   예약자 수정
                                 </div>
@@ -4452,7 +4483,7 @@ px-4 py-2
                                   setPerson={setEditPerson}
                                 />
 
-                                <div className="mt-4 flex gap-2">
+                                <div className="mt-4 flex flex-wrap gap-2">
                                   <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
                                     <label className="flex cursor-pointer items-center gap-3">
                                       <input
@@ -4481,7 +4512,7 @@ px-4 py-2
 
                                   <button
                                     type="button"
-                                    onClick={updatePerson}
+                                    onClick={() => updatePerson()}
                                     className="
                   rounded-lg
                   bg-blue-600
@@ -4492,6 +4523,14 @@ px-4 py-2
                 "
                                   >
                                     저장
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => updatePerson(true)}
+                                    className="rounded-lg bg-blue-700 px-4 py-2 font-bold text-white disabled:opacity-50"
+                                  >
+                                    저장 후 다음 예약자 ▶
                                   </button>
 
                                   <button
@@ -4508,7 +4547,7 @@ px-4 py-2
                                     취소
                                   </button>
                                 </div>
-                              </div>
+                              </fieldset>
                             )}
                           </Fragment>
                         );
