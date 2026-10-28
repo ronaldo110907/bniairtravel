@@ -272,7 +272,9 @@ function ReservationsContent() {
 
   const [openPersonId, setOpenPersonId] = useState<string | null>(null);
   const [previewPassport, setPreviewPassport] = useState<string | null>(null);
+  const [failedPassportPreview, setFailedPassportPreview] = useState<string | null>(null);
   const [passportUploading, setPassportUploading] = useState(false);
+  const [bulkPassportUploading, setBulkPassportUploading] = useState(false);
   const [ocrRunning, setOcrRunning] = useState(false);
   const [memoDraft, setMemoDraft] = useState("");
   const [messageDraft, setMessageDraft] = useState("");
@@ -647,7 +649,7 @@ const bulkReduction = useMemo(() => {
   }
 
   async function uploadPersonPassport(person: ReservationPeople, file: File) {
-    if (!selected) return;
+    if (!selected || bulkPassportUploading) return;
 
     setPassportUploading(true);
     const fileExt = file.name.split(".").pop() || "jpg";
@@ -683,6 +685,72 @@ const bulkReduction = useMemo(() => {
     await loadPeople(selected.id);
 
     alert("여권이 등록되었습니다.");
+  }
+  async function uploadBulkPassports(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []).sort((a, b) =>
+      a.name.localeCompare(b.name, "ko", { numeric: true }));
+    event.target.value = "";
+    if (!selected || !files.length || bulkPassportUploading || passportUploading || savingPerson) return;
+    if (files.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
+      alert("JPG, PNG, WEBP 사진만 선택해 주세요.");
+      return;
+    }
+
+    const reservationId = selected.id;
+    let completed = 0;
+    setBulkPassportUploading(true);
+    try {
+      // 화면에 남은 목록 대신 최신 빈자리를 확인합니다.
+      const { data, error } = await supabase.from("reservation_people")
+        .select("*").eq("reservation_id", reservationId).order("sort_order", { ascending: true });
+      if (error) throw error;
+      const candidates = getBulkReductionCandidates(data ?? []).temporaryPeople
+        .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+      if (files.length > candidates.length) {
+        alert(`등록할 사진은 ${files.length}장, 빈 예약자는 ${candidates.length}명입니다. 사진 수를 줄이거나 인원을 먼저 추가해 주세요.`);
+        return;
+      }
+
+      for (const [index, file] of files.entries()) {
+        const person = candidates[index];
+        const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+        const filePath = `reservation-people/${person.id}-${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage.from("passports")
+          .upload(filePath, file, { upsert: false });
+        if (uploadError) throw uploadError;
+
+        {
+          let query = supabase.from("reservation_people").update({ passport_image: filePath })
+            .eq("id", person.id).eq("reservation_id", reservationId).eq("name", person.name);
+          // 업로드 도중 다른 창에서 등록/수정한 예약자는 덮어쓰지 않습니다.
+          const fields = ["passport_image", "passport_name", "passport_last_name", "passport_first_name",
+            "passport_number", "passport_birth", "passport_issue", "passport_expiry", "passport_sex",
+            "passport_nationality", "is_guide"] as const;
+          for (const field of fields) {
+            query = person[field] == null ? query.is(field, null) : query.eq(field, person[field]);
+          }
+          const { data: saved, error: saveError } = await query.select("id").maybeSingle();
+          if (saveError) throw saveError;
+          if (!saved) {
+            await supabase.storage.from("passports").remove([filePath]);
+            throw new Error("예약자 정보가 변경되어 등록을 멈췄습니다.");
+          }
+        }
+        completed++;
+      }
+      alert(`여권 사진 ${completed}장이 파일명 순서대로 등록되었습니다. 수정창에서 정보를 입력해 주세요.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "사진 등록에 실패했습니다.";
+      alert(`${completed}장 등록 후 중단됐습니다.\n${message}\n중단된 파일: ${files[completed]?.name ?? "-"}\n등록된 사진을 확인하고 남은 파일만 다시 선택해 주세요.`);
+    } finally {
+      setBulkPassportUploading(false);
+      const people = await loadPeople(reservationId);
+      setEditPerson((current) => {
+        if (!current || current.reservation_id !== reservationId) return current;
+        const updated = people?.find((person) => person.id === current.id);
+        return updated ? { ...current, passport_image: updated.passport_image } : current;
+      });
+    }
   }
   async function savePerson() {
     if (!selected) return;
@@ -2443,6 +2511,7 @@ for (let from = 0; ; from += 1000) {
 
   async function openDetail(item: Reservation) {
     setEditPerson(null);
+    setFailedPassportPreview(null);
     setSelected(item);
     setShowPersonForm(false);
     setMemoDraft(item.memo || "");
@@ -3722,15 +3791,15 @@ function resetFilters() {
           }}
         >
           <div
-            className="
+            className={`
             max-h-[92vh]
             w-full
-            max-w-3xl
+            ${editPerson ? "max-w-6xl" : "max-w-3xl"}
             overflow-y-auto
             rounded-3xl
             bg-white
             shadow-2xl
-            "
+            `}
           >
             {/* HEADER */}
 
@@ -4177,7 +4246,7 @@ function resetFilters() {
               <div className="mt-6 rounded-xl border p-5">
                 <h3 className="mb-4 font-bold">👥 예약자 명단 관리</h3>
 
-                <div className="mt-4 flex items-center gap-3">
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                   <button
                     type="button"
                     onClick={() => setShowPersonForm(true)}
@@ -4209,6 +4278,19 @@ function resetFilters() {
                   >
                     👥 인원 일괄 추가
                   </button>
+                  <label className={`rounded-lg bg-violet-600 px-4 py-2 font-bold text-white ${bulkPassportUploading || passportUploading || savingPerson ? "opacity-50" : "cursor-pointer"}`}>
+                    {bulkPassportUploading ? "여권 등록 중..." : "여권 일괄등록"}
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      disabled={bulkPassportUploading || passportUploading || savingPerson}
+                      onChange={uploadBulkPassports}
+                    />
+                  </label>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
                   <button
                     type="button"
                     onClick={() => setShowInvoiceModal(true)}
@@ -4247,6 +4329,9 @@ function resetFilters() {
                     💰 정산 바로가기
                   </button>
                 </div>
+                <p className="mt-3 text-sm text-gray-500">
+                  여권 일괄등록: 파일명 순으로 사진·여권정보가 없는 임시 예약자에 연결합니다. 추가 등록은 남은 빈자리부터 이어집니다.
+                </p>
                 <div className="mt-3">
                   <input
                     type="text"
@@ -4478,10 +4563,46 @@ px-4 py-2
                                   예약자 수정
                                 </div>
 
-                                <PersonForm
-                                  person={editPerson}
-                                  setPerson={setEditPerson}
-                                />
+                                <div className="grid items-start gap-5 lg:grid-cols-2">
+                                  <div className="min-w-0 rounded-xl border bg-white p-4">
+                                    <div className="mb-3 font-bold">여권 사진</div>
+                                    {editPerson.passport_image ? (
+                                      failedPassportPreview === `${editPerson.id}:${editPerson.passport_image}` ? (
+                                        <p role="status" className="py-8 text-center text-sm text-gray-600">
+                                          사진을 불러오지 못했습니다. 예약 상세를 다시 열어 주세요.
+                                        </p>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          className="block w-full rounded-lg text-left focus-visible:outline-2 focus-visible:outline-blue-600"
+                                          onClick={() => setPreviewPassport(editPerson.passport_image)}
+                                          aria-label={`${editPerson.name} 여권 사진 확대`}
+                                        >
+                                          <img
+                                            key={`${editPerson.id}:${editPerson.passport_image}`}
+                                            src={editPerson.passport_image}
+                                            alt={`${editPerson.name} 여권`}
+                                            className="max-h-[60vh] w-full rounded-lg object-contain"
+                                            onError={() => setFailedPassportPreview(`${editPerson.id}:${editPerson.passport_image}`)}
+                                          />
+                                          <span className="mt-2 block text-center text-sm text-blue-700">
+                                            사진을 누르면 크게 볼 수 있습니다.
+                                          </span>
+                                        </button>
+                                      )
+                                    ) : (
+                                      <p className="py-8 text-center text-sm text-gray-500">
+                                        등록된 여권 사진이 없습니다.
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <PersonForm
+                                      person={editPerson}
+                                      setPerson={setEditPerson}
+                                    />
+                                  </div>
+                                </div>
 
                                 <div className="mt-4 flex flex-wrap gap-2">
                                   <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
