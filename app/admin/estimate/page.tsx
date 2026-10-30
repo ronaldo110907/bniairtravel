@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useReactToPrint } from "react-to-print";
 import { estimateProducts } from "@/data/estimateProducts";
 import { supabase } from "@/lib/supabase";
+import { extractEstimateFromPdf } from "@/lib/importEstimatePdf";
 
 type Partner = {
   id: string;
@@ -62,6 +63,8 @@ export default function EstimatePage() {
   }, []);
   const estimateRef = useRef<HTMLDivElement>(null);
   const estimateContentRef = useRef<HTMLDivElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [isImportingPdf, setIsImportingPdf] = useState(false);
 
   const [showPreview, setShowPreview] = useState(false);
 
@@ -417,6 +420,36 @@ thead {
     );
   }
 
+  async function handlePdfFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file || isImportingPdf) return;
+
+    setIsImportingPdf(true);
+    try {
+      const imported = await extractEstimateFromPdf(file);
+
+      // 기존 작성 화면의 state에 그대로 복원하므로 모든 입력칸 수정 가능
+      setMode("free");
+      setPriceMode(imported.priceMode);
+      setForm(imported.form);
+      setDays(imported.days);
+      setShowPreview(false);
+
+      const warningText = imported.warnings.length
+        ? `\n\n확인할 사항:\n- ${imported.warnings.join("\n- ")}`
+        : "";
+      alert(`PDF를 불러왔습니다. DAY ${imported.days.length}개를 복원했습니다.${warningText}`);
+    } catch (error) {
+      console.error("견적서 PDF 불러오기 오류:", error);
+      alert(error instanceof Error ? error.message : "PDF 불러오기에 실패했습니다.");
+    } finally {
+      // 같은 파일도 다시 선택할 수 있도록 초기화
+      input.value = "";
+      setIsImportingPdf(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       {/* 제목 */}
@@ -428,8 +461,17 @@ thead {
         </p>
       </div>
 
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        onChange={handlePdfFileChange}
+        className="hidden"
+        aria-label="기존 견적서 PDF 선택"
+      />
+
       {/* 견적 유형 선택 */}
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-3">
         <button
           type="button"
           onClick={() => setMode("product")}
@@ -466,6 +508,22 @@ thead {
           <div className="mt-2 text-sm leading-6 text-gray-500">
             홈페이지에 없는 지역이나 별도 상품을
             <br />빈 견적서에서 직접 작성합니다.
+          </div>
+        </button>
+        <button
+          type="button"
+          disabled={isImportingPdf}
+          onClick={() => pdfInputRef.current?.click()}
+          className="rounded-2xl border border-violet-200 bg-violet-50 p-7 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-wait disabled:opacity-60"
+        >
+          <div className="text-3xl">📂</div>
+          <div className="mt-4 text-xl font-bold">
+            {isImportingPdf ? "PDF 분석 중..." : "기존 PDF 불러오기"}
+          </div>
+          <div className="mt-2 text-sm leading-6 text-gray-500">
+            전에 다운로드한 BNI 견적서를 불러와
+            <br />
+            입력칸에서 다시 수정합니다.
           </div>
         </button>
       </div>

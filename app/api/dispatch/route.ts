@@ -442,7 +442,18 @@ export async function GET(request: Request) {
     let roomingRow = 6;
     let roomingNo = 1;
 
-    for (const room of rooms ?? []) {
+    for (const room of [...(rooms ?? [])].sort((a, b) => {
+  const roomOrder: Record<string, number> = {
+    "1인실": 0,
+    "2인실": 1,
+    "3인실": 2,
+  };
+
+  return (
+    (roomOrder[a.room_type] ?? 99) -
+    (roomOrder[b.room_type] ?? 99)
+  );
+})) {
       const members = filteredRoomMembers.filter(
         (member: any) => String(member.room_id) === String(room.id),
       );
