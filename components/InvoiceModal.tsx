@@ -16,6 +16,7 @@ type ReservationPeople = {
   passport_birth?: string | null;
   passport_number?: string | null;
   passport_expiry?: string | null;
+  is_guide?: boolean | null;
 };
 
 type Reservation = {
@@ -101,7 +102,9 @@ export default function InvoiceModal({
   const [account, setAccount] = useState("전세기계좌");
 
   const peopleCount = reservation?.people?.length ?? 0;
-  const totalAmount = (reservation?.departure_price ?? 0) * peopleCount;
+  const guideCount = reservation?.people?.filter((person) => person.is_guide === true).length ?? 0;
+  const payingPeopleCount = peopleCount - guideCount;
+  const totalAmount = (reservation?.departure_price ?? 0) * payingPeopleCount;
   const enteredTotalPrice = parseMoney(totalPrice);
   const enteredCurrentInvoiceAmount = parseMoney(currentInvoiceAmount);
 
@@ -370,7 +373,7 @@ export default function InvoiceModal({
                 <div>{reservation.departure_date}</div>
 
                 <div className="font-semibold text-gray-600">인원</div>
-                <div>{peopleCount}명</div>
+                <div>{peopleCount}명{guideCount > 0 ? ` (청구 ${payingPeopleCount}명 · 인솔자 FREE ${guideCount}명)` : ""}</div>
               </div>
             </div>
 
@@ -478,7 +481,7 @@ export default function InvoiceModal({
                             placeholder="직접 입력"
                             className="w-28 rounded-md border border-gray-300 px-2 py-2 text-right outline-none"
                           />
-                          <span className="whitespace-nowrap">원 × {peopleCount}명</span>
+                          <span className="whitespace-nowrap">원 × {payingPeopleCount}명</span>
                         </label>
                         <div className="ml-auto flex items-center gap-2">
                           <input
@@ -730,7 +733,7 @@ export default function InvoiceModal({
                   <div>{reservation.departure_date}</div>
 
                   <div className="font-semibold text-gray-600">총 인원</div>
-                  <div>{peopleCount}명</div>
+                  <div>{peopleCount}명{guideCount > 0 ? ` (청구 ${payingPeopleCount}명 · 인솔자 FREE ${guideCount}명)` : ""}</div>
                 </div>
               </div>
 
