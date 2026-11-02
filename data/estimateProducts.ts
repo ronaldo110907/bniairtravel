@@ -3,7 +3,7 @@ import type { ItineraryItem } from "@/data/xiamen";
 import {
   itineraryValue3N5D,
   itineraryPremium3N5D,
-  itineraryPremium4N6D,
+  itineraryGuanzhishan4N6D,
   itineraryWuyishan4N6D,
   itineraryGolf3N5D,
   itineraryGolf4N6D,
@@ -11,8 +11,8 @@ import {
   excludesValue3,
   includesPremium3,
   excludesPremium3,
-  includesPremium4,
-  excludesPremium4,
+  includesGuanzhishan4,
+  excludesGuanzhishan4,
   includesWuyishan4,
   excludesWuyishan4,
   includesGolf3,
@@ -194,26 +194,26 @@ export const estimateProducts: EstimateProductPreset[] = [
   },
 
   // ======================================================
-  // 하문 - 고품격 4박6일
+  // 하문 - 고품격 관지산 4박6일
   // ======================================================
   {
-    id: "xiamen-premium-4n6d",
+    id: "xiamen-guanzhishan-4n6d",
 
     region: "하문",
     stay: "4박6일",
-    type: "고품격",
+    type: "고품격 관지산",
 
-    productName: "하문 고품격 4박6일",
+    productName: "하문 고품격 관지산 4박6일",
     travelPeriod: "4박6일",
 
-    includes: listToText(includesPremium4),
-    excludes: listToText(excludesPremium4),
+    includes: listToText(includesGuanzhishan4),
+    excludes: listToText(excludesGuanzhishan4),
 
-    shopping: xiamenTourShopping,
-    options: "",
+    shopping: "노쇼핑",
+    options: "노옵션",
     remarks: xiamenRemarks,
 
-    days: itineraryToDays("xiamen-premium-4n6d", itineraryPremium4N6D),
+    days: itineraryToDays("xiamen-guanzhishan-4n6d", itineraryGuanzhishan4N6D),
   },
 
   // ======================================================
