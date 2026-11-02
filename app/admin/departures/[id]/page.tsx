@@ -14,6 +14,8 @@ export default function DepartureDetailPage() {
 
   const [departure, setDeparture] = useState<any>(null);
   const [reservations, setReservations] = useState<any[]>([]);
+  const [sharedReservedCount, setSharedReservedCount] = useState<number | null>(null);
+  const [seatError, setSeatError] = useState(false);
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [selectedDispatchIds, setSelectedDispatchIds] = useState<string[]>([]);
 
@@ -84,7 +86,44 @@ export default function DepartureDetailPage() {
     return sum + count;
   }, 0);
 
-  const remainSeat = (departure?.seat || 0) - reservedCount;
+  useEffect(() => {
+    if (!departure) return;
+    let cancelled = false;
+    setSharedReservedCount(null);
+    setSeatError(false);
+
+    async function loadSharedSeats() {
+      try {
+        // 출발일 목록과 동일하게 상품 + 출발일 기준으로 좌석을 공유합니다.
+        const { data: sharedDepartures, error: departureError } = await supabase
+          .from("departures")
+          .select("id")
+          .eq("product_id", departure.product_id)
+          .eq("departure_date", departure.departure_date);
+        if (departureError || !sharedDepartures?.length) throw departureError ?? new Error("공유 출발일 없음");
+
+        const { data: sharedReservations, error: reservationError } = await supabase
+          .from("reservations")
+          .select("people_count, status, people:reservation_people(id)")
+          .in("departure_id", sharedDepartures.map((item) => item.id));
+        if (reservationError) throw reservationError;
+
+        const count = (sharedReservations ?? []).reduce((sum, reservation) => {
+          if (reservation.status === "취소") return sum;
+          // 인솔자도 좌석은 점유하며, 명단 미입력 예약은 예약 인원으로 계산합니다.
+          return sum + Math.max(Number(reservation.people_count) || 0, reservation.people?.length || 0, 1);
+        }, 0);
+        if (!cancelled) setSharedReservedCount(count);
+      } catch (error) {
+        console.error("SHARED SEATS LOAD ERROR", error);
+        if (!cancelled) setSeatError(true);
+      }
+    }
+    void loadSharedSeats();
+    return () => { cancelled = true; };
+  }, [departure, reservations]);
+
+  const remainSeat = sharedReservedCount === null ? null : (departure?.seat || 0) - sharedReservedCount;
 
   function openDispatchModal() {
     if (!departure) return;
@@ -254,9 +293,19 @@ export default function DepartureDetailPage() {
 
             <div>
               <span className="font-semibold text-gray-500">
-                예약 / 잔여 :{" "}
+                해당 코스 예약 :{" "}
               </span>
-              예약 {reservedCount}명 / 잔여 {remainSeat}석
+              {reservedCount}명
+              <div className="mt-1">
+                <span className="font-semibold text-gray-500">공유 좌석 전체 : </span>
+                {seatError ? (
+                  <span className="text-red-600">좌석 조회 실패 — 새로고침해 주세요.</span>
+                ) : remainSeat === null ? (
+                  "조회 중..."
+                ) : (
+                  <>예약 {sharedReservedCount}명 / <span className={remainSeat < 0 ? "font-bold text-red-600" : ""}>잔여 {remainSeat}석</span></>
+                )}
+              </div>
             </div>
           </div>
         </div>
