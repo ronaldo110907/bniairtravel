@@ -10,6 +10,17 @@ import {
 } from "@/data/zhangjiajie";
 
 import {
+  flightInfo as zhangjiajie2027FlightInfo,
+  itinerary3N4D as zhangjiajie2027_3N4D,
+  itinerary4N5D as zhangjiajie2027_4N5D,
+  hotels as zhangjiajie2027Hotels,
+  includes as zhangjiajie2027Includes,
+  excludes as zhangjiajie2027Excludes,
+  mealBaseUrl as zhangjiajie2027MealBaseUrl,
+  mealImages as zhangjiajie2027MealImages,
+} from "@/data/zhangjiajie-2027";
+
+import {
   flightInfo as baekduFlightInfo,
   itinerary3N4D as baekdu3N4D,
   itinerary4N5D as baekdu4N5D,
@@ -168,6 +179,29 @@ const shareProducts: Record<string, ShareProduct> = {
         hotels: zhangjiajieHotels as ShareHotel[],
         includes: zhangjiajieIncludes as ShareListItem[],
         excludes: zhangjiajieExcludes as ShareListItem[],
+      },
+    },
+  },
+  
+    "zhangjiajie-2027": {
+    name: "장가계",
+    poster:
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie.png",
+    flightInfo: zhangjiajie2027FlightInfo,
+    courses: {
+      "3n4d": {
+        name: "3박4일",
+        itinerary: zhangjiajie2027_3N4D as ShareItem[],
+        hotels: zhangjiajie2027Hotels as ShareHotel[],
+        includes: zhangjiajie2027Includes as ShareListItem[],
+        excludes: zhangjiajie2027Excludes as ShareListItem[],
+      },
+      "4n5d": {
+        name: "4박5일",
+        itinerary: zhangjiajie2027_4N5D as ShareItem[],
+        hotels: zhangjiajie2027Hotels as ShareHotel[],
+        includes: zhangjiajie2027Includes as ShareListItem[],
+        excludes: zhangjiajie2027Excludes as ShareListItem[],
       },
     },
   },
@@ -366,7 +400,26 @@ export default async function ShareItineraryPage({
     notFound();
   }
 
-  const selectedHotels = courseData.hotels;
+  const selectedHotels =
+  product === "zhangjiajie-2027"
+    ? courseData.hotels.map((hotel) => {
+        const baseUrl =
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/hotel/zhangjiajie/";
+
+        const resolveImage = (path?: string) => {
+          if (!path) return undefined;
+          if (path.startsWith("http")) return path;
+
+          return `${baseUrl}${path.replace(/^\/+/, "")}`;
+        };
+
+        return {
+          ...hotel,
+          image: resolveImage(hotel.image),
+          roomImage: resolveImage(hotel.roomImage),
+        };
+      })
+    : courseData.hotels;
   const selectedIncludes = courseData.includes;
   const selectedExcludes = courseData.excludes;
 
@@ -750,6 +803,47 @@ export default async function ShareItineraryPage({
                           </div>
                         </div>
                       </div>
+                      {product === "zhangjiajie-2027" && (
+  <div className="mt-5 grid gap-4 sm:grid-cols-3">
+    {[
+      { label: "조식", name: item.meals.breakfast },
+      { label: "중식", name: item.meals.lunch },
+      { label: "석식", name: item.meals.dinner },
+    ].map(({ label, name }) => {
+      const imageFile = name
+        ? (zhangjiajie2027MealImages as Record<string, string>)[name]
+        : undefined;
+
+      if (!imageFile || name === "-----") return null;
+
+      const imageUrl = imageFile.startsWith("http")
+        ? imageFile
+        : `${zhangjiajie2027MealBaseUrl}${imageFile.replace(/^\/+/, "")}`;
+
+      return (
+        <div
+          key={label}
+          className="overflow-hidden rounded-2xl border border-[#e8dcc4] bg-white"
+        >
+          <img
+            src={imageUrl}
+            alt={`${label} - ${name}`}
+            className="h-36 w-full object-cover"
+          />
+
+          <div className="p-3 text-center">
+            <p className="text-xs font-bold text-[#b88a44]">
+              {label}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-gray-700">
+              {name}
+            </p>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
                     </div>
                   )}
 

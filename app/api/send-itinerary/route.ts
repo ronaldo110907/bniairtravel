@@ -12,6 +12,17 @@ import {
 } from "@/data/zhangjiajie";
 
 import {
+  itinerary3N4D as zhangjiajie2027Itinerary3N4D,
+  itinerary4N5D as zhangjiajie2027Itinerary4N5D,
+  hotels as zhangjiajie2027Hotels,
+  includes as zhangjiajie2027Includes,
+  excludes as zhangjiajie2027Excludes,
+  flightInfo as zhangjiajie2027FlightInfo,
+  mealBaseUrl as zhangjiajie2027MealBaseUrl,
+  mealImages as zhangjiajie2027MealImages,
+} from "@/data/zhangjiajie-2027";
+
+import {
   flightInfo as baekduFlightInfo,
   itinerary3N4D as baekduItinerary3N4D,
   itinerary4N5D as baekduItinerary4N5D,
@@ -362,6 +373,23 @@ export async function POST(request: Request) {
         itinerary3: itinerary3N4D,
         itinerary4: itinerary4N5D,
       },
+      
+            "zhangjiajie-2027": {
+        name: "장가계 2027",
+        poster:
+          "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie.png",
+        flightInfo: zhangjiajie2027FlightInfo,
+        hotels: zhangjiajie2027Hotels.map((hotel) => ({
+          ...hotel,
+          image: hotel.image.startsWith("http")
+            ? hotel.image
+            : `${zhangjiajieHotelBaseUrl}${hotel.image}`,
+        })),
+        includes: zhangjiajie2027Includes,
+        excludes: zhangjiajie2027Excludes,
+        itinerary3: zhangjiajie2027Itinerary3N4D,
+        itinerary4: zhangjiajie2027Itinerary4N5D,
+      },
 
       baekdu: {
         name: "백두산",
@@ -549,7 +577,11 @@ export async function POST(request: Request) {
     };
 
     const selectedProduct =
-      product === "baekdu" ? productData.baekdu : productData.zhangjiajie;
+  product === "baekdu"
+    ? productData.baekdu
+    : product === "zhangjiajie-2027"
+      ? productData["zhangjiajie-2027"]
+      : productData.zhangjiajie;
 
     const productInfo =
       product === "phuquoc"
@@ -598,12 +630,17 @@ export async function POST(request: Request) {
     const isXiamen = product === "xiamen";
 
     const mealImageConfig =
-      product === "zhangjiajie"
-        ? {
-            baseUrl: zhangjiajieMealBaseUrl,
-            images: zhangjiajieMealImages,
-          }
-        : product === "baekdu"
+  product === "zhangjiajie-2027"
+    ? {
+        baseUrl: zhangjiajie2027MealBaseUrl,
+        images: zhangjiajie2027MealImages,
+      }
+    : product === "zhangjiajie"
+      ? {
+          baseUrl: zhangjiajieMealBaseUrl,
+          images: zhangjiajieMealImages,
+        }
+      : product === "baekdu"
           ? {
               baseUrl: baekduMealBaseUrl,
               images: baekduMealImages,
@@ -1110,10 +1147,11 @@ export async function POST(request: Request) {
         </div>
                 ${
                   (isXiamen ||
-                    isPhuquoc ||
-                    isGuilin ||
-                    product === "zhangjiajie" ||
-                    product === "baekdu") &&
+  isPhuquoc ||
+  isGuilin ||
+  product === "zhangjiajie" ||
+  product === "zhangjiajie-2027" ||
+  product === "baekdu") &&
                   (hotel.image || hotel.roomImage)
                     ? `
               <table
