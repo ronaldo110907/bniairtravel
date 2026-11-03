@@ -7,6 +7,7 @@ import { invoiceHistoryTotal, isInvoiceAmount, type InvoiceHistoryItem } from "@
 import CancellationSection from "@/components/sections/CancellationSection";
 import { assertAdminSession } from "@/lib/auth/client";
 import { supabase } from "@/lib/supabase";
+import { downloadInvoiceHwpx, generateInvoiceHwpx, invoiceLabel, type InvoiceDocument } from "@/lib/invoiceHwpx";
 
 type ReservationPeople = {
   id: string;
@@ -76,6 +77,9 @@ export default function InvoiceModal({
   onGenerated,
 }: Props) {
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const savedPrintRef = useRef<HTMLDivElement>(null);
+  const [savedDocument, setSavedDocument] = useState<InvoiceDocument | null>(null);
+  const savedHwpx = useRef<Blob | null>(null);
 
   const [sender, setSender] = useState("이민우 부장");
   const [receiver, setReceiver] = useState("");
@@ -154,6 +158,9 @@ export default function InvoiceModal({
     setInvoices([]);
     setHistoryError("");
     setEditingHistory(false);
+    setSavedDocument(null);
+    savedHwpx.current = null;
+    savedPrintRef.current?.replaceChildren();
     if (open && reservation?.id) void loadInvoices().catch(() => {});
     const requests = historyRequest;
     return () => { requests.current++; };
@@ -174,7 +181,7 @@ export default function InvoiceModal({
     setIsPrinting(false);
   }
 
-  const handlePrint = useReactToPrint({
+  const printOptions = {
     contentRef: invoiceRef,
     onBeforePrint: assertAdminSession,
     onAfterPrint: () => {
@@ -236,8 +243,20 @@ export default function InvoiceModal({
     }
   }
 `,
+  };
+  const handlePrint = useReactToPrint(printOptions);
+  const handleSavedPrint = useReactToPrint({
+    contentRef: savedPrintRef,
+    documentTitle: savedDocument ? `${savedDocument.name}_${invoiceLabel(savedDocument.invoiceType)}` : "BNI_Invoice",
+    pageStyle: printOptions.pageStyle,
+    onBeforePrint: assertAdminSession,
+    onAfterPrint: () => { printingRef.current = false; setIsPrinting(false); },
+    onPrintError: () => {
+      alert("인쇄를 완료하지 못했습니다. 청구이력을 추가하지 않았으니 다시 인쇄할 수 있습니다.");
+      printingRef.current = false; setIsPrinting(false);
+    },
   });
-  const printInvoice = async () => {
+  const outputInvoice = async (format: "print" | "hwpx") => {
     if (printingRef.current || invoiceLoading || historyError || editingHistory) return;
     if (!reservation?.id) { alert("예약 정보를 확인할 수 없습니다."); return; }
     const amount = parseMoney(currentInvoiceAmount);
@@ -248,8 +267,18 @@ export default function InvoiceModal({
     printingRef.current = true;
     setIsPrinting(true);
     let saved = false;
+    const snapshot: InvoiceDocument = {
+      reservationId: reservation.id, name: reservation.name, product: reservation.product,
+      departureDate: reservation.departure_date, people: (reservation.people ?? []).map(person => ({ ...person })),
+      sender, receiver, date: today, invoiceType, customerType, unitPrice: parseMoney(unitPrice),
+      total: enteredTotalPrice, previous: previousInvoiceAmount, current: amount, commission: enteredCommission,
+      dueDate: paymentDueDate, notice: invoiceNotice, account: { ...selectedAccount },
+    };
+    const printSnapshot = invoiceRef.current?.cloneNode(true) as HTMLDivElement | undefined;
     try {
       await assertAdminSession();
+      // Prepare the file before saving: template/ZIP failures must not create a charge.
+      const hwpx = format === "hwpx" ? await generateInvoiceHwpx(snapshot) : null;
       const latest = await loadInvoices();
       if (invoiceHistoryTotal(latest) !== previousInvoiceAmount) {
         alert("청구 이력이 변경되어 이전 청구액을 갱신했습니다. 금액을 확인한 뒤 다시 인쇄해주세요.");
@@ -260,19 +289,45 @@ export default function InvoiceModal({
       });
       if (error) throw new Error("인보이스 청구 이력을 저장하지 못했습니다.");
       saved = true;
+      setSavedDocument(snapshot);
+      savedHwpx.current = hwpx;
+      if (printSnapshot) savedPrintRef.current?.replaceChildren(printSnapshot);
+      if (format === "hwpx") {
+        downloadInvoiceHwpx(hwpx!, snapshot);
+        if (snapshot.invoiceType === "balance") onGenerated?.();
+        await finishPrint();
+        return;
+      }
       // Let React render the print view without adding this charge to the previous amount.
       window.setTimeout(() => handlePrint(), 50);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "인보이스를 생성하지 못했습니다.");
+      alert(saved ? "청구이력은 저장되었습니다. 아래 ‘방금 저장한 청구서’에서 다시 받아주세요. 추가 저장은 필요하지 않습니다." : error instanceof Error ? error.message : "인보이스를 생성하지 못했습니다.");
+      if (saved) await finishPrint();
     } finally {
       if (!saved) { printingRef.current = false; setIsPrinting(false); }
     }
+  };
+
+  const repeatOutput = async (format: "print" | "hwpx") => {
+    if (!savedDocument || printingRef.current || editingHistory || invoiceLoading || historyError) return;
+    printingRef.current = true; setIsPrinting(true);
+    try {
+      await assertAdminSession();
+      if (format === "print") { handleSavedPrint(); return; }
+      const blob = savedHwpx.current ?? await generateInvoiceHwpx(savedDocument);
+      savedHwpx.current = blob;
+      downloadInvoiceHwpx(blob, savedDocument);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "저장한 청구서를 다시 받지 못했습니다.");
+    }
+    printingRef.current = false; setIsPrinting(false);
   };
 
   if (!open || !reservation) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+      <div style={{ display: "none" }}><div ref={savedPrintRef} /></div>
       <div className="flex max-h-[95vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         <div className="flex shrink-0 items-center justify-between border-b bg-white px-6 py-4">
           <h2 className="text-2xl font-bold">📄 인보이스 생성</h2>
@@ -287,11 +342,11 @@ export default function InvoiceModal({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className={`min-h-0 flex-1 overflow-y-auto ${isPrinting ? "pointer-events-none" : ""}`} inert={isPrinting}>
           <div className="no-print px-6 pt-4">
             {invoiceLoading && <p role="status" className="mb-2 text-sm text-gray-600">청구 이력 불러오는 중…</p>}
             {historyError && <div role="alert" className="mb-3 rounded bg-red-50 p-3 text-sm text-red-700">{historyError} <button type="button" disabled={isPrinting} onClick={() => void loadInvoices().catch(() => {})} className="underline">다시 불러오기</button></div>}
-            <InvoiceHistoryEditor key={`${reservation.id}:${open}`} invoices={invoices} reservationId={reservation.id} disabled={isPrinting || invoiceLoading || !!historyError} onEditingChange={setEditingHistory} onSaved={async () => { await loadInvoices(); }} />
+            <InvoiceHistoryEditor key={`${reservation.id}:${open}`} invoices={invoices} reservationId={reservation.id} disabled={isPrinting || invoiceLoading || !!historyError} onEditingChange={setEditingHistory} onSaved={async () => { setSavedDocument(null); savedHwpx.current = null; savedPrintRef.current?.replaceChildren(); await loadInvoices(); }} />
           </div>
           <div ref={invoiceRef} className="invoice-page bg-white p-6">
             <img
@@ -804,7 +859,15 @@ export default function InvoiceModal({
           </div>
         </div>
 
-        <div className="flex shrink-0 justify-center gap-3 border-t bg-gray-50 p-4">
+        {savedDocument && (
+          <div className="shrink-0 border-t bg-blue-50 px-4 py-3 text-center text-sm">
+            <p>방금 저장한 청구서 · {invoiceLabel(savedDocument.invoiceType)} {savedDocument.current.toLocaleString()}원</p>
+            <p className="mb-2 text-xs text-gray-600">다른 형식으로 다시 받아도 청구이력은 추가되지 않습니다. 이 창을 닫기 전까지 사용할 수 있습니다.</p>
+            <button type="button" onClick={() => void repeatOutput("hwpx")} disabled={isPrinting || invoiceLoading || !!historyError || editingHistory} className="mx-1 rounded border bg-white px-3 py-1">HWPX 다시 받기</button>
+            <button type="button" onClick={() => void repeatOutput("print")} disabled={isPrinting || invoiceLoading || !!historyError || editingHistory} className="mx-1 rounded border bg-white px-3 py-1">다시 인쇄</button>
+          </div>
+        )}
+        <div className="flex shrink-0 flex-wrap justify-center gap-3 border-t bg-gray-50 p-4">
           <button
             type="button"
             onClick={onClose}
@@ -816,11 +879,19 @@ export default function InvoiceModal({
 
           <button
             type="button"
-            onClick={printInvoice}
+            onClick={() => void outputInvoice("hwpx")}
+            disabled={isPrinting || invoiceLoading || !!historyError || editingHistory}
+            className="rounded-lg bg-emerald-600 px-5 py-2 text-white"
+          >
+            HWPX 다운로드&저장
+          </button>
+          <button
+            type="button"
+            onClick={() => void outputInvoice("print")}
             disabled={isPrinting || invoiceLoading || !!historyError || editingHistory}
             className="rounded-lg bg-blue-600 px-5 py-2 text-white"
           >
-            {isPrinting ? "인쇄 준비 중…" : "인쇄&저장"}
+            {isPrinting ? "처리 중…" : "인쇄&저장"}
           </button>
         </div>
       </div>
