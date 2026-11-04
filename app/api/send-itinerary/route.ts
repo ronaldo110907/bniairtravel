@@ -873,6 +873,7 @@ export async function POST(request: Request) {
 `;
 
     type EmailItineraryItem = (typeof itinerary)[number] & {
+      schedule?: string;
       spotImages?: {
         name: string;
         image: string;
@@ -913,6 +914,19 @@ export async function POST(request: Request) {
         >
           ${item.description}
         </p>
+
+        ${item.schedule?.trim() ? `
+        <div style="margin: 0 0 16px; padding: 14px; border: 1px solid #eadfcf; border-radius: 10px; background-color: #faf8f4; color: #4b5563; line-height: 1.7;">
+          <strong style="color: #b88a44;">상세 일정</strong><br />
+          ${item.schedule
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;")
+            .replace(/\r\n|\r|\n/g, "<br />")}
+        </div>
+        ` : ""}
 
         <div
           style="
