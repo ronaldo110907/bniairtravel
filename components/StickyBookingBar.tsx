@@ -25,6 +25,7 @@ type Props = {
   price?: string;
   pdfFile?: string;
   hwpFile?: string;
+  seatStatusUrl?: string;
 };
 
 export default function StickyBookingBar({
@@ -33,10 +34,13 @@ export default function StickyBookingBar({
   price = "출발일 확인",
   pdfFile,
   hwpFile,
+  seatStatusUrl,
 }: Props) {
+  const seatsHref = seatStatusUrl ?? (["하문", "샤먼"].includes(product)
+    ? "https://docs.google.com/spreadsheets/d/1yDeuQ6T9oVjiXN_BbjLDqx-iwZeM9K1R6ai_l5x118A/edit?usp=sharing" : undefined);
   return (
     <div className="sticky top-0 z-40 border-y border-black/5 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-black/50">
             {departure} · {product} 직항
@@ -53,7 +57,7 @@ export default function StickyBookingBar({
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex max-w-full flex-wrap items-center gap-2">
           {/*}
           {showItineraryButtons && (
             <div className="hidden items-center gap-2 sm:flex">
@@ -77,9 +81,9 @@ export default function StickyBookingBar({
             </div>
           )}
             */}
-          {["하문", "샤먼"].includes(product) && (
+          {seatsHref && (
             <a
-              href="https://docs.google.com/spreadsheets/d/1yDeuQ6T9oVjiXN_BbjLDqx-iwZeM9K1R6ai_l5x118A/edit?usp=sharing"
+              href={seatsHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex rounded-full border border-[#b88a44] px-5 py-3 text-sm font-bold text-[#b88a44] transition hover:bg-[#b88a44] hover:text-white"

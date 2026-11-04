@@ -1,4 +1,5 @@
 import CTASection from "@/components/CTASection";
+import ZhangjiajieSeasonLinks from "@/components/ZhangjiajieSeasonLinks";
 import DepartureCalendar from "@/components/DepartureCalendar";
 import GallerySlider from "@/components/GallerySlider";
 import HotelCard from "@/components/HotelCard";
@@ -41,6 +42,7 @@ export default async function ZhangjiajiePage() {
     .single();
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f7f3ec] pb-24 text-[#1f1f1f] lg:pb-0">
+      <ZhangjiajieSeasonLinks year={2026} />
       <ProductHero product={product} />
 
       <SectionReveal className="relative z-20 mx-auto -mt-16 max-w-5xl px-6">

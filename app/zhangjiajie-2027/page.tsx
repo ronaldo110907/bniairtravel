@@ -1,4 +1,7 @@
 import CTASection from "@/components/CTASection";
+import { notFound } from "next/navigation";
+import ZhangjiajieSeasonLinks from "@/components/ZhangjiajieSeasonLinks";
+import { getZhangjiajiePublicDepartures } from "@/lib/zhangjiajie-public-departures";
 import DepartureCalendar from "@/components/DepartureCalendar";
 import GallerySlider from "@/components/GallerySlider";
 import HotelCard from "@/components/HotelCard";
@@ -33,21 +36,27 @@ import ItineraryEmailButton from "@/components/ItineraryEmailButton";
 
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function ZhangjiajiePage() {
   const { data: product } = await supabase
   .from("products")
   .select("*")
   .eq("slug", "zhangjiajie-2027")
+  .eq("is_visible", true)
   .single();
+  if (!product) notFound();
+  const departures = await getZhangjiajiePublicDepartures(product.id);
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f7f3ec] pb-24 text-[#1f1f1f] lg:pb-0">
+      <ZhangjiajieSeasonLinks year={2027} />
       <ProductHero product={product} />
 
       <SectionReveal className="relative z-20 mx-auto -mt-16 max-w-5xl px-6">
         <div className="overflow-hidden rounded-[36px] bg-white p-5 shadow-2xl">
           <img
             src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie2027.png"
-            alt="장가계 상품 안내 포스터"
+            alt="2027 상반기 장가계 상품 안내 포스터"
             className="w-full rounded-2xl"
           />
         </div>
@@ -58,8 +67,9 @@ export default async function ZhangjiajiePage() {
           product={product?.title}
           departure={product?.departure_airport}
           price="출발일 확인"
-          pdfFile="/files/zhangjiajie.pdf"
-          hwpFile="/files/zhangjiajie.hwp"
+          pdfFile="/files/zhangjiajie-2027.pdf"
+          hwpFile="/files/zhangjiajie-2027.hwp"
+          seatStatusUrl="https://docs.google.com/spreadsheets/d/1eaDSwD9IxjuOQkqQxc-Ow2XgUrFcxcDMyy0HfC1wrJo/edit"
         />
       </div>
 
@@ -81,6 +91,7 @@ export default async function ZhangjiajiePage() {
   <DepartureCalendar
     productId={product.id}
     productName={product.title}
+    initialDepartures={departures}
   />
 ) : (
   <p className="text-center text-red-600">

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import SelectedInfo from "./SelectedInfo";
-type Departure = {
+export type Departure = {
   id: string;
   date: string;
   course: string;
@@ -18,10 +18,11 @@ type Departure = {
 type Props = {
   productId: string;
   productName: string;
+  initialDepartures?: Departure[];
 };
 
-export default function DepartureCalendar({ productId, productName }: Props) {
-  const [departures, setDepartures] = useState<Departure[]>([]);
+export default function DepartureCalendar({ productId, productName, initialDepartures }: Props) {
+  const [departures, setDepartures] = useState<Departure[]>(initialDepartures ?? []);
   const [reservations, setReservations] = useState<any[]>([]);
   const [people, setPeople] = useState<any[]>([]);
   const monthOptions = useMemo(() => {
@@ -44,6 +45,10 @@ export default function DepartureCalendar({ productId, productName }: Props) {
 
   useEffect(() => {
     async function loadDepartures() {
+      if (initialDepartures !== undefined) {
+        setDepartures(initialDepartures);
+        return;
+      }
       // 출발일 조회
       const { data: departuresData, error: departuresError } = await supabase
         .from("departures")
@@ -117,7 +122,7 @@ export default function DepartureCalendar({ productId, productName }: Props) {
     }
 
     loadDepartures();
-  }, [productId]);
+  }, [productId, initialDepartures]);
   const currentYearMonth = monthOptions[monthIndex] ?? monthOptions[0];
 
   const [currentYear, currentMonth] = currentYearMonth.split("-").map(Number);

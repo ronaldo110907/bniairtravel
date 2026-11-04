@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 
 const destinations = [
   {
-    title: "장가계",
+    title: "장가계 2027",
     subtitle: "DISCOVER CHINA",
-    period: "2026.09.02 ~ 2026.11.27",
+    period: "2027.03.02 ~ 2027.06.27",
     description: "자연이 선물한 가장 아름다운 절경 속으로 당신을 초대합니다.",
     image: "/images/zhangjiajie/cover.jpg",
-    href: "/zhangjiajie",
+    href: "/zhangjiajie-2027",
   },
   {
     title: "백두산",

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const menus = [
   { name: "HOME", href: "/" },
-  { name: "장가계", href: "/zhangjiajie" },
+  { name: "장가계 2027", href: "/zhangjiajie-2027" },
   { name: "백두산", href: "/baekdu" },
   { name: "푸꾸옥", href: "/phuquoc" },
   { name: "하문", href: "/xiamen" },
@@ -32,6 +32,11 @@ export default function Header() {
               {menu.name}
             </Link>
           ))}
+        </nav>
+        <nav aria-label="모바일 메뉴" className="flex gap-4 text-sm font-semibold text-white lg:hidden">
+          <Link href="/">HOME</Link>
+          <Link href="/zhangjiajie-2027">장가계 2027</Link>
+          <Link href="/reservation">예약문의</Link>
         </nav>
       </div>
     </header>

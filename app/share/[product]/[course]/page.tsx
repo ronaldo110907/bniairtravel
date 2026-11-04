@@ -184,9 +184,9 @@ const shareProducts: Record<string, ShareProduct> = {
   },
   
     "zhangjiajie-2027": {
-    name: "장가계",
+    name: "장가계 2027",
     poster:
-      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie.png",
+      "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie2027.png",
     flightInfo: zhangjiajie2027FlightInfo,
     courses: {
       "3n4d": {
