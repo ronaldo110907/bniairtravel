@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const destinations = [
   {
@@ -71,6 +73,58 @@ const destinations = [
 ];
 
 export default function Discover() {
+  const [displayDestinations, setDisplayDestinations] =
+    useState(destinations);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProductSort() {
+      const { data, error } = await supabase
+        .from("products")
+        .select("slug, sort");
+
+      if (error) {
+        console.error("상품 정렬순서 조회 오류:", error);
+        return;
+      }
+
+      const sortMap = new Map<string, number>();
+
+      for (const product of data ?? []) {
+        if (product.sort == null) continue;
+
+        const sort = Number(product.sort);
+
+        if (Number.isFinite(sort)) {
+          sortMap.set(product.slug, sort);
+        }
+      }
+
+      const sorted = [...destinations].sort((a, b) => {
+        const sortA =
+          sortMap.get(a.href.replace(/^\//, "")) ??
+          Number.MAX_SAFE_INTEGER;
+
+        const sortB =
+          sortMap.get(b.href.replace(/^\//, "")) ??
+          Number.MAX_SAFE_INTEGER;
+
+        return sortA - sortB;
+      });
+
+      if (active) {
+        setDisplayDestinations(sorted);
+      }
+    }
+
+    loadProductSort();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="bg-white py-32">
       <div className="mx-auto max-w-7xl px-6">
@@ -88,7 +142,7 @@ export default function Discover() {
           </p>
         </div>
 
-        {destinations.map((item, index) => (
+        {displayDestinations.map((item, index) => (
           <div
             key={item.title}
             className={`mb-32 grid items-center gap-14 lg:grid-cols-2 ${
