@@ -1,7 +1,7 @@
 import { google } from "googleapis";
 
-export function getGoogleSheetsClient() {
-  const spreadsheetId = process.env.GOOGLE_XIAMEN_SHEET_ID;
+export function getGoogleSheetsClient(targetSpreadsheetId?: string) {
+  const spreadsheetId = targetSpreadsheetId ?? process.env.GOOGLE_XIAMEN_SHEET_ID;
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 

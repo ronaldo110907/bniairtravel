@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/xiamen-seat-sync",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/zhangjiajie-seat-sync",
+      "schedule": "5 8 * * *"
     }
   ]
 }

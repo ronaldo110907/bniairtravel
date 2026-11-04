@@ -9,7 +9,7 @@ export default function XiamenGoogleSheetSyncButton() {
     if (isSyncing) return;
 
     const confirmed = window.confirm(
-      "예약 데이터를 구글 좌석표에 동기화하시겠습니까?",
+      "하문·장가계 예약 데이터를 각 구글 좌석표에 동기화하시겠습니까?",
     );
 
     if (!confirmed) return;
@@ -17,19 +17,20 @@ export default function XiamenGoogleSheetSyncButton() {
     try {
       setIsSyncing(true);
 
-      const response = await fetch("/api/admin/xiamen/sync-google-sheet", {
-        method: "POST",
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "동기화에 실패했습니다.");
-      }
-
-      const total = result.data?.seatUsage?.total ?? 0;
-
-      window.alert(`구글 좌석표 동기화 완료!\n현재 하문 모객: ${total}명`);
+      const targets = [{ slug: "xiamen", name: "하문" }, { slug: "zhangjiajie", name: "장가계" }];
+      const results = await Promise.allSettled(targets.map(async ({ slug, name }) => {
+        const response = await fetch(`/api/admin/${slug}/sync-google-sheet`, { method: "POST" });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || "동기화 실패");
+        const usage = result.data?.seatUsage;
+        return slug === "zhangjiajie"
+          ? `${name}: 완료 (홀드 ${usage?.hold ?? 0}명 / 확정 ${usage?.confirmed ?? 0}명)`
+          : `${name}: 완료 (모객 ${usage?.total ?? 0}명)`;
+      }));
+      window.alert(results.map((result, index) => result.status === "fulfilled"
+        ? result.value
+        : `${targets[index].name}: 실패 — ${result.reason instanceof Error ? result.reason.message : "잠시 후 다시 시도해 주세요."}`
+      ).join("\n"));
     } catch (error) {
       const message =
         error instanceof Error
@@ -55,7 +56,7 @@ export default function XiamenGoogleSheetSyncButton() {
         <span className="flex flex-col items-center leading-tight">
           <span>📊 구글시트 좌석 동기화</span>
           <span className="mt-1 text-[10px] font-medium text-green-100">
-            매일 17시 자동 동기화
+            하문 17:00 · 장가계 17:05 자동 동기화
           </span>
         </span>
       )}
