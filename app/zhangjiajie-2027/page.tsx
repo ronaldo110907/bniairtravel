@@ -46,7 +46,7 @@ export default async function ZhangjiajiePage() {
       <SectionReveal className="relative z-20 mx-auto -mt-16 max-w-5xl px-6">
         <div className="overflow-hidden rounded-[36px] bg-white p-5 shadow-2xl">
           <img
-            src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie.png"
+            src="https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/poster/zhangjiajie2027.png"
             alt="장가계 상품 안내 포스터"
             className="w-full rounded-2xl"
           />
