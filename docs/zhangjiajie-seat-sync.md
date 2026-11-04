@@ -4,6 +4,7 @@
 - 기간: 2027-03-01 ~ 2027-06-30
 - 시트: https://docs.google.com/spreadsheets/d/1eaDSwD9IxjuOQkqQxc-Ow2XgUrFcxcDMyy0HfC1wrJo/edit
 - 탭: `좌석현황`, B열 날짜(yyyy-mm-dd) + D열 패턴으로 매칭
+- 상단 제목 1~2행, 머리글 3행, 출발일 4행부터. 코드가 날짜/패턴 머리글을 찾아 실제 시작 행을 결정한다.
 - 관리자가 확정한 66항차를 기준으로 홈페이지와 날짜/패턴을 일치시켜야 한다.
 
 ## 갱신 범위

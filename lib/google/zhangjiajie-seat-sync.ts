@@ -13,7 +13,7 @@ type Reservation = {
 
 /** Resolve by date/course, never by DB order: sheet filters/sorts must not mix departures. */
 export function buildZhangjiajieSeatUpdates(
-  departures: Departure[], reservations: Reservation[], rows: unknown[][],
+  departures: Departure[], reservations: Reservation[], rows: unknown[][], firstDataRow = 2,
 ) {
   const key = (date: string, course: string) => `${date}|${course}`;
   const byKey = new Map<string, Departure>();
@@ -47,7 +47,7 @@ export function buildZhangjiajieSeatUpdates(
     if (!departure || seen.has(k)) throw new Error(`시트와 출발일을 확인해 주세요: ${k}`);
     seen.add(k);
     const usage = counts.get(departure.id) ?? { hold: 0, confirmed: 0 };
-    return [{ range: `'${TAB}'!G${index + 2}:H${index + 2}`, values: [[usage.hold, usage.confirmed]] }];
+    return [{ range: `'${TAB}'!G${index + firstDataRow}:H${index + firstDataRow}`, values: [[usage.hold, usage.confirmed]] }];
   });
   const missing = [...byKey.keys()].filter(k => !seen.has(k));
   if (missing.length) throw new Error(`시트에 없는 출발일: ${missing.join(", ")}`);
@@ -83,8 +83,12 @@ export async function syncZhangjiajieSeats(supabase: SupabaseClient) {
     ?.properties?.gridProperties?.rowCount;
   if (!rowCount || rowCount < 2 || rowCount > 1000) throw new Error("좌석현황 시트 범위를 확인해 주세요.");
   const result = await sheets.spreadsheets.values.get({ spreadsheetId,
-    range: `'${TAB}'!B2:D${rowCount}`, valueRenderOption: "FORMATTED_VALUE" });
-  const data = buildZhangjiajieSeatUpdates(departures, reservations, result.data.values ?? []);
+    range: `'${TAB}'!B1:D${rowCount}`, valueRenderOption: "FORMATTED_VALUE" });
+  const rows = result.data.values ?? [];
+  const headers = rows.flatMap((row, index) => row[0] === "날짜" && row[2] === "패턴" ? [index] : []);
+  if (headers.length !== 1) throw new Error("좌석현황의 날짜/패턴 머리글을 확인해 주세요.");
+  const header = headers[0];
+  const data = buildZhangjiajieSeatUpdates(departures, reservations, rows.slice(header + 1), header + 2);
   // Only G:H are managed here. Keep prices, total seats, remaining formulas and notes intact.
   await sheets.spreadsheets.values.batchUpdate({ spreadsheetId, requestBody: {
     valueInputOption: "RAW", data,

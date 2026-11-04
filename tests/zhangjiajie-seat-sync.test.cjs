@@ -35,6 +35,10 @@ test('sorting sheet rows still targets correct departure; only G:H are written',
   const result=build(departures,[{departure_id:'a',people_count:2,status:'확정'}],[rows[1],[],rows[0]]);
   assert.deepEqual(result,[{range:"'좌석현황'!G2:H2",values:[[0,0]]},{range:"'좌석현황'!G4:H4",values:[[0,2]]}]);
 });
+test('title rows shift data without overwriting header or title', () => {
+  const result=build(departures,[{departure_id:'a',people_count:3,status:'확정'}],rows,4);
+  assert.deepEqual(result,[{range:"'좌석현황'!G4:H4",values:[[0,3]]},{range:"'좌석현황'!G5:H5",values:[[0,0]]}]);
+});
 test('missing/extra/duplicate dates and wrong patterns abort instead of writing partial counts', () => {
   assert.throws(()=>build(departures,[],rows.slice(0,1)),/시트에 없는/);
   assert.throws(()=>build(departures,[],[...rows,['2027-03-26','금','4박5일']]),/확인/);
