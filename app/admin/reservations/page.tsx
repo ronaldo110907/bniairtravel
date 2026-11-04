@@ -235,6 +235,95 @@ function getRosterProgress(reservation: Reservation) {
   };
 }
 
+// 예약관리 상품별 배경색
+function getProductBackground(
+  productName: string,
+  registeredProducts: Product[],
+) {
+  const name = productName.trim();
+
+  // 관리자에 등록되지 않은 기타 상품
+  const isRegistered = registeredProducts.some(
+    (product) => product.title.trim() === name,
+  );
+
+  if (!isRegistered) {
+    return "#F3F4F6";
+  }
+
+  // 등록 상품별 고정 색상
+  if (name.includes("장가계")) return "#E8F7ED";
+
+  if (name.includes("샤먼") || name.includes("하문"))
+    return "#E8F3FF";
+
+  if (name.includes("백두산")) return "#F1EBFF";
+
+  if (name.includes("계림")) return "#FFF6DA";
+
+  if (name.includes("푸꾸옥")) return "#FFF0E5";
+
+  if (name.includes("상해") || name.includes("상하이"))
+    return "#FFEAF2";
+
+  // 그 외 등록 상품은 상품명 기준으로 색상 고정
+  let hash = 0;
+
+  for (const char of name) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  }
+
+  const colors = [
+    "#E7F6F5",
+    "#F8EDFF",
+    "#FFF4E6",
+    "#EAF4FF",
+    "#F1F7E5",
+    "#FFF0F5",
+  ];
+
+  return colors[hash % colors.length];
+}
+
+// 같은 날짜에 여러 상품이 있는 경우 처리
+// 출발일별 상품 색상 자동 분할
+function getDepartureBackground(
+  productNames: string[],
+  registeredProducts: Product[],
+) {
+  const colors = [
+    ...new Set(
+      productNames.map((name) =>
+        getProductBackground(name, registeredProducts),
+      ),
+    ),
+  ];
+
+  // 상품이 없는 경우
+  if (colors.length === 0) {
+    return "#F8FAFC";
+  }
+
+  // 한 가지 색상이라면 전체 배경 적용
+  if (colors.length === 1) {
+    return colors[0];
+  }
+
+  // 여러 색상이라면 동일한 너비로 자동 분할
+  const step = 100 / colors.length;
+
+  const stops = colors
+    .map((color, index) => {
+      const start = index * step;
+      const end = (index + 1) * step;
+
+      return `${color} ${start}%, ${color} ${end}%`;
+    })
+    .join(", ");
+
+  return `linear-gradient(to right, ${stops})`;
+}
+
 function ReservationsContent() {
   const [list, setList] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -2956,7 +3045,15 @@ function resetFilters() {
               <tbody>
                 {paginatedGroups.map((group) => (
                   <Fragment key={group.date}>
-                    <tr className="border-t-2 border-blue-200 bg-blue-50">
+                    <tr
+  className="border-t-2 border-blue-200"
+  style={{
+    background: getDepartureBackground(
+      group.productNames,
+      products,
+    ),
+  }}
+>
                       <td colSpan={10} className="px-4 py-3">
                         <button
                           type="button"
