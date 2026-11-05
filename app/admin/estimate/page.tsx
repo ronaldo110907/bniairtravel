@@ -36,6 +36,44 @@ function getToday() {
   }).format(new Date());
 }
 
+type ExcelDraft = ReturnType<typeof import("@/lib/importEstimateExcel").parseEstimateWorkbook>;
+
+function FreeEstimateExcelButton({ onImport }: { onImport: (draft: ExcelDraft) => boolean }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  async function readFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || busy) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const { importEstimateExcel } = await import("@/lib/importEstimateExcel");
+      const draft = await importEstimateExcel(file);
+      if (!inputRef.current) return;
+      setMessage(onImport(draft)
+        ? file.name + " · " + draft.days.length + "일 일정을 불러왔습니다."
+        : "불러오기를 취소했습니다.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "엑셀 파일을 읽지 못했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <input ref={inputRef} type="file" accept=".xlsx,.xls" onChange={readFile}
+        aria-label="기타 견적서 일정 엑셀 선택" className="hidden" />
+      <button type="button" disabled={busy} onClick={() => inputRef.current?.click()}
+        className="rounded-lg border border-emerald-300 bg-white px-4 py-2 text-emerald-800 disabled:opacity-50">
+        {busy ? "엑셀 읽는 중…" : "엑셀 불러오기"}
+      </button>
+      <span role="status" className="text-xs">{message}</span>
+    </div>
+  );
+}
+
 export default function EstimatePage() {
   const [mode, setMode] = useState<EstimateMode>(null);
   const [priceMode, setPriceMode] = useState<PriceMode>("split");
@@ -541,6 +579,19 @@ thead {
             {mode === "product"
               ? "🧳 등록 상품 견적서 작성"
               : "✍️ 자유 견적서 작성"}
+            {mode === "free" && (
+              <div className="mt-2">
+                <FreeEstimateExcelButton onImport={draft => {
+                  const hasContent = days.some(({ id: _id, ...day }) => Object.values(day).some(Boolean))
+                    || Object.keys(draft.form).some(key => form[key as keyof typeof draft.form]);
+                  if (hasContent && !window.confirm("현재 날짜별 일정과 엑셀에서 읽은 항목을 교체할까요?")) return false;
+                  setForm(current => ({ ...current, ...draft.form }));
+                  setDays(draft.days);
+                  setShowPreview(false);
+                  return true;
+                }} />
+              </div>
+            )}
           </div>
 
           {/* 등록 상품 불러오기 */}
@@ -1545,7 +1596,7 @@ thead {
                                 </td>
 
                                 {/* 상세일정 */}
-                                <td className="whitespace-pre-line border border-gray-400 px-[1.5mm] py-[1.2mm] align-top">
+                                <td className="whitespace-pre-wrap border border-gray-400 px-[1.5mm] py-[1.2mm] align-top">
                                   {day.schedule || "-"}
                                 </td>
 
