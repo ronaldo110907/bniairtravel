@@ -791,10 +791,11 @@ const bulkReduction = useMemo(() => {
     try {
       // 화면에 남은 목록 대신 최신 빈자리를 확인합니다.
       const { data, error } = await supabase.from("reservation_people")
-        .select("*").eq("reservation_id", reservationId).order("sort_order", { ascending: true });
+        .select("*").eq("reservation_id", reservationId)
+        .order("sort_order", { ascending: true }).order("id", { ascending: true });
       if (error) throw error;
-      const candidates = getBulkReductionCandidates(data ?? []).temporaryPeople
-        .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+      const candidates = (data ?? []).filter((person: ReservationPeople) =>
+        (person.is_guide || isTemporaryPersonName(person)) && !hasPassportData(person));
       if (files.length > candidates.length) {
         alert(`등록할 사진은 ${files.length}장, 빈 예약자는 ${candidates.length}명입니다. 사진 수를 줄이거나 인원을 먼저 추가해 주세요.`);
         return;
@@ -931,16 +932,12 @@ const bulkReduction = useMemo(() => {
   }
 
   
-function getBulkReductionCandidates(people: ReservationPeople[]) {
-  const customers = people.filter((person) => !person.is_guide);
+function isTemporaryPersonName(person: ReservationPeople) {
+  return /^예약자\s*\d+$/i.test(person.name.trim());
+}
 
-  const temporaryPeople = customers
-    .filter((person) => {
-      const isTemporaryName = /^예약자\s*\d+$/i.test(
-        person.name.trim(),
-      );
-
-      const hasPassportData = Boolean(
+function hasPassportData(person: ReservationPeople) {
+  return Boolean(
         person.passport_image ||
         person.passport_name ||
         person.passport_last_name ||
@@ -954,10 +951,13 @@ function getBulkReductionCandidates(people: ReservationPeople[]) {
           person.passport_nationality &&
           person.passport_nationality.toUpperCase() !== "KOR"
         ),
-      );
+  );
+}
 
-      return isTemporaryName && !hasPassportData;
-    })
+function getBulkReductionCandidates(people: ReservationPeople[]) {
+  const customers = people.filter((person) => !person.is_guide);
+  const temporaryPeople = customers
+    .filter((person) => isTemporaryPersonName(person) && !hasPassportData(person))
     .sort((a, b) => b.sort_order - a.sort_order);
 
   return {
@@ -1578,7 +1578,7 @@ sort_order: currentTotalCount + index,
       .from("reservation_people")
       .select("*")
       .eq("reservation_id", reservationId)
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true }).order("id", { ascending: true });
 
     if (error) {
       console.error("LOAD PEOPLE ERROR", error);
@@ -4427,7 +4427,7 @@ function resetFilters() {
                   </button>
                 </div>
                 <p className="mt-3 text-sm text-gray-500">
-                  여권 일괄등록: 파일명 순으로 사진·여권정보가 없는 임시 예약자에 연결합니다. 추가 등록은 남은 빈자리부터 이어집니다.
+                  사진을 파일명 순으로 정렬해 명단 순서대로 연결합니다. 대상은 여권 사진과 정보가 비어 있는 임시 예약자와 인솔자입니다. 추가 등록은 남은 빈자리부터 이어집니다.
                 </p>
                 <div className="mt-3">
                   <input
