@@ -71,7 +71,7 @@ export const mealImages: Record<string, string> = {
   서파현지식: "seopalocal.png",
   양꼬치무제한: "yangggoqi.png",
   소불고기전골: "sobulgogi.png",
-  양갈비구비: "lam.png",
+  양갈비구이: "lam.png",
   동북요리: "dongbei.png",
   버섯전골: "mushrom.png",
   샤브샤브: "shabu.png",
