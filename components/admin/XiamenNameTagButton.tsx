@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx-js-style";
+import JSZip from "jszip";
 
 type DepartureGroup = {
   key: string;
@@ -37,6 +38,7 @@ export default function XiamenNameTagButton() {
   const [peopleLoading, setPeopleLoading] = useState(false);
   const [previewPage, setPreviewPage] = useState(1);
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [excelGenerating, setExcelGenerating] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -453,7 +455,7 @@ export default function XiamenNameTagButton() {
     }
   }
 
-  function generateExcel() {
+  async function generateExcel() {
     if (!selectedGroup) {
       alert("출발일을 먼저 선택해주세요.");
       return;
@@ -464,182 +466,223 @@ export default function XiamenNameTagButton() {
       return;
     }
 
-    const workbook = XLSX.utils.book_new();
+    if (excelGenerating) return;
+    setExcelGenerating(true);
+    try {
+      const workbook = XLSX.utils.book_new();
 
-    const totalPages = Math.ceil(people.length / ITEMS_PER_PAGE);
+      const totalPages = Math.ceil(people.length / ITEMS_PER_PAGE);
 
-    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-      const pagePeople = people.slice(
-        pageIndex * ITEMS_PER_PAGE,
-        pageIndex * ITEMS_PER_PAGE + ITEMS_PER_PAGE,
-      );
+      for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+        const pagePeople = people.slice(
+          pageIndex * ITEMS_PER_PAGE,
+          pageIndex * ITEMS_PER_PAGE + ITEMS_PER_PAGE,
+        );
 
-      const sheetData: string[][] = [];
+        const sheetData: string[][] = [];
 
-      // 네임택 1칸당 한글 / 영문 / 휴대폰 3줄
-      for (let row = 0; row < 5; row++) {
-        const leftPerson = pagePeople[row * 2];
-        const rightPerson = pagePeople[row * 2 + 1];
+        // 네임택 1칸당 한글 / 영문 / 휴대폰 3줄
+        for (let row = 0; row < 5; row++) {
+          const leftPerson = pagePeople[row * 2];
+          const rightPerson = pagePeople[row * 2 + 1];
 
-        sheetData.push([leftPerson?.name ?? "", "", rightPerson?.name ?? ""]);
+          sheetData.push([leftPerson?.name ?? "", "", rightPerson?.name ?? ""]);
 
-        sheetData.push([
-          leftPerson ? formatEnglishName(leftPerson) : "",
-          "",
-          rightPerson ? formatEnglishName(rightPerson) : "",
-        ]);
+          sheetData.push([
+            leftPerson ? formatEnglishName(leftPerson) : "",
+            "",
+            rightPerson ? formatEnglishName(rightPerson) : "",
+          ]);
 
-        sheetData.push([
-          leftPerson ? "HP:+82-10" : "",
-          "",
-          rightPerson ? "HP:+82-10" : "",
-        ]);
-      }
-
-      const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-
-      // 기존 2열 네임택 구조 유지
-      worksheet["!cols"] = [{ wch: 47 }, { wch: 4.5 }, { wch: 47 }];
-
-      // 3줄 높이 합계 147.4pt = 약 52mm
-      worksheet["!rows"] = Array.from({ length: 15 }, (_, index) => {
-        const position = index % 3;
-
-        if (position === 0) return { hpt: 60 };
-        if (position === 1) return { hpt: 50 };
-
-        return { hpt: 37.4 };
-      });
-
-      for (let row = 0; row < 5; row++) {
-        for (const col of [0, 2]) {
-          const person = pagePeople[row * 2 + (col === 0 ? 0 : 1)];
-
-          if (!person) continue;
-
-          const koreanRow = row * 3;
-          const englishRow = koreanRow + 1;
-          const phoneRow = koreanRow + 2;
-
-          const koreanAddress = XLSX.utils.encode_cell({
-            r: koreanRow,
-            c: col,
-          });
-
-          const englishAddress = XLSX.utils.encode_cell({
-            r: englishRow,
-            c: col,
-          });
-
-          const phoneAddress = XLSX.utils.encode_cell({
-            r: phoneRow,
-            c: col,
-          });
-
-          const koreanLength = person.name.replace(/\s/g, "").length;
-          const englishName = formatEnglishName(person);
-          const englishLength = englishName.replace(/\s/g, "").length;
-
-          let koreanFontSize = 39;
-
-          if (koreanLength >= 8) {
-            koreanFontSize = 22;
-          } else if (koreanLength >= 6) {
-            koreanFontSize = 28;
-          } else if (koreanLength >= 5) {
-            koreanFontSize = 33;
-          }
-
-          let englishFontSize = 18;
-
-          if (englishLength >= 20) {
-            englishFontSize = 12;
-          } else if (englishLength >= 16) {
-            englishFontSize = 14;
-          } else if (englishLength >= 12) {
-            englishFontSize = 16;
-          }
-
-          // 한글 이름
-          worksheet[koreanAddress].s = {
-            font: {
-              name: "맑은 고딕",
-              sz: koreanFontSize,
-              bold: true,
-              color: { rgb: "111827" },
-            },
-            alignment: {
-              horizontal: "center",
-              vertical: "bottom",
-              shrinkToFit: true,
-            },
-          };
-
-          // 영문 이름
-          worksheet[englishAddress].s = {
-            font: {
-              name: "맑은 고딕",
-              sz: englishFontSize,
-              bold: true,
-              color: { rgb: "1D4ED8" },
-            },
-            alignment: {
-              horizontal: "center",
-              vertical: "center",
-              shrinkToFit: true,
-            },
-          };
-
-          // 휴대폰 표시
-          worksheet[phoneAddress].s = {
-            font: {
-              name: "맑은 고딕",
-              sz: 12,
-              bold: true,
-              color: { rgb: "4B5563" },
-            },
-            alignment: {
-              horizontal: "left",
-              vertical: "top",
-              indent: 2,
-            },
-          };
+          sheetData.push([
+            leftPerson ? "HP:+82-10" : "",
+            "",
+            rightPerson ? "HP:+82-10" : "",
+          ]);
         }
+
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+
+        // V3250: 실제 Excel 인쇄에서 검증한 88.9mm 두 열과 9.1mm 간격.
+        worksheet["!cols"] = [
+          { width: 44.67259979248047 },
+          { width: 4.629852294921875 },
+          { width: 44.67259979248047 },
+        ];
+
+        // 검증된 출력본과 같은 행 높이. Excel의 화면/인쇄 치수 차이를 반영합니다.
+        worksheet["!rows"] = Array.from({ length: 15 }, (_, index) => {
+          const position = index % 3;
+
+          if (position === 0) return { hpt: 62.25 };
+          if (position === 1) return { hpt: 51.75 };
+
+          return { hpt: 38.25 };
+        });
+
+        for (let row = 0; row < 5; row++) {
+          for (const col of [0, 2]) {
+            const person = pagePeople[row * 2 + (col === 0 ? 0 : 1)];
+
+            if (!person) continue;
+
+            const koreanRow = row * 3;
+            const englishRow = koreanRow + 1;
+            const phoneRow = koreanRow + 2;
+
+            const koreanAddress = XLSX.utils.encode_cell({
+              r: koreanRow,
+              c: col,
+            });
+
+            const englishAddress = XLSX.utils.encode_cell({
+              r: englishRow,
+              c: col,
+            });
+
+            const phoneAddress = XLSX.utils.encode_cell({
+              r: phoneRow,
+              c: col,
+            });
+
+            const koreanLength = person.name.replace(/\s/g, "").length;
+            const englishName = formatEnglishName(person);
+            const englishLength = englishName.replace(/\s/g, "").length;
+
+            let koreanFontSize = 39;
+
+            if (koreanLength >= 8) {
+              koreanFontSize = 22;
+            } else if (koreanLength >= 6) {
+              koreanFontSize = 28;
+            } else if (koreanLength >= 5) {
+              koreanFontSize = 33;
+            }
+
+            let englishFontSize = 18;
+
+            if (englishLength >= 20) {
+              englishFontSize = 12;
+            } else if (englishLength >= 16) {
+              englishFontSize = 14;
+            } else if (englishLength >= 12) {
+              englishFontSize = 16;
+            }
+
+            // 한글 이름
+            worksheet[koreanAddress].s = {
+              font: {
+                name: "맑은 고딕",
+                sz: koreanFontSize,
+                bold: true,
+                color: { rgb: "111827" },
+              },
+              alignment: {
+                horizontal: "center",
+                vertical: "bottom",
+                shrinkToFit: true,
+              },
+            };
+
+            // 영문 이름
+            worksheet[englishAddress].s = {
+              font: {
+                name: "맑은 고딕",
+                sz: englishFontSize,
+                bold: true,
+                color: { rgb: "1D4ED8" },
+              },
+              alignment: {
+                horizontal: "center",
+                vertical: "center",
+                shrinkToFit: true,
+              },
+            };
+
+            // 휴대폰 표시
+            worksheet[phoneAddress].s = {
+              font: {
+                name: "맑은 고딕",
+                sz: 12,
+                bold: true,
+                color: { rgb: "4B5563" },
+              },
+              alignment: {
+                horizontal: "left",
+                vertical: "top",
+                indent: 2,
+              },
+            };
+          }
+        }
+
+        // 오른쪽/아래쪽은 반올림으로 페이지가 넘어가지 않도록 여유를 둡니다.
+        worksheet["!margins"] = {
+          left: 11.5 / 25.4,
+          right: 11 / 25.4,
+          top: 20.5 / 25.4,
+          bottom: 16 / 25.4,
+          header: 0,
+          footer: 0,
+        };
+
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          totalPages === 1 ? "네임택" : `네임택${pageIndex + 1}`,
+        );
       }
 
-      // A4 기존 여백 유지
-      worksheet["!margins"] = {
-        left: 12 / 25.4,
-        right: 12 / 25.4,
-        top: 18.5 / 25.4,
-        bottom: 18.5 / 25.4,
-        header: 0,
-        footer: 0,
-      };
+      const safeProductName = makeSafeFileName(selectedGroup.product);
 
-      worksheet["!pageSetup"] = {
-        paperSize: 9,
-        orientation: "portrait",
-        scale: 100,
-        fitToWidth: 1,
-        fitToHeight: 0,
-      };
+      const fileName =
+        `${selectedGroup.departureDate}_` + `${safeProductName}_네임택.xlsx`;
 
-      worksheet["!printArea"] = "A1:C15";
-
-      XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        totalPages === 1 ? "네임택" : `네임택${pageIndex + 1}`,
+      // xlsx-js-style은 !pageSetup/!printArea를 저장하지 않으므로
+      // 최종 XLSX의 표준 XML에 용지/배율/인쇄영역을 직접 기록합니다.
+      const zip = await JSZip.loadAsync(
+        XLSX.write(workbook, { type: "array", bookType: "xlsx" }),
       );
+      const printAreas: string[] = [];
+      for (let index = 0; index < workbook.SheetNames.length; index++) {
+        const sheetPath = `xl/worksheets/sheet${index + 1}.xml`;
+        const sheetFile = zip.file(sheetPath);
+        if (!sheetFile) throw new Error("네임택 시트 파일이 없습니다.");
+        const sheetXml = await sheetFile.async("string");
+        zip.file(sheetPath, sheetXml.replace(
+          /(<pageMargins\b[^>]*\/>)/,
+          '$1<pageSetup paperSize="9" scale="100" orientation="portrait" usePrinterDefaults="0"/>',
+        ));
+        // 시트 이름은 위에서 생성한 '네임택' 또는 '네임택N'만 사용합니다.
+        printAreas.push(
+          `<definedName name="_xlnm.Print_Area" localSheetId="${index}">'${workbook.SheetNames[index]}'!$A$1:$C$15</definedName>`,
+        );
+      }
+      const workbookFile = zip.file("xl/workbook.xml");
+      if (!workbookFile) throw new Error("네임택 통합 문서 파일이 없습니다.");
+      const workbookXml = await workbookFile.async("string");
+      zip.file("xl/workbook.xml", workbookXml.replace(
+        "</workbook>",
+        `<definedNames>${printAreas.join("")}</definedNames></workbook>`,
+      ));
+      const blob = await zip.generateAsync({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error("NAMETAG EXCEL ERROR", error);
+      alert("네임택 엑셀 생성 중 오류가 발생했습니다.");
+    } finally {
+      setExcelGenerating(false);
     }
-
-    const safeProductName = makeSafeFileName(selectedGroup.product);
-
-    const fileName =
-      `${selectedGroup.departureDate}_` + `${safeProductName}_네임택.xlsx`;
-
-    XLSX.writeFile(workbook, fileName);
   }
 
   function closeModal() {
@@ -889,7 +932,7 @@ export default function XiamenNameTagButton() {
                   <button
                     type="button"
                     onClick={generateExcel}
-                    disabled={people.length === 0}
+                    disabled={excelGenerating || people.length === 0}
                     className="
     flex-1 rounded-xl bg-emerald-600
     px-4 py-3 font-bold text-white
@@ -899,7 +942,7 @@ export default function XiamenNameTagButton() {
     disabled:text-gray-500
   "
                   >
-                    📊 엑셀 다운로드
+                    {excelGenerating ? "엑셀 생성 중..." : "📊 엑셀 다운로드"}
                   </button>
 
                   <button
