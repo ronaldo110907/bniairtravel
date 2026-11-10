@@ -8,6 +8,7 @@ import PersonForm from "@/components/PersonForm";
 import { Fragment } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import InvoiceModal from "@/components/InvoiceModal";
+import ReservationPayments from "@/components/admin/ReservationPayments";
 import ReservationConfirmationDownload from "@/components/admin/ReservationConfirmationDownload";
 import { useDispatchRequestStatus } from "@/lib/useDispatchRequestStatus";
 import TravelContractModal from "@/components/contract/TravelContractModal";
@@ -4426,6 +4427,7 @@ function resetFilters() {
                     💰 정산 바로가기
                   </button>
                 </div>
+                <ReservationPayments key={selected.id} reservationId={selected.id} />
                 <p className="mt-3 text-sm text-gray-500">
                   사진을 파일명 순으로 정렬해 명단 순서대로 연결합니다. 대상은 여권 사진과 정보가 비어 있는 임시 예약자와 인솔자입니다. 추가 등록은 남은 빈자리부터 이어집니다.
                 </p>
