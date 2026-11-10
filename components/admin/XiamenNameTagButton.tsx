@@ -603,7 +603,7 @@ export default function XiamenNameTagButton() {
             worksheet[phoneAddress].s = {
               font: {
                 name: "맑은 고딕",
-                sz: 12,
+                sz: 15,
                 bold: true,
                 color: { rgb: "4B5563" },
               },
