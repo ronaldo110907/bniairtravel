@@ -103,6 +103,8 @@ export default function EstimatePage() {
   const estimateContentRef = useRef<HTMLDivElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const [isImportingPdf, setIsImportingPdf] = useState(false);
+  const [isDownloadingHwpx, setIsDownloadingHwpx] = useState(false);
+  const downloadingHwpxRef = useRef(false);
 
   const [showPreview, setShowPreview] = useState(false);
 
@@ -184,6 +186,22 @@ export default function EstimatePage() {
       hotel: "",
     },
   ]);
+
+  async function downloadHwpx() {
+    if (downloadingHwpxRef.current) return;
+    downloadingHwpxRef.current = true;
+    setIsDownloadingHwpx(true);
+    const snapshot = { priceMode, form: { ...form }, days: days.map(day => ({ ...day })) };
+    try {
+      const { downloadEstimateHwpx } = await import("@/lib/estimateHwpx");
+      await downloadEstimateHwpx(snapshot);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "한글 견적서를 생성하지 못했습니다. 다시 시도해주세요.");
+    } finally {
+      downloadingHwpxRef.current = false;
+      setIsDownloadingHwpx(false);
+    }
+  }
 
   function updateForm(key: keyof typeof form, value: string) {
     setForm((prev) => ({
@@ -1290,7 +1308,11 @@ thead {
             </div>
           </div>
           {/* A4 미리보기 버튼 */}
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
+            <button type="button" disabled={isDownloadingHwpx} onClick={() => void downloadHwpx()}
+              className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white disabled:opacity-50">
+              {isDownloadingHwpx ? "한글 파일 생성 중…" : "한글 다운로드"}
+            </button>
             <button
               type="button"
               onClick={() => setShowPreview(true)}
@@ -1304,6 +1326,10 @@ thead {
               <div className="relative">
                 {/* 닫기 버튼 */}
                 <div className="sticky top-0 z-10 mb-3 flex justify-end gap-2">
+                  <button type="button" disabled={isDownloadingHwpx} onClick={() => void downloadHwpx()}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-lg disabled:opacity-50">
+                    {isDownloadingHwpx ? "한글 파일 생성 중…" : "한글 다운로드"}
+                  </button>
                   <button
                     type="button"
                     onClick={handlePrint}
