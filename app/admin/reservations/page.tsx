@@ -82,6 +82,7 @@ type Reservation = {
 
   departure_id: string;
   departure_price?: number;
+  departure_variant?: string | null;
 
   people?: ReservationPeople[];
   reservation_people?: ReservationPeople[];
@@ -1627,18 +1628,19 @@ sort_order: currentTotalCount + index,
   async function loadDeparturePrice(departureId: string) {
     const { data, error } = await supabase
       .from("departures")
-      .select("price")
+      .select("price, variant")
       .eq("id", departureId)
       .single();
 
     if (error || !data) return;
 
     setSelected((prev) => {
-      if (!prev) return prev;
+      if (!prev || prev.departure_id !== departureId) return prev;
 
       return {
         ...prev,
         departure_price: data.price,
+        departure_variant: data.variant,
       };
     });
   }

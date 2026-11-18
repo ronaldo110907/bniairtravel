@@ -7,7 +7,7 @@ import { invoiceHistoryTotal, isInvoiceAmount, type InvoiceHistoryItem } from "@
 import CancellationSection from "@/components/sections/CancellationSection";
 import { assertAdminSession } from "@/lib/auth/client";
 import { supabase } from "@/lib/supabase";
-import { downloadInvoiceHwpx, generateInvoiceHwpx, invoiceLabel, type InvoiceDocument } from "@/lib/invoiceHwpx";
+import { downloadInvoiceHwpx, generateInvoiceHwpx, invoiceLabel, invoiceFilename, type InvoiceDocument } from "@/lib/invoiceHwpx";
 
 type ReservationPeople = {
   id: string;
@@ -27,6 +27,7 @@ type Reservation = {
   departure_date: string;
   people?: ReservationPeople[];
   departure_price?: number;
+  departure_variant?: string | null;
   departure_id: string;
 };
 
@@ -106,6 +107,7 @@ export default function InvoiceModal({
   const [account, setAccount] = useState("전세기계좌");
 
   const peopleCount = reservation?.people?.length ?? 0;
+  const productName = reservation?.departure_variant?.trim() || reservation?.product || "";
   const guideCount = reservation?.people?.filter((person) => person.is_guide === true).length ?? 0;
   const payingPeopleCount = peopleCount - guideCount;
   const totalAmount = (reservation?.departure_price ?? 0) * payingPeopleCount;
@@ -192,7 +194,7 @@ export default function InvoiceModal({
       alert("청구 이력은 저장되었지만 인쇄를 완료하지 못했습니다. 이력을 확인해주세요. 잘못 저장한 금액은 정정할 수 있습니다.");
       void finishPrint();
     },
-    documentTitle: `${(reservation?.departure_date ?? "").replaceAll("-", "").slice(2)}_BNI_Invoice_${reservation?.name ?? ""}_${invoiceType === "deposit" ? "계약금" : invoiceType === "interim" ? "중도금" : "잔금"}`,
+    documentTitle: invoiceFilename({ departureDate: reservation?.departure_date ?? "", product: productName, name: reservation?.name ?? "", invoiceType }).replace(/\.hwpx$/, ""),
     pageStyle: `
   @page {
     size: A4 portrait;
@@ -247,7 +249,7 @@ export default function InvoiceModal({
   const handlePrint = useReactToPrint(printOptions);
   const handleSavedPrint = useReactToPrint({
     contentRef: savedPrintRef,
-    documentTitle: savedDocument ? `${savedDocument.name}_${invoiceLabel(savedDocument.invoiceType)}` : "BNI_Invoice",
+    documentTitle: savedDocument ? invoiceFilename(savedDocument).replace(/\.hwpx$/, "") : "BNI_Invoice",
     pageStyle: printOptions.pageStyle,
     onBeforePrint: assertAdminSession,
     onAfterPrint: () => { printingRef.current = false; setIsPrinting(false); },
@@ -268,7 +270,7 @@ export default function InvoiceModal({
     setIsPrinting(true);
     let saved = false;
     const snapshot: InvoiceDocument = {
-      reservationId: reservation.id, name: reservation.name, product: reservation.product,
+      reservationId: reservation.id, name: reservation.name, product: productName,
       departureDate: reservation.departure_date, people: (reservation.people ?? []).map(person => ({ ...person })),
       sender, receiver, date: today, invoiceType, customerType, unitPrice: parseMoney(unitPrice),
       total: enteredTotalPrice, previous: previousInvoiceAmount, current: amount, commission: enteredCommission,
@@ -422,7 +424,7 @@ export default function InvoiceModal({
                 </div>
 
                 <div className="font-semibold text-gray-600">상품</div>
-                <div>{reservation.product}</div>
+                <div>{productName}</div>
 
                 <div className="font-semibold text-gray-600">출발일</div>
                 <div>{reservation.departure_date}</div>
@@ -532,7 +534,11 @@ export default function InvoiceModal({
                             aria-label="1인 금액"
                             inputMode="numeric"
                             value={unitPrice}
-                            onChange={(event) => setUnitPrice(formatMoney(event.target.value))}
+                            onChange={(event) => {
+                              const price = formatMoney(event.target.value);
+                              setUnitPrice(price);
+                              setTotalPrice(price === "" ? "" : (parseMoney(price) * payingPeopleCount).toLocaleString());
+                            }}
                             placeholder="직접 입력"
                             className="w-28 rounded-md border border-gray-300 px-2 py-2 text-right outline-none"
                           />
@@ -552,7 +558,7 @@ export default function InvoiceModal({
                         </div>
                       </div>
                       <p className="no-print mt-1 text-xs text-gray-500">
-                        1인 금액은 표시용이며, 여행경비 총액은 오른쪽에서 직접 수정합니다.
+                        1인 금액을 수정하면 청구 인원 기준으로 총액을 자동 계산합니다. 총액도 직접 수정할 수 있습니다.
                       </p>
                     </td>
                   </tr>
@@ -782,7 +788,7 @@ export default function InvoiceModal({
                   </div>
 
                   <div className="font-semibold text-gray-600">상품</div>
-                  <div>{reservation.product}</div>
+                  <div>{productName}</div>
 
                   <div className="font-semibold text-gray-600">출발일</div>
                   <div>{reservation.departure_date}</div>

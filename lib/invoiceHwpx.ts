@@ -32,8 +32,8 @@ const rows = (table: Element) => Array.from(table.children).filter(e => e.localN
 const cells = (row: Element) => Array.from(row.children).filter(e => e.localName === "tc");
 const money = (value: number) => `${value.toLocaleString("ko-KR")} 원`;
 export const invoiceLabel = (kind: InvoiceDocument["invoiceType"]) => ({ deposit: "계약금", interim: "중도금", balance: "잔금" })[kind];
-export function invoiceFilename(data: InvoiceDocument) {
-  return `${data.departureDate.replaceAll("-", "").slice(2)}_BNI_Invoice_${data.name}_${invoiceLabel(data.invoiceType)}`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_") + ".hwpx";
+export function invoiceFilename(data: Pick<InvoiceDocument, "departureDate" | "product" | "name" | "invoiceType">) {
+  return `${data.departureDate.replaceAll("-", "").slice(2)}_BNI_Invoice_${data.product}_${data.name}_${invoiceLabel(data.invoiceType)}`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_") + ".hwpx";
 }
 
 function put(cell: Element, value: string) {
