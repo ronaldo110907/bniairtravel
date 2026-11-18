@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { roomHasOtherReservation, roomsForReservation } from "@/lib/roomReservationScope";
 
 type Props = {
   departureId?: string;
@@ -29,6 +30,8 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
   const [people, setPeople] = useState<any[]>([]);
 
   const [memo, setMemo] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   async function saveRoom() {
     if (!roomName.trim()) {
@@ -69,7 +72,7 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
     }
 
     alert("객실이 등록되었습니다.");
-    await loadRooms();
+    await reload();
 
     setEditRoomId(null);
 
@@ -148,7 +151,7 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
       return;
     }
 
-    await loadRooms();
+    await reload();
 
     setBulkSingle(0);
     setBulkTwin(0);
@@ -161,30 +164,40 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
     const query = supabase.from("rooms").select("*");
 
     const { data, error } = await (
-      reservationId
-        ? query.eq("reservation_id", reservationId)
-        : query.eq("departure_id", departureId!)
+      departureId
+        ? query.eq("departure_id", departureId)
+        : query.eq("reservation_id", reservationId!)
     ).order("created_at");
 
     if (error) {
       console.error("LOAD ROOMS ERROR:", error);
-      setRooms([]);
-      return;
+      throw error;
     }
 
     setRooms(data ?? []);
+    await loadRoomMembers((data ?? []).map(room => room.id));
   }
 
-  async function loadRoomMembers() {
-    const { data } = await supabase.from("room_members").select(`
+  async function loadRoomMembers(roomIds = rooms.map(room => room.id)) {
+    if (roomIds.length === 0) {
+      setRoomMembers([]);
+      return;
+    }
+    const allMembers: any[] = [];
+    for (let offset = 0; ; offset += 500) {
+      const { data, error } = await supabase.from("room_members").select(`
       *,
       reservation_people (
         id,
-        name
+        name,
+        reservation_id
       )
-    `);
-
-    setRoomMembers(data ?? []);
+    `).in("room_id", roomIds).order("id").range(offset, offset + 499);
+      if (error) throw error;
+      allMembers.push(...(data ?? []));
+      if ((data?.length ?? 0) < 500) break;
+    }
+    setRoomMembers(allMembers);
   }
 
   async function loadPeople() {
@@ -194,12 +207,12 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
         .from("reservation_people")
         .select("id, reservation_id, name")
         .eq("reservation_id", reservationId)
+        .order("sort_order", { ascending: true })
         .order("name");
 
       if (error) {
         console.error("LOAD RESERVATION PEOPLE ERROR:", error);
-        setPeople([]);
-        return;
+        throw error;
       }
 
       setPeople(data ?? []);
@@ -219,8 +232,7 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
 
     if (reservationError) {
       console.error("LOAD DEPARTURE RESERVATIONS ERROR", reservationError);
-      setPeople([]);
-      return;
+      throw reservationError;
     }
 
     const reservationIds = (reservations ?? []).map(
@@ -240,8 +252,7 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
 
     if (error) {
       console.error("LOAD DEPARTURE PEOPLE ERROR", error);
-      setPeople([]);
-      return;
+      throw error;
     }
 
     setPeople(data ?? []);
@@ -255,6 +266,8 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
   }
 
   async function selectPersonForRoom(room: any, personId: string) {
+    if (!people.some(person => person.id === personId) ||
+      (reservationId && room.reservation_id && room.reservation_id !== reservationId)) return;
     const capacity = getRoomCapacity(room.room_type);
 
     const assignedCount = roomMembers.filter(
@@ -300,13 +313,15 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
         return;
       }
 
-      await loadRoomMembers();
+      await reload();
 
       setSelectedPersonIds([]);
       setSelectedRoomId(null);
     }
   }
   async function removePerson(roomMemberId: string) {
+    const member = roomMembers.find(item => item.id === roomMemberId);
+    if (reservationId && member?.reservation_people?.reservation_id !== reservationId) return;
     const { error } = await supabase
       .from("room_members")
       .delete()
@@ -317,14 +332,26 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
       return;
     }
 
-    await loadRoomMembers();
+    await reload();
+  }
+
+  async function reload() {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      await Promise.all([loadRooms(), loadPeople()]);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    loadRooms();
-    loadRoomMembers();
-    loadPeople();
+    void reload();
   }, [departureId, reservationId]);
+
+  const visibleRooms = roomsForReservation(rooms, roomMembers, reservationId);
 
   const currentRoomIds = new Set(rooms.map((room) => room.id));
 
@@ -349,6 +376,11 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
   }, [assignmentComplete]);
 
   async function deleteRoom(id: string) {
+    const room = rooms.find(item => item.id === id);
+    if (roomHasOtherReservation(id, roomMembers, reservationId) || (reservationId && room?.reservation_id && room.reservation_id !== reservationId)) {
+      alert("다른 예약 인원과 함께 사용하는 객실은 출발일 전체 객실배정에서 관리해주세요.");
+      return;
+    }
     const ok = confirm("이 객실을 삭제하시겠습니까?");
 
     if (!ok) return;
@@ -360,10 +392,14 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
       return;
     }
 
-    await loadRooms();
+    await reload();
   }
 
   async function editRoom(room: any) {
+    if (roomHasOtherReservation(room.id, roomMembers, reservationId) || (reservationId && room.reservation_id && room.reservation_id !== reservationId)) {
+      alert("다른 예약 인원과 함께 사용하는 객실은 출발일 전체 객실배정에서 관리해주세요.");
+      return;
+    }
     setEditRoomId(room.id);
 
     setRoomName(room.room_name);
@@ -372,6 +408,9 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
 
     setShowForm(true);
   }
+
+  if (loading) return <p className="p-6 text-center">객실과 예약자 명단을 확인 중입니다…</p>;
+  if (loadError) return <div className="p-6 text-center"><p className="text-red-600">객실배정 정보를 불러오지 못했습니다.</p><button type="button" onClick={() => void reload()} className="mt-3 rounded border px-3 py-2">다시 시도</button></div>;
 
   if (isAssignmentCollapsed && assignmentComplete) {
     return (
@@ -393,7 +432,7 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
 
   return (
     <div className="rounded-xl border bg-white p-6">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-bold">🛏 객실 배정</h2>
 
         <div className="flex items-center gap-2">
@@ -522,13 +561,13 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
         </div>
       )}
 
-      {rooms.length === 0 ? (
+      {visibleRooms.length === 0 ? (
         <div className="rounded-lg border border-dashed p-6 text-center text-gray-500">
           아직 등록된 객실이 없습니다.
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {rooms.map((room) => (
+          {visibleRooms.map((room) => (
             <div key={room.id} className="rounded-lg border bg-gray-50 p-4">
               <div className="flex items-center gap-3">
                 <div className="font-bold">{room.room_name}</div>
@@ -550,10 +589,12 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
                 </div>
               </div>
               <div className="text-sm text-gray-600">{room.room_type}</div>
+              {reservationId && !room.reservation_id && !roomMembers.some(member => member.room_id === room.id) && <p className="mt-1 text-xs text-gray-500">출발일 공용 빈 객실</p>}
+              {roomHasOtherReservation(room.id, roomMembers, reservationId) && <p className="mt-1 text-xs text-amber-700">다른 예약 인원과 함께 사용하는 객실입니다. 전체 정원에 포함됩니다.</p>}
 
               {room.memo && <div className="mt-2 text-sm">📝 {room.memo}</div>}
               <div className="mt-3 border-t pt-3">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <div className="text-sm font-semibold text-gray-700">
                     예약자
                   </div>
@@ -603,7 +644,7 @@ export default function RoomAssignment({ departureId, reservationId }: Props) {
                 ) : (
                   <div className="mt-2 space-y-1">
                     {roomMembers
-                      .filter((member) => member.room_id === room.id)
+                      .filter((member) => member.room_id === room.id && (!reservationId || member.reservation_people?.reservation_id === reservationId))
                       .map((member) => (
                         <div
                           key={member.id}

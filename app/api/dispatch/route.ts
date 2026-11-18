@@ -155,6 +155,7 @@ export async function GET(request: Request) {
 
     const productName =
       departure?.products?.title || firstReservation?.product || "기타 예약";
+    const fileProductName = departure?.variant?.trim() || productName;
 
     const departureDate =
       departure?.departure_date || firstReservation?.departure_date || "";
@@ -608,7 +609,7 @@ export async function GET(request: Request) {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(
-          `수배의뢰서_${productName}_${departureDate}.xlsx`,
+          `수배의뢰서_${fileProductName}_${departureDate}.xlsx`,
         )}`,
       },
     });

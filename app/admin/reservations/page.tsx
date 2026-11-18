@@ -9,6 +9,7 @@ import { Fragment } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import InvoiceModal from "@/components/InvoiceModal";
 import ReservationPayments from "@/components/admin/ReservationPayments";
+import ReservationRoomAssignment from "@/components/admin/ReservationRoomAssignment";
 import ReservationConfirmationDownload from "@/components/admin/ReservationConfirmationDownload";
 import { useDispatchRequestStatus } from "@/lib/useDispatchRequestStatus";
 import TravelContractModal from "@/components/contract/TravelContractModal";
@@ -4426,6 +4427,7 @@ function resetFilters() {
                   >
                     💰 정산 바로가기
                   </button>
+                  <ReservationRoomAssignment key={selected.id} reservationId={selected.id} departureId={selected.departure_id} name={selected.name} />
                 </div>
                 <ReservationPayments key={selected.id} reservationId={selected.id} />
                 <p className="mt-3 text-sm text-gray-500">

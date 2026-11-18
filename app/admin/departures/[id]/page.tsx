@@ -224,7 +224,8 @@ export default function DepartureDetailPage() {
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = `수배의뢰서_${departure.products?.title}_${departure.departure_date}.xlsx`;
+      const fileProductName = departure.variant?.trim() || departure.products?.title || "기타 예약";
+      a.download = `수배의뢰서_${fileProductName}_${departure.departure_date}.xlsx`;
 
       a.click();
 
