@@ -8,7 +8,10 @@ const JSZip = require('jszip');
 const compiled = ts.transpileModule(fs.readFileSync('lib/estimateHwpx.ts', 'utf8'), {
   compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
 }).outputText;
-const bundle = `const module={exports:{}};new Function('require','module','exports',${JSON.stringify(compiled)})(()=>window.JSZip,module,module.exports);window.estimate=module.exports;`;
+const compile = file => ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+  compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
+}).outputText;
+const bundle = `const border={exports:{}};new Function('module','exports',${JSON.stringify(compile('lib/hwpxPageBorder.ts'))})(border,border.exports);const module={exports:{}};new Function('require','module','exports',${JSON.stringify(compiled)})(id=>id==='jszip'?window.JSZip:border.exports,module,module.exports);window.estimate=module.exports;const importer={exports:{}};new Function('require','module','exports',${JSON.stringify(compile('lib/importEstimateHwpx.ts'))})(()=>window.JSZip,importer,importer.exports);window.importer=importer.exports;`;
 const server = http.createServer((req, res) => {
   if (req.url === '/generator.js') { res.setHeader('Content-Type', 'application/javascript'); res.end(bundle); }
   else if (req.url === '/jszip.js') { res.setHeader('Content-Type', 'application/javascript'); res.end(fs.readFileSync(require.resolve('jszip/dist/jszip.min.js'))); }
@@ -35,6 +38,18 @@ const server = http.createServer((req, res) => {
         const xml = await zip.file('Contents/section0.xml').async('string');
         const doc = new DOMParser().parseFromString(xml, 'application/xml');
         const headerDoc = new DOMParser().parseFromString(await zip.file('Contents/header.xml').async('string'), 'application/xml');
+        for (const pageBorder of doc.getElementsByTagNameNS('*','pageBorderFill')) {
+          const border = [...headerDoc.getElementsByTagNameNS('*','borderFill')].find(b => b.getAttribute('id') === pageBorder.getAttribute('borderFillIDRef'));
+          for (const side of ['leftBorder','rightBorder','topBorder','bottomBorder']) {
+            if (border?.getElementsByTagNameNS('*',side)[0]?.getAttribute('color') !== '#2563EB') throw Error('Missing blue page border');
+          }
+        }
+        const imported = await window.importer.importEstimateHwpx(new File([blob], 'sample.hwpx'));
+        if (imported.days.length !== days.length || imported.form.includes !== f.includes || imported.form.excludes !== f.excludes) throw Error('Import roundtrip lost content');
+        for (const key of ['combinedPrice','airfare','landCost','recipient','sender','sentDate']) if (key in imported.form) throw Error('Financial/contact field leaked into content import');
+        for (let i=0;i<days.length;i++) {
+          for (const key of ['transport','time','breakfast','lunch','dinner','hotel']) if(imported.days[i][key] !== days[i][key]) throw Error(`Roundtrip mismatch ${name} ${i} ${key}: ${imported.days[i][key]}`);
+        }
         for (const face of headerDoc.getElementsByTagNameNS('*', 'fontface')) {
           const lang = face.getAttribute('lang').toLowerCase();
           for (const ref of headerDoc.getElementsByTagNameNS('*', 'fontRef')) {
@@ -54,6 +69,18 @@ const server = http.createServer((req, res) => {
       const original = '🚌特殊&<文字>'.repeat(400);
       if (window.estimate.estimateTextChunks(original).join('') !== original) throw Error('Truncated long text');
       if (sameCurrency[2][1] !== '700,000원') throw Error('Incorrect same-currency total');
+      const p = t => `<hp:p><hp:run><hp:t>${t}</hp:t></hp:run></hp:p>`;
+      const row = cells => '<hp:tr>'+cells.map((t,i)=>`<hp:tc><hp:subList>${p(t)}</hp:subList><hp:cellAddr colAddr="${i}"/></hp:tc>`).join('')+'</hp:tr>';
+      const table = rows => p('').replace('<hp:t></hp:t>', '<hp:tbl>'+rows.map(row).join('')+'</hp:tbl>');
+      const supplier = `<hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">${table([['포함사항','불포함사항'],['✈ 항공 / 호텔','개인경비']])}${table([['일자','지역','교통편','시간','일정','조식','중식','석식','호텔'],['1일차','다낭','ZE777','09:00','🚌 공항 미팅','기내식','현지식','호텔식','A호텔'],['','호이안','','13:00','관광 계속','','','',''],['2일차','다낭','전용차량','전일','자유시간','호텔식','현지식','불포함','B호텔']])}</hs:sec>`;
+      const supplierDraft=window.importer.parseEstimateHwpxSections([supplier]);
+      const missing=window.importer.parseEstimateHwpxSections([supplier.replace('✈ 항공 / 호텔','-').replace('개인경비','-')]);
+      if ('includes' in missing.form || 'excludes' in missing.form) throw Error('Missing fields would overwrite existing input');
+      if(supplierDraft.form.includes!=='✈ 항공 / 호텔'||supplierDraft.form.excludes!=='개인경비'||supplierDraft.days[0].transport!=='ZE777'||supplierDraft.days[0].schedule!=='🚌 공항 미팅\n관광 계속'||supplierDraft.days[1].hotel!=='B호텔') throw Error('Supplier table mismatch');
+      for (const bad of [supplier.replace('2일차','4일차'), '<broken>']) {
+        let rejected=false;try{window.importer.parseEstimateHwpxSections([bad]);}catch{rejected=true;}if(!rejected)throw Error('Ambiguous/malformed input accepted');
+      }
+      try { await window.importer.importEstimateHwpx(new File(['old binary'], 'sample.hwp')); throw Error('Legacy HWP accepted'); } catch(error) { if(!error.message.includes('hwpx')) throw error; }
       return result;
     });
     fs.mkdirSync('coverage/estimate-hwpx', { recursive: true });

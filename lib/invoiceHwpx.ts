@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { applyBluePageBorder } from "./hwpxPageBorder";
 
 export type InvoiceDocument = {
   reservationId: string;
@@ -65,9 +66,13 @@ export async function generateInvoiceHwpx(data: InvoiceDocument, template?: Arra
   }
   const zip = await JSZip.loadAsync(template);
   const xml = await zip.file("Contents/section0.xml")?.async("string");
-  if (!xml) throw new Error("인보이스 한글 양식이 올바르지 않습니다.");
+  const headerXml = await zip.file("Contents/header.xml")?.async("string");
+  if (!xml || !headerXml) throw new Error("인보이스 한글 양식이 올바르지 않습니다.");
   const doc = new DOMParser().parseFromString(xml, "application/xml");
+  const header = new DOMParser().parseFromString(headerXml, "application/xml");
   if (all(doc, "parsererror").length) throw new Error("인보이스 한글 양식을 읽지 못했습니다.");
+  if (all(header, "parsererror").length) throw new Error("인보이스 한글 글꼴/서식을 읽지 못했습니다.");
+  applyBluePageBorder(doc, header);
   const tables = all(doc, "tbl");
   if (tables.length !== 7) throw new Error("인보이스 한글 양식의 표 구성이 다릅니다.");
   const guides = data.people.filter(p => p.is_guide === true).length;
@@ -132,6 +137,7 @@ export async function generateInvoiceHwpx(data: InvoiceDocument, template?: Arra
   // Drop stale layout caches; Hancom recalculates native paragraphs when opened.
   all(doc, "linesegarray").forEach(e => e.remove());
   zip.file("Contents/section0.xml", new XMLSerializer().serializeToString(doc));
+  zip.file("Contents/header.xml", new XMLSerializer().serializeToString(header));
   zip.file("Preview/PrvText.txt", all(doc, "t").map(t => t.textContent).join("\n"));
   zip.remove("Preview/PrvImage.png");
   return zip.generateAsync({ type: "blob", mimeType: "application/hwp+zip", compression: "DEFLATE" });

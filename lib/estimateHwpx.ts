@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { applyBluePageBorder } from "./hwpxPageBorder";
 
 export type EstimateDocument = {
   priceMode: "combined" | "split";
@@ -219,6 +220,7 @@ export async function generateEstimateHwpx(data: EstimateDocument, template?: Ar
   if (f.remarks) labelled("비고", f.remarks);
   root.append(paragraph("상기 일정은 현지 및 항공 사정에 따라 변경될 수 있습니다.", "42"));
   compactLayout(doc, header);
+  applyBluePageBorder(doc, header);
   all(doc, "linesegarray").forEach(e => e.remove());
   zip.file("Contents/section0.xml", new XMLSerializer().serializeToString(doc));
   zip.file("Contents/header.xml", new XMLSerializer().serializeToString(header));

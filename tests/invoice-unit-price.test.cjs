@@ -5,7 +5,7 @@ const ts = require('typescript');
 const invoiceModule = { exports: {} };
 new Function('require', 'module', 'exports', ts.transpileModule(fs.readFileSync('lib/invoiceHwpx.ts', 'utf8'), {
   compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
-}).outputText)(require, invoiceModule, invoiceModule.exports);
+}).outputText)(id => id === './hwpxPageBorder' ? { applyBluePageBorder() {} } : require(id), invoiceModule, invoiceModule.exports);
 
 // Exercise the actual input handlers without fetching or saving live invoices.
 function harness(people, departureVariant) {

@@ -22,8 +22,8 @@ function add(file) {
   for (const m of code.matchAll(/require\(["']([^"']+)["']\)/g)) {
     const name = m[1];
     if (mocks[name]) { graph[name] = { code: mocks[name], deps: {} }; graph[file].deps[name] = name; continue; }
-    const q = path.join(root, name.slice(2));
-    const resolved = name.startsWith('@/') ? ['.ts', '.tsx', ''].map(e => q + e).find(fs.existsSync) : require.resolve(name, { paths: [path.dirname(file)] });
+    const q = name.startsWith('@/') ? path.join(root, name.slice(2)) : path.resolve(path.dirname(file), name);
+    const resolved = name.startsWith('@/') || name.startsWith('.') ? ['.ts', '.tsx', '', '.js'].map(e => q + e).find(fs.existsSync) : require.resolve(name, { paths: [path.dirname(file)] });
     graph[file].deps[name] = add(resolved);
   }
   return file;
@@ -60,6 +60,16 @@ const server = http.createServer((req, res) => {
     await charge().fill('400000');
     const bytes = await download(submit());
     const xml = await inspect(bytes);
+    const invoiceZip = await JSZip.loadAsync(bytes);
+    const header = await invoiceZip.file('Contents/header.xml').async('string');
+    assert.match(header, /color="#2563EB"/);
+    assert.equal(await page.evaluate(({xml,header})=>{
+      const doc=new DOMParser().parseFromString(xml,'application/xml'), head=new DOMParser().parseFromString(header,'application/xml');
+      return [...doc.getElementsByTagNameNS('*','pageBorderFill')].every(page=>{
+        const border=[...head.getElementsByTagNameNS('*','borderFill')].find(b=>b.getAttribute('id')===page.getAttribute('borderFillIDRef'));
+        return ['leftBorder','rightBorder','topBorder','bottomBorder'].every(side=>border?.getElementsByTagNameNS('*',side)[0]?.getAttribute('color')==='#2563EB');
+      });
+    },{xml,header}),true);
     assert.match(xml, /청구 2명/); assert.match(xml, /1,998,000/); assert.match(xml, /1,498,000/);
     assert.match(xml, /100,000/); assert.match(xml, /400,000/);
     assert.equal((xml.match(/binaryItemIDRef="invoiceStamp"/g) || []).length, 1);

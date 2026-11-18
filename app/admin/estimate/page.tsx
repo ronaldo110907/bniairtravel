@@ -102,6 +102,8 @@ export default function EstimatePage() {
   const estimateRef = useRef<HTMLDivElement>(null);
   const estimateContentRef = useRef<HTMLDivElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
+  const hwpxInputRef = useRef<HTMLInputElement>(null);
+  const importingEstimateRef = useRef(false);
   const [isImportingPdf, setIsImportingPdf] = useState(false);
   const [isDownloadingHwpx, setIsDownloadingHwpx] = useState(false);
   const downloadingHwpxRef = useRef(false);
@@ -479,29 +481,37 @@ thead {
   async function handlePdfFileChange(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
     const file = input.files?.[0];
-    if (!file || isImportingPdf) return;
+    input.value = "";
+    if (!file || importingEstimateRef.current) return;
 
+    importingEstimateRef.current = true;
     setIsImportingPdf(true);
     try {
-      const imported = await extractEstimateFromPdf(file);
+      const { importEstimateHwpx, estimateContentOnly } = await import("@/lib/importEstimateHwpx");
+      const isPdf = /\.pdf$/i.test(file.name);
+      const imported = isPdf ? await extractEstimateFromPdf(file) : await importEstimateHwpx(file);
+      const content = estimateContentOnly(imported.form);
+      const hasContent = days.some(({ id: _id, ...day }) => Object.values(day).some(Boolean))
+        || Object.keys(content).some(key => form[key as keyof typeof form]);
+      if (hasContent && !window.confirm("현재 일정과 읽어온 견적 내용을 교체할까요? 금액·수신·발신 정보는 유지됩니다.")) return;
 
-      // 기존 작성 화면의 state에 그대로 복원하므로 모든 입력칸 수정 가능
+      // Import content only; financial and sender/recipient fields stay untouched.
       setMode("free");
-      setPriceMode(imported.priceMode);
-      setForm(imported.form);
+      setForm(previous => ({ ...previous, ...content }));
       setDays(imported.days);
       setShowPreview(false);
 
       const warningText = imported.warnings.length
         ? `\n\n확인할 사항:\n- ${imported.warnings.join("\n- ")}`
         : "";
-      alert(`PDF를 불러왔습니다. DAY ${imported.days.length}개를 복원했습니다.${warningText}`);
+      alert(`${isPdf ? "PDF" : "한글"}에서 DAY ${imported.days.length}개를 불러왔습니다. 금액·수신·발신 정보는 변경하지 않았습니다.${warningText}`);
     } catch (error) {
-      console.error("견적서 PDF 불러오기 오류:", error);
-      alert(error instanceof Error ? error.message : "PDF 불러오기에 실패했습니다.");
+      console.error("견적서 불러오기 오류:", error);
+      alert(error instanceof Error ? error.message : "견적서 불러오기에 실패했습니다.");
     } finally {
       // 같은 파일도 다시 선택할 수 있도록 초기화
       input.value = "";
+      importingEstimateRef.current = false;
       setIsImportingPdf(false);
     }
   }
@@ -520,11 +530,13 @@ thead {
       <input
         ref={pdfInputRef}
         type="file"
-        accept=".pdf,application/pdf"
+        accept=".pdf,.hwpx,.hwp,application/pdf,application/hwp+zip"
         onChange={handlePdfFileChange}
         className="hidden"
-        aria-label="기존 견적서 PDF 선택"
+        aria-label="기존 견적서 PDF 또는 한글 선택"
       />
+      <input ref={hwpxInputRef} type="file" accept=".hwpx,.hwp,application/hwp+zip"
+        onChange={handlePdfFileChange} className="hidden" aria-label="자유 견적서 한글 선택" />
 
       {/* 견적 유형 선택 */}
       <div className="grid gap-5 md:grid-cols-3">
@@ -574,12 +586,11 @@ thead {
         >
           <div className="text-3xl">📂</div>
           <div className="mt-4 text-xl font-bold">
-            {isImportingPdf ? "PDF 분석 중..." : "기존 PDF 불러오기"}
+            {isImportingPdf ? "견적서 읽는 중..." : "기존 견적서 불러오기"}
           </div>
           <div className="mt-2 text-sm leading-6 text-gray-500">
-            전에 다운로드한 BNI 견적서를 불러와
-            <br />
-            입력칸에서 다시 수정합니다.
+            PDF·한글(HWPX)에서 일정과 포함·불포함사항을 불러옵니다.
+            <br />금액은 현재 입력값을 유지합니다.
           </div>
         </button>
       </div>
@@ -598,7 +609,7 @@ thead {
               ? "🧳 등록 상품 견적서 작성"
               : "✍️ 자유 견적서 작성"}
             {mode === "free" && (
-              <div className="mt-2">
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 <FreeEstimateExcelButton onImport={draft => {
                   const hasContent = days.some(({ id: _id, ...day }) => Object.values(day).some(Boolean))
                     || Object.keys(draft.form).some(key => form[key as keyof typeof draft.form]);
@@ -608,6 +619,11 @@ thead {
                   setShowPreview(false);
                   return true;
                 }} />
+                <button type="button" disabled={isImportingPdf} onClick={() => hwpxInputRef.current?.click()}
+                  className="rounded-lg border border-emerald-300 bg-white px-4 py-2 text-emerald-800 disabled:opacity-50">
+                  {isImportingPdf ? "한글 읽는 중…" : "한글 불러오기"}
+                </button>
+                <p className="w-full text-xs font-normal">금액은 유지하고 일정·항공편·호텔·식사·포함·불포함사항을 불러옵니다. HWP 파일은 한글에서 HWPX로 저장 후 올려주세요.</p>
               </div>
             )}
           </div>

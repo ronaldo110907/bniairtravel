@@ -9,7 +9,7 @@ const JSZip = require('jszip');
 const graph = {}, root = process.cwd();
 const mocks = {
   '@/lib/supabase': 'exports.supabase={from(){return {select(){return this},eq(){return this},order:async()=>({data:[]})}}};',
-  '@/lib/importEstimatePdf': 'exports.extractEstimateFromPdf=async()=>{};',
+  '@/lib/importEstimatePdf': `exports.extractEstimateFromPdf=async()=>({form:{productName:'PDF 일정',includes:'PDF 포함',airfare:'999999',recipient:'덮어쓰면 안 됨'},priceMode:'combined',days:[{id:'pdf-1',region:'',transport:'ZE123',time:'09:00',schedule:'PDF 공항 미팅',breakfast:'',lunch:'',dinner:'',hotel:''}],warnings:[]});`,
   '@/lib/importEstimateExcel': 'exports.importEstimateExcel=async()=>{};',
   'jszip': 'module.exports=window.JSZip;',
   'react-to-print': 'exports.useReactToPrint=()=>()=>{window.printed=true};',
@@ -44,12 +44,14 @@ const server = http.createServer((req,res)=>{
     const page=await browser.newPage();
     const errors=[],dialogs=[];
     page.on('pageerror',e=>errors.push(e.message));
-    page.on('dialog',async d=>{dialogs.push(d.message());await d.dismiss();});
+    let acceptImports=true;
+    page.on('dialog',async d=>{dialogs.push(d.message());if(d.type()==='confirm'&&acceptImports)await d.accept();else await d.dismiss();});
     for(const mode of ['등록 상품 불러오기','자유 견적 작성']){
       await page.goto(`http://127.0.0.1:${server.address().port}`);
       await page.getByRole('button',{name:new RegExp(mode)}).click();
       await page.getByPlaceholder('예: [노팁/노옵션/품격] 연길/백두산 5일').fill(`${mode} & 수정 견적`);
       await page.getByPlaceholder('예: 금수학호텔 ★★★★☆ 또는 동급').fill('수정된 호텔 ★★★★');
+      await page.getByPlaceholder(/연길 국제공항 도착 후 가이드 미팅/).fill('✈ 공항 미팅\n관광 후 호텔');
       const event=page.waitForEvent('download');
       await page.getByRole('button',{name:'한글 다운로드',exact:true}).click();
       const file=await event;
@@ -57,6 +59,21 @@ const server = http.createServer((req,res)=>{
       const zip=await JSZip.loadAsync(fs.readFileSync(await file.path()));
       const text=await zip.file('Preview/PrvText.txt').async('string');
       assert.ok(text.includes(`${mode} & 수정 견적`));assert.ok(text.includes('수정된 호텔 ★★★★'));
+      await page.getByPlaceholder('항공 별도인 경우 비워두세요').fill('888000');
+      await page.getByPlaceholder('거래처명 검색 또는 직접 입력').fill('유지할 수신처');
+      await page.getByPlaceholder('예: 금수학호텔 ★★★★☆ 또는 동급').fill('교체 전 호텔');
+      const inputName=mode==='등록 상품 불러오기'?'기존 견적서 PDF 또는 한글 선택':'자유 견적서 한글 선택';
+      const upload={name:file.suggestedFilename(),mimeType:'application/hwp+zip',buffer:fs.readFileSync(await file.path())};
+      await page.getByLabel(inputName).setInputFiles(upload);
+      await page.waitForFunction(()=>document.querySelector('input[placeholder="예: 금수학호텔 ★★★★☆ 또는 동급"]').value==='수정된 호텔 ★★★★');
+      assert.equal(await page.getByPlaceholder('항공 별도인 경우 비워두세요').inputValue(),'888000');
+      assert.equal(await page.getByPlaceholder('거래처명 검색 또는 직접 입력').inputValue(),'유지할 수신처');
+      acceptImports=false;
+      await page.getByPlaceholder('예: 금수학호텔 ★★★★☆ 또는 동급').fill('취소 시 유지 호텔');
+      await page.getByLabel('자유 견적서 한글 선택').setInputFiles(upload);
+      await page.waitForFunction(()=>![...document.querySelectorAll('button')].some(b=>/읽는 중/.test(b.textContent)));
+      assert.equal(await page.getByPlaceholder('예: 금수학호텔 ★★★★☆ 또는 동급').inputValue(),'취소 시 유지 호텔');
+      acceptImports=true;
       await page.getByRole('button',{name:'📄 A4 견적서 미리보기',exact:true}).click();
       assert.equal(await page.getByRole('button',{name:'한글 다운로드',exact:true}).count(),2);
       assert.equal(await page.getByRole('button',{name:'🖨️ 인쇄 / PDF 테스트',exact:true}).count(),1);
@@ -66,6 +83,10 @@ const server = http.createServer((req,res)=>{
     await page.waitForFunction(()=>![...document.querySelectorAll('button')].some(b=>b.textContent.includes('한글 파일 생성 중')));
     assert.ok(dialogs.some(text=>text.includes('양식을 불러오지 못했습니다')));
     assert.equal(await page.getByPlaceholder('예: [노팁/노옵션/품격] 연길/백두산 5일').inputValue(),'자유 견적 작성 & 수정 견적');
+    await page.getByLabel('기존 견적서 PDF 또는 한글 선택').setInputFiles({name:'existing.pdf',mimeType:'application/pdf',buffer:Buffer.from('synthetic')});
+    await page.waitForFunction(()=>document.querySelector('input[placeholder="예: [노팁/노옵션/품격] 연길/백두산 5일"]').value==='PDF 일정');
+    assert.equal(await page.getByPlaceholder('항공 별도인 경우 비워두세요').inputValue(),'888000');
+    assert.equal(await page.getByPlaceholder('거래처명 검색 또는 직접 입력').inputValue(),'유지할 수신처');
     assert.deepEqual(errors,[]);
     console.log('PASS product/free download buttons, edited values, preview/PDF preservation and failure recovery');
   } finally {await browser.close();server.close();}
