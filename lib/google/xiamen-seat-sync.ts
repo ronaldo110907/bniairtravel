@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { sheets_v4 } from "googleapis";
 import { getGoogleSheetsClient } from "./sheets";
+import { buildXiamenAdminSyncRequests, XIAMEN_ADMIN_SHEET_ID } from "./xiamen-admin-sync";
 
 const SHEET_NAME = "좌석현황";
 export const PRICE_LABEL = "↳ 1인 상품가";
@@ -17,8 +18,8 @@ export const XIAMEN_BLOCKS = [
   ], variants: [{ name: "고품격관지산", label: "고품격관지산" }, { name: "고품격무이산", label: "고품격무이산" }, { name: "하문골프72H", label: "골프" }] },
 ] as const;
 const XIAMEN_VARIANTS = ["하문실속", ...XIAMEN_BLOCKS.flatMap(b => b.variants.map(v => v.name))];
-type Departure = { id: string; departure_date: string; seat: number | null; variant: string | null; price: number | null };
-type Reservation = { departure_id: string | null; people_count: number | null; status: string | null; reservation_people?: { id: string }[] | null };
+type Departure = { id: string; departure_date: string; course?: string | null; seat: number | null; variant: string | null; price: number | null };
+type Reservation = { departure_id: string | null; name?: string | null; people_count: number | null; status: string | null; reservation_people?: { id: string }[] | null };
 const text = (cell?: sheets_v4.Schema$CellData) => cell?.userEnteredValue?.stringValue?.trim() ?? "";
 const column = (index: number) => String.fromCharCode(65 + index); // This fixed winter matrix spans A:T.
 
@@ -136,14 +137,14 @@ export function buildXiamenSyncRequests(departures: Departure[], reservations: R
 }
 
 export async function syncXiamenSeats(supabase: SupabaseClient) {
-  const { data, error } = await supabase.from("departures").select("id,departure_date,seat,variant,price")
+  const { data, error } = await supabase.from("departures").select("id,departure_date,course,seat,variant,price")
     .gte("departure_date", "2026-12-03").lte("departure_date", "2027-03-25").in("variant", XIAMEN_VARIANTS);
   if (error) throw new Error(`하문 출발일 조회 실패: ${error.message}`);
   const departures = (data ?? []) as Departure[];
   if (!departures.length) throw new Error("하문 출발일 데이터가 없습니다.");
   const reservations: Reservation[] = [];
   for (let offset = 0; ; offset += 500) {
-    const result = await supabase.from("reservations").select("id,departure_id,people_count,status,reservation_people(id)")
+    const result = await supabase.from("reservations").select("id,name,departure_id,people_count,status,reservation_people(id)")
       .in("departure_id", departures.map(d => d.id)).order("id").range(offset, offset + 499);
     if (result.error) throw new Error(`하문 예약 조회 실패: ${result.error.message}`);
     reservations.push(...(result.data ?? []) as Reservation[]);
@@ -156,5 +157,14 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
   if (!sheet) throw new Error("구글시트 좌석현황 탭을 찾을 수 없습니다.");
   const plan = buildXiamenSyncRequests(departures, reservations, sheet);
   await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests: plan.requests } });
-  return { success: true, syncedAt: new Date().toISOString(), departureCount: 33, reservationCount: reservations.length, seatUsage: plan.seatUsage, priceRowCount: plan.priceRowCount, warnings: plan.warnings };
+  try {
+    const result = await sheets.spreadsheets.get({ spreadsheetId: XIAMEN_ADMIN_SHEET_ID, ranges: [`'${SHEET_NAME}'!A1:K1000`], fields: "sheets(properties,conditionalFormats,data(startRow,startColumn,rowData(values(userEnteredValue))))" });
+    const admin = result.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
+    if (!admin) throw new Error("관리자 좌석현황 탭이 없습니다.");
+    const adminPlan = buildXiamenAdminSyncRequests(departures, reservations, admin);
+    await sheets.spreadsheets.batchUpdate({ spreadsheetId: XIAMEN_ADMIN_SHEET_ID, requestBody: { requests: adminPlan.requests } });
+  } catch {
+    throw new Error("거래처용은 동기화 완료됐지만 하문 관리자용 동기화에 실패했습니다. 관리자 시트의 연동 계정 권한과 좌석현황 탭을 확인해 주세요.");
+  }
+  return { success: true, syncedAt: new Date().toISOString(), departureCount: 33, reservationCount: reservations.length, seatUsage: plan.seatUsage, priceRowCount: plan.priceRowCount, warnings: plan.warnings, adminSynced: true };
 }
