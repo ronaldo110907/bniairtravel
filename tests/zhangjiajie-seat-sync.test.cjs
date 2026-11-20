@@ -9,6 +9,7 @@ const code = ts.transpileModule(fs.readFileSync('lib/google/zhangjiajie-seat-syn
 new Function('require', 'exports', code)(() => ({}), exportsObject);
 const build = exportsObject.buildZhangjiajieSeatUpdates;
 const planSync = exportsObject.buildZhangjiajieSyncRequests;
+const planAdmin = exportsObject.buildZhangjiajieAdminSyncRequests;
 const departures = [
   {id:'a',departure_date:'2027-03-02',course:'3박4일'},
   {id:'b',departure_date:'2027-03-03',course:'4박5일'},
@@ -77,6 +78,45 @@ function sheetFixture() {
 }
 const detailedDepartures = departures.map(d=>({...d,price:1400000,seat:20}));
 const addedDeparture = {id:'c',departure_date:'2027-03-26',course:'4박5일',price:1430000,seat:20};
+
+function adminFixture() {
+  const sheet=sheetFixture();
+  sheet.data[0].rowData.slice(3).forEach(row=>{
+    row.values[1].userEnteredValue={numberValue:Date.parse(row.values[1].formattedValue+'T00:00:00Z')/86400000+25569};
+  });
+  return sheet;
+}
+function applyAdmin(sheet,plan){
+  for(const r of plan.requests){
+    if(r.updateCells){const u=r.updateCells;const row=sheet.data[0].rowData[u.start.rowIndex]??={values:[]};u.rows[0].values.forEach((v,i)=>{row.values[i]={...row.values[i],...v};});}
+    if(r.sortRange){const {startRowIndex:a,endRowIndex:b}=r.sortRange.range;const rows=sheet.data[0].rowData;rows.splice(a,b-a,...rows.slice(a,b).sort((x,y)=>x.values[1].userEnteredValue.numberValue-y.values[1].userEnteredValue.numberValue));}
+  }
+}
+test('admin sync preserves live private notes when new departures reorder rows; retries do not duplicate',()=>{
+  const sheet=adminFixture(); const ds=[...detailedDepartures,addedDeparture];
+  const plan=planAdmin(ds,[],sheet);
+  // A user edits J after planning: the sync must not replay stale notes.
+  sheet.data[0].rowData[3].values[9].userEnteredValue={stringValue:'private commission edited while syncing'};
+  applyAdmin(sheet,plan);
+  assert.equal(sheet.data[0].rowData[3].values[9].userEnteredValue.stringValue,'earlier date');
+  assert.equal(sheet.data[0].rowData[4].values[9].userEnteredValue.stringValue,'private commission edited while syncing');
+  assert.equal(sheet.data[0].rowData[5].values[9],undefined);
+  for(const row of sheet.data[0].rowData.slice(3))row.values[1].formattedValue=new Date((row.values[1].userEnteredValue.numberValue-25569)*86400000).toISOString().slice(0,10);
+  applyAdmin(sheet,planAdmin(ds,[],sheet));
+  assert.equal(sheet.data[0].rowData.length,6);
+  assert.equal(sheet.data[0].rowData[4].values[9].userEnteredValue.stringValue,'private commission edited while syncing');
+});
+test('admin write payload excludes J contents and updates website prices',()=>{
+  const sheet=adminFixture();const plan=planAdmin(detailedDepartures,[],sheet);
+  assert.ok(!JSON.stringify(plan.requests).includes('later date'));
+  assert.ok(!JSON.stringify(plan.requests).includes('earlier date'));
+  for(const r of plan.requests.filter(r=>r.updateCells)){
+    assert.equal(r.updateCells.rows[0].values.length,9);
+    assert.equal(r.updateCells.rows[0].values[4].userEnteredValue.numberValue,1400000);
+    assert.match(r.updateCells.rows[0].values[8].userEnteredValue.formulaValue,/ROW\(\)/);
+  }
+  assert.throws(()=>planAdmin([{...detailedDepartures[0],price:null},detailedDepartures[1]],[],sheet),/금액/);
+});
 
 function table(plan) {
   return plan.requests.find(r=>r.updateCells?.fields.includes('userEnteredValue')).updateCells.rows;

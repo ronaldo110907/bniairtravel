@@ -3,6 +3,7 @@ import type { sheets_v4 } from "googleapis";
 import { getGoogleSheetsClient } from "./sheets";
 
 export const ZHANGJIAJIE_SHEET_ID = "1eaDSwD9IxjuOQkqQxc-Ow2XgUrFcxcDMyy0HfC1wrJo";
+export const ZHANGJIAJIE_ADMIN_SHEET_ID = "115Abpy3JTKeLC3Netda5ZkmYqNmjiPvi5NleNTe5QDY";
 const TAB = "좌석현황";
 type Departure = {
   id: string; departure_date: string; course: string | null;
@@ -178,6 +179,56 @@ export function buildZhangjiajieSyncRequests(
     seatUsage: { hold, confirmed, total: hold + confirmed } };
 }
 
+/** Update A:I only. Native sorting moves J with its date without reading/replaying private notes. */
+export function buildZhangjiajieAdminSyncRequests(
+  departures: Departure[], reservations: Reservation[], sheet: sheets_v4.Schema$Sheet,
+) {
+  const base = buildZhangjiajieSyncRequests(departures, reservations, sheet);
+  const table = base.requests.find(r => r.updateCells?.start && r.updateCells.fields?.includes("userEnteredValue"))!.updateCells!;
+  const startRow = table.start!.rowIndex!;
+  const sheetId = sheet.properties!.sheetId!;
+  const oldRows = sheet.data![0].rowData ?? [];
+  const key = (cells: sheets_v4.Schema$CellData[]) => {
+    const date = cells[1]?.userEnteredValue?.numberValue;
+    const day = date == null ? (cells[1]?.formattedValue ?? cells[1]?.userEnteredValue?.stringValue ?? "")
+      : new Date((date - 25569) * 86400000).toISOString().slice(0, 10);
+    return `${day}|${cells[3]?.userEnteredValue?.stringValue ?? cells[3]?.formattedValue ?? ""}`;
+  };
+  const positions = new Map<string, number>();
+  oldRows.forEach((row, index) => { if (index >= startRow && row.values?.some(c => c.userEnteredValue)) positions.set(key(row.values), index); });
+  let nextRow = Math.max(startRow, ...[...positions.values()].map(i => i + 1));
+  const requests: sheets_v4.Schema$Request[] = [];
+  const sorted = [...departures].sort((a, b) => a.departure_date.localeCompare(b.departure_date) || (a.course ?? "").localeCompare(b.course ?? ""));
+  const pending: sheets_v4.Schema$Request[] = [];
+  for (const [index, source] of table.rows!.entries()) {
+    const departure = sorted[index];
+    if (departure.price == null || !Number.isFinite(departure.price) || departure.price < 0) throw new Error(`금액을 확인해 주세요: ${departure.departure_date}`);
+    const existingRow = positions.get(`${departure.departure_date}|${departure.course}`);
+    const rowIndex = existingRow ?? nextRow++;
+    if (existingRow == null) {
+      pending.push({ copyPaste: {
+        source: { sheetId, startRowIndex: startRow, endRowIndex: startRow + 1, startColumnIndex: 0, endColumnIndex: 10 },
+        destination: { sheetId, startRowIndex: rowIndex, endRowIndex: rowIndex + 1, startColumnIndex: 0, endColumnIndex: 10 },
+        pasteType: "PASTE_FORMAT",
+      } });
+    }
+    const cells = source.values!.slice(0, 9).map(cell => ({ userEnteredValue: cell.userEnteredValue }));
+    cells[0].userEnteredValue = { formulaValue: `=ROW()-${startRow}` };
+    cells[2].userEnteredValue = { formulaValue: '=CHOOSE(WEEKDAY(INDEX(B:B,ROW())),"일","월","화","수","목","금","토")' };
+    cells[4].userEnteredValue = { numberValue: departure.price };
+    cells[8].userEnteredValue = { formulaValue: '=IF(INDEX(F:F,ROW())="","",INDEX(F:F,ROW())-INDEX(G:G,ROW())-INDEX(H:H,ROW()))' };
+    pending.push({ updateCells: { start: { sheetId, rowIndex, columnIndex: 0 }, rows: [{ values: cells }], fields: "userEnteredValue" } });
+  }
+  if (nextRow > 1000) throw new Error("관리자 좌석표 범위를 확인해 주세요.");
+  const rowCount = sheet.properties!.gridProperties!.rowCount!;
+  if (nextRow > rowCount) requests.push({ appendDimension: { sheetId, dimension: "ROWS", length: nextRow - rowCount } });
+  requests.push(...pending);
+  // The server moves the entire live row, including any note edited since our read.
+  requests.push({ sortRange: { range: { sheetId, startRowIndex: startRow, endRowIndex: nextRow, startColumnIndex: 0, endColumnIndex: 10 }, sortSpecs: [{ dimensionIndex: 1, sortOrder: "ASCENDING" }, { dimensionIndex: 3, sortOrder: "ASCENDING" }] } });
+  requests.push(...base.requests.filter(r => r.updateConditionalFormatRule || r.setBasicFilter));
+  return { ...base, requests };
+}
+
 export async function syncZhangjiajieSeats(supabase: SupabaseClient) {
   const { data: product, error: productError } = await supabase.from("products")
     .select("id").eq("slug", "zhangjiajie-2027").single();
@@ -213,5 +264,18 @@ export async function syncZhangjiajieSeats(supabase: SupabaseClient) {
   if (!sheet) throw new Error("좌석현황 시트를 찾을 수 없습니다.");
   const { requests, ...summary } = buildZhangjiajieSyncRequests(departures, reservations, sheet);
   await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests } });
-  return { success: true, syncedAt: new Date().toISOString(), ...summary };
+  // Separate destination and request plan: private J cells never enter the public plan.
+  try {
+    const adminResult = await sheets.spreadsheets.get({ spreadsheetId: ZHANGJIAJIE_ADMIN_SHEET_ID,
+      ranges: [`'${TAB}'!A1:I1000`],
+      fields: "sheets(properties,basicFilter,conditionalFormats,data(startRow,startColumn,rowData(values(formattedValue,userEnteredValue,userEnteredFormat,dataValidation))))",
+    });
+    const adminSheet = adminResult.data.sheets?.find(s => s.properties?.title === TAB);
+    if (!adminSheet) throw new Error("관리자 좌석현황 탭을 찾을 수 없습니다.");
+    const adminPlan = buildZhangjiajieAdminSyncRequests(departures, reservations, adminSheet);
+    await sheets.spreadsheets.batchUpdate({ spreadsheetId: ZHANGJIAJIE_ADMIN_SHEET_ID, requestBody: { requests: adminPlan.requests } });
+  } catch {
+    throw new Error("거래처용은 동기화 완료됐지만 관리자용 동기화에 실패했습니다. 관리자 시트의 연동 계정 권한과 좌석현황 탭을 확인해 주세요.");
+  }
+  return { success: true, syncedAt: new Date().toISOString(), ...summary, adminSynced: true };
 }
