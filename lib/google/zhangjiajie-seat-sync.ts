@@ -183,6 +183,14 @@ export function buildZhangjiajieSyncRequests(
   } });
   const hold = usage.reduce((sum, row) => sum + row.values[0][0], 0);
   const confirmed = usage.reduce((sum, row) => sum + row.values[0][1], 0);
+  // Use the cell's current row so inserting/deleting/sorting dates cannot leave stale validation references.
+  for (const [offset, col] of ["F", "G", "H"].entries()) {
+    const value = `INDEX(${col}:${col},ROW())`;
+    requests.push({ setDataValidation: {
+      range: { sheetId, startRowIndex: startRow, startColumnIndex: offset + 5, endColumnIndex: offset + 6 },
+      rule: { condition: { type: "CUSTOM_FORMULA", values: [{ userEnteredValue: `=OR(${value}="",AND(ISNUMBER(${value}),${value}>=0,MOD(${value},1)=0))` }] }, strict: true, inputMessage: "0 이상의 정수만 입력하세요." },
+    } });
+  }
   return { requests, departureCount: sorted.length,
     addedCount: [...keys].filter(k => !existing.has(k)).length,
     removedCount: [...existing.keys()].filter(k => !keys.has(k)).length,
@@ -245,7 +253,7 @@ export function buildZhangjiajieAdminSyncRequests(
   nextRow -= removedRows.length;
   // The server moves the entire live row, including any note edited since our read.
   if (nextRow > startRow) requests.push({ sortRange: { range: { sheetId, startRowIndex: startRow, endRowIndex: nextRow, startColumnIndex: 0, endColumnIndex: 10 }, sortSpecs: [{ dimensionIndex: 1, sortOrder: "ASCENDING" }, { dimensionIndex: 3, sortOrder: "ASCENDING" }] } });
-  requests.push(...base.requests.filter(r => r.updateConditionalFormatRule || r.setBasicFilter));
+  requests.push(...base.requests.filter(r => r.updateConditionalFormatRule || r.setBasicFilter || r.setDataValidation));
   return { ...base, requests };
 }
 
