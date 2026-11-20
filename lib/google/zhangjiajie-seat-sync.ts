@@ -80,19 +80,27 @@ export function buildZhangjiajieSyncRequests(
     a.departure_date.localeCompare(b.departure_date) || (a.course ?? "").localeCompare(b.course ?? ""));
   const key = (date: string, course: string) => `${date}|${course}`;
   // Reuse the existing status validation, duplicate detection and guide-inclusive counts.
-  const usage = buildZhangjiajieSeatUpdates(sorted, reservations,
-    sorted.map(d => [d.departure_date, "", d.course ?? ""]), startRow + 1);
+  const usage = sorted.length ? buildZhangjiajieSeatUpdates(sorted, reservations,
+    sorted.map(d => [d.departure_date, "", d.course ?? ""]), startRow + 1) : [];
   const keys = new Set(sorted.map(d => key(d.departure_date, d.course ?? "")));
   const existing = new Map<string, sheets_v4.Schema$CellData[]>();
   for (const row of rows.slice(startRow)) {
     const cells = row.values ?? [];
     if (!cells.some(cell => cell.userEnteredValue)) continue;
     const k = key(text(cells[1]), text(cells[3]));
-    if (!keys.has(k) || existing.has(k)) throw new Error(`시트와 출발일을 확인해 주세요: ${k}`);
+    const date = text(cells[1]);
+    if (!/^2027-(03|04|05|06)-\d{2}$/.test(date) ||
+        !["3박4일", "4박5일"].includes(text(cells[3])) ||
+        new Date(date + "T00:00:00Z").toISOString().slice(0, 10) !== date || existing.has(k)) {
+      throw new Error(`시트와 출발일을 확인해 주세요: ${k}`);
+    }
     existing.set(k, cells);
   }
-  const template = existing.values().next().value;
-  if (!template) throw new Error("서식을 복사할 기존 출발일 행이 없습니다.");
+  const template: sheets_v4.Schema$CellData[] = existing.values().next().value ??
+    Array.from({ length: 10 }, (_, col) => ({ userEnteredFormat: {
+      textFormat: { fontFamily: "Arial", fontSize: 11 }, wrapStrategy: "CLIP",
+      ...(col === 1 ? { numberFormat: { type: "DATE", pattern: "yyyy-mm-dd" } } : {}),
+    } }));
   const fields = "userEnteredValue,userEnteredFormat,note,textFormatRuns,dataValidation";
   const tableRows: sheets_v4.Schema$RowData[] = sorted.map((departure, index) => {
     if (!/^2027-\d{2}-\d{2}$/.test(departure.departure_date) ||
@@ -151,7 +159,7 @@ export function buildZhangjiajieSyncRequests(
     range: { sheetId, startRowIndex: startRow, startColumnIndex: 0, endColumnIndex: 10 },
     cell: {}, fields,
   } });
-  requests.push({ updateCells: {
+  if (tableRows.length) requests.push({ updateCells: {
     start: { sheetId, rowIndex: startRow, columnIndex: 0 }, rows: tableRows, fields,
   } });
   for (const [index, rule] of (sheet.conditionalFormats ?? []).entries()) {
@@ -175,7 +183,9 @@ export function buildZhangjiajieSyncRequests(
   } });
   const hold = usage.reduce((sum, row) => sum + row.values[0][0], 0);
   const confirmed = usage.reduce((sum, row) => sum + row.values[0][1], 0);
-  return { requests, departureCount: sorted.length, addedCount: sorted.length - existing.size,
+  return { requests, departureCount: sorted.length,
+    addedCount: [...keys].filter(k => !existing.has(k)).length,
+    removedCount: [...existing.keys()].filter(k => !keys.has(k)).length,
     seatUsage: { hold, confirmed, total: hold + confirmed } };
 }
 
@@ -184,8 +194,8 @@ export function buildZhangjiajieAdminSyncRequests(
   departures: Departure[], reservations: Reservation[], sheet: sheets_v4.Schema$Sheet,
 ) {
   const base = buildZhangjiajieSyncRequests(departures, reservations, sheet);
-  const table = base.requests.find(r => r.updateCells?.start && r.updateCells.fields?.includes("userEnteredValue"))!.updateCells!;
-  const startRow = table.start!.rowIndex!;
+  const table = base.requests.find(r => r.updateCells?.start && r.updateCells.fields?.includes("userEnteredValue"))?.updateCells;
+  const startRow = base.requests.find(r => r.repeatCell)!.repeatCell!.range!.startRowIndex!;
   const sheetId = sheet.properties!.sheetId!;
   const oldRows = sheet.data![0].rowData ?? [];
   const key = (cells: sheets_v4.Schema$CellData[]) => {
@@ -199,8 +209,10 @@ export function buildZhangjiajieAdminSyncRequests(
   let nextRow = Math.max(startRow, ...[...positions.values()].map(i => i + 1));
   const requests: sheets_v4.Schema$Request[] = [];
   const sorted = [...departures].sort((a, b) => a.departure_date.localeCompare(b.departure_date) || (a.course ?? "").localeCompare(b.course ?? ""));
+  const activeKeys = new Set(sorted.map(d => `${d.departure_date}|${d.course}`));
+  const removedRows = [...positions].filter(([k]) => !activeKeys.has(k)).map(([, i]) => i).sort((a, b) => b - a);
   const pending: sheets_v4.Schema$Request[] = [];
-  for (const [index, source] of table.rows!.entries()) {
+  for (const [index, source] of (table?.rows ?? []).entries()) {
     const departure = sorted[index];
     if (departure.price == null || !Number.isFinite(departure.price) || departure.price < 0) throw new Error(`금액을 확인해 주세요: ${departure.departure_date}`);
     const existingRow = positions.get(`${departure.departure_date}|${departure.course}`);
@@ -212,19 +224,27 @@ export function buildZhangjiajieAdminSyncRequests(
         pasteType: "PASTE_FORMAT",
       } });
     }
-    const cells = source.values!.slice(0, 9).map(cell => ({ userEnteredValue: cell.userEnteredValue }));
+    const cells = source.values!.slice(0, 9).map(cell => ({ userEnteredValue: cell.userEnteredValue,
+      ...(existingRow == null ? { userEnteredFormat: cell.userEnteredFormat } : {}),
+    }));
     cells[0].userEnteredValue = { formulaValue: `=ROW()-${startRow}` };
     cells[2].userEnteredValue = { formulaValue: '=CHOOSE(WEEKDAY(INDEX(B:B,ROW())),"일","월","화","수","목","금","토")' };
     cells[4].userEnteredValue = { numberValue: departure.price };
     cells[8].userEnteredValue = { formulaValue: '=IF(INDEX(F:F,ROW())="","",INDEX(F:F,ROW())-INDEX(G:G,ROW())-INDEX(H:H,ROW()))' };
-    pending.push({ updateCells: { start: { sheetId, rowIndex, columnIndex: 0 }, rows: [{ values: cells }], fields: "userEnteredValue" } });
+    pending.push({ updateCells: { start: { sheetId, rowIndex, columnIndex: 0 }, rows: [{ values: cells }], fields: existingRow == null ? "userEnteredValue,userEnteredFormat" : "userEnteredValue" } });
   }
   if (nextRow > 1000) throw new Error("관리자 좌석표 범위를 확인해 주세요.");
   const rowCount = sheet.properties!.gridProperties!.rowCount!;
   if (nextRow > rowCount) requests.push({ appendDimension: { sheetId, dimension: "ROWS", length: nextRow - rowCount } });
   requests.push(...pending);
+  // Delete only obsolete date rows, bottom-up. Live J notes move with surviving rows.
+  for (const rowIndex of removedRows) requests.push({ deleteRange: {
+    range: { sheetId, startRowIndex: rowIndex, endRowIndex: rowIndex + 1, startColumnIndex: 0, endColumnIndex: 10 },
+    shiftDimension: "ROWS",
+  } });
+  nextRow -= removedRows.length;
   // The server moves the entire live row, including any note edited since our read.
-  requests.push({ sortRange: { range: { sheetId, startRowIndex: startRow, endRowIndex: nextRow, startColumnIndex: 0, endColumnIndex: 10 }, sortSpecs: [{ dimensionIndex: 1, sortOrder: "ASCENDING" }, { dimensionIndex: 3, sortOrder: "ASCENDING" }] } });
+  if (nextRow > startRow) requests.push({ sortRange: { range: { sheetId, startRowIndex: startRow, endRowIndex: nextRow, startColumnIndex: 0, endColumnIndex: 10 }, sortSpecs: [{ dimensionIndex: 1, sortOrder: "ASCENDING" }, { dimensionIndex: 3, sortOrder: "ASCENDING" }] } });
   requests.push(...base.requests.filter(r => r.updateConditionalFormatRule || r.setBasicFilter));
   return { ...base, requests };
 }
@@ -238,11 +258,10 @@ export async function syncZhangjiajieSeats(supabase: SupabaseClient) {
     .gte("departure_date", "2027-03-01").lte("departure_date", "2027-06-30");
   if (departureError) throw new Error(`출발일 조회 실패: ${departureError.message}`);
   const departures = (departureData ?? []) as Departure[];
-  if (!departures.length) throw new Error("장가계 2027 출발일이 없습니다.");
 
   // Paginate rather than silently dropping reservations at Supabase's default row limit.
   const reservations: Reservation[] = [];
-  for (let offset = 0; ; offset += 500) {
+  for (let offset = 0; departures.length; offset += 500) {
     const { data, error } = await supabase.from("reservations")
       .select("id,departure_id,people_count,status,reservation_people(id)")
       .in("departure_id", departures.map(d => d.id)).order("id").range(offset, offset + 499);

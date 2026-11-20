@@ -88,6 +88,7 @@ function adminFixture() {
 }
 function applyAdmin(sheet,plan){
   for(const r of plan.requests){
+    if(r.deleteRange){const q=r.deleteRange.range;sheet.data[0].rowData.splice(q.startRowIndex,q.endRowIndex-q.startRowIndex);}
     if(r.updateCells){const u=r.updateCells;const row=sheet.data[0].rowData[u.start.rowIndex]??={values:[]};u.rows[0].values.forEach((v,i)=>{row.values[i]={...row.values[i],...v};});}
     if(r.sortRange){const {startRowIndex:a,endRowIndex:b}=r.sortRange.range;const rows=sheet.data[0].rowData;rows.splice(a,b-a,...rows.slice(a,b).sort((x,y)=>x.values[1].userEnteredValue.numberValue-y.values[1].userEnteredValue.numberValue));}
   }
@@ -179,10 +180,34 @@ test('zero seats remain zero and unset seats stay blank, never defaulting to six
   const result=planSync([{...detailedDepartures[0],seat:0},{...detailedDepartures[1],seat:null}],[],sheetFixture());
   assert.deepEqual(table(result).map(r=>r.values[5].userEnteredValue),[{numberValue:0},{}]);
 });
-test('invalid seats, extra sheet dates and duplicate DB dates stop before any mutation', () => {
+test('invalid seats, malformed sheet dates and duplicate DB dates stop before any mutation', () => {
   assert.throws(()=>planSync([{...detailedDepartures[0],seat:-1},detailedDepartures[1]],[],sheetFixture()),/총좌석/);
-  assert.throws(()=>planSync([detailedDepartures[0]],[],sheetFixture()),/시트와 출발일/);
+  const bad=sheetFixture();bad.data[0].rowData[3].values[1].formattedValue='not-a-date';
+  assert.throws(()=>planSync([detailedDepartures[0]],[],bad),/시트와 출발일/);
   assert.throws(()=>planSync([...detailedDepartures,detailedDepartures[0]],[],sheetFixture()),/중복/);
+});
+
+test('deleted departures disappear from both sheets; surviving private notes stay with dates',()=>{
+  const publicSheet=sheetFixture(),admin=adminFixture();const ds=[detailedDepartures[0],addedDeparture];
+  const pub=planSync(ds,[],publicSheet),priv=planAdmin(ds,[],admin);
+  assert.equal(pub.removedCount,1);assert.equal(pub.addedCount,1);
+  applyPlan(publicSheet,pub);applyAdmin(admin,priv);
+  assert.equal(publicSheet.data[0].rowData.length,5);assert.equal(admin.data[0].rowData.length,5);
+  assert.equal(admin.data[0].rowData[3].values[9].userEnteredValue.stringValue,'earlier date');
+  assert.equal(admin.data[0].rowData[4].values[9],undefined);
+  assert.ok(!JSON.stringify(publicSheet).includes('later date'));
+  for(const row of admin.data[0].rowData.slice(3))row.values[1].formattedValue=new Date((row.values[1].userEnteredValue.numberValue-25569)*86400000).toISOString().slice(0,10);
+  assert.equal(planAdmin(ds,[],admin).removedCount,0);
+});
+test('all dates deleted clears data only, then adding a departure works again',()=>{
+  for(const [buildPlan,apply,fixture]of [[planSync,applyPlan,sheetFixture],[planAdmin,applyAdmin,adminFixture]]){
+    const sheet=fixture(),headers=structuredClone(sheet.data[0].rowData.slice(0,3));
+    const plan=buildPlan([],[],sheet);assert.equal(plan.removedCount,2);apply(sheet,plan);
+    assert.deepEqual(sheet.data[0].rowData,headers);
+    const next=buildPlan([addedDeparture],[],sheet);assert.equal(next.addedCount,1);apply(sheet,next);
+    assert.equal(sheet.data[0].rowData.length,4);
+    assert.equal(sheet.data[0].rowData[3].values[1].userEnteredFormat.numberFormat.type,'DATE');
+  }
 });
 
 function loadRoute(path, authenticated) {
