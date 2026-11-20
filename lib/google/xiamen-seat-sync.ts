@@ -1,550 +1,160 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-
+import type { sheets_v4 } from "googleapis";
 import { getGoogleSheetsClient } from "./sheets";
 
 const SHEET_NAME = "좌석현황";
-
-const THURSDAY_DATES = [
-  "2026-12-03",
-  "2026-12-10",
-  "2026-12-17",
-  "2026-12-24",
-  "2026-12-31",
-  "2027-01-07",
-  "2027-01-14",
-  "2027-01-21",
-  "2027-01-28",
-  "2027-02-04",
-  "2027-02-11",
-  "2027-02-18",
-  "2027-02-25",
-  "2027-03-04",
-  "2027-03-11",
-  "2027-03-18",
-  "2027-03-25",
+export const PRICE_LABEL = "↳ 1인 상품가";
+export const XIAMEN_BLOCKS = [
+  { course: "3박5일", dates: [
+    "2026-12-03", "2026-12-10", "2026-12-17", "2026-12-24", "2026-12-31",
+    "2027-01-07", "2027-01-14", "2027-01-21", "2027-01-28", "2027-02-04",
+    "2027-02-11", "2027-02-18", "2027-02-25", "2027-03-04", "2027-03-11", "2027-03-18", "2027-03-25",
+  ], variants: [{ name: "하문고품격", label: "하문고품격" }, { name: "하문골프54H", label: "골프" }] },
+  { course: "4박6일", dates: [
+    "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27", "2027-01-03",
+    "2027-01-10", "2027-01-17", "2027-01-24", "2027-01-31", "2027-02-07",
+    "2027-02-14", "2027-02-21", "2027-02-28", "2027-03-07", "2027-03-14", "2027-03-21",
+  ], variants: [{ name: "고품격관지산", label: "고품격관지산" }, { name: "고품격무이산", label: "고품격무이산" }, { name: "하문골프72H", label: "골프" }] },
 ] as const;
+const XIAMEN_VARIANTS = ["하문실속", ...XIAMEN_BLOCKS.flatMap(b => b.variants.map(v => v.name))];
+type Departure = { id: string; departure_date: string; seat: number | null; variant: string | null; price: number | null };
+type Reservation = { departure_id: string | null; people_count: number | null; status: string | null; reservation_people?: { id: string }[] | null };
+const text = (cell?: sheets_v4.Schema$CellData) => cell?.userEnteredValue?.stringValue?.trim() ?? "";
+const column = (index: number) => String.fromCharCode(65 + index); // This fixed winter matrix spans A:T.
 
-const SUNDAY_DATES = [
-  "2026-12-06",
-  "2026-12-13",
-  "2026-12-20",
-  "2026-12-27",
-  "2027-01-03",
-  "2027-01-10",
-  "2027-01-17",
-  "2027-01-24",
-  "2027-01-31",
-  "2027-02-07",
-  "2027-02-14",
-  "2027-02-21",
-  "2027-02-28",
-  "2027-03-07",
-  "2027-03-14",
-  "2027-03-21",
-] as const;
-
-const XIAMEN_VARIANTS = [
-  "하문실속",
-  "하문고품격",
-  "하문골프54H",
-  "고품격관지산",
-  "고품격무이산",
-  "하문골프72H",
-] as const;
-
-type DepartureRow = {
-  id: string;
-  departure_date: string;
-  seat: number | null;
-  variant: string | null;
-};
-
-type ReservationRow = {
-  departure_id: string | null;
-  people_count: number | null;
-  status: string | null;
-  reservation_people?: { id: string }[] | null;
-};
-
-/**
- * 현재 BNI 관리자와 동일한 좌석 계산 방식
- *
- * - 취소만 좌석 사용에서 제외
- * - 대기/확정은 좌석 사용
- * - people_count와 실제 등록인원 중 큰 값 사용
- * - 최소 1석 사용
- */
-function getReservationSeatCount(reservation: ReservationRow) {
-  if (reservation.status === "취소") {
-    return 0;
-  }
-
-  const savedPeopleCount = Number(reservation.people_count) || 0;
-
-  const registeredPeopleCount = reservation.reservation_people?.length || 0;
-
-  return Math.max(savedPeopleCount, registeredPeopleCount, 1);
+function dateValue(cell?: sheets_v4.Schema$CellData) {
+  const serial = cell?.effectiveValue?.numberValue ?? cell?.userEnteredValue?.numberValue;
+  if (serial !== undefined && serial !== null) return new Date(Date.UTC(1899, 11, 30) + serial * 86400000).toISOString().slice(0, 10);
+  const match = cell?.userEnteredValue?.formulaValue?.match(/^=DATE\((\d{4}),\s*(\d{1,2}),\s*(\d{1,2})\)$/i);
+  if (match) return `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}`;
+  return text(cell);
 }
 
-function getVariantReservationCount(
-  departure: DepartureRow,
-  reservations: ReservationRow[],
-) {
-  return reservations.reduce((sum, reservation) => {
-    if (reservation.departure_id !== departure.id) {
-      return sum;
+/** Read labels and dates, not fixed row offsets. Supports both the old matrix and price rows. */
+export function resolveXiamenLayout(sheet: sheets_v4.Schema$Sheet) {
+  const rows = sheet.data?.[0]?.rowData ?? [];
+  if ((sheet.data?.[0]?.startRow ?? 0) !== 0 || (sheet.data?.[0]?.startColumn ?? 0) !== 0) throw new Error("좌석현황은 A1부터 조회해야 합니다.");
+  const blocks = XIAMEN_BLOCKS.map(block => {
+    const headers = rows.flatMap((r, i) => text(r.values?.[0]) === block.course && text(r.values?.[1]) === "출발일" ? [i] : []);
+    if (headers.length !== 1) throw new Error(`${block.course} 출발일 제목을 확인해 주세요.`);
+    const header = headers[0];
+    const next = rows.findIndex((r, i) => i > header && text(r.values?.[1]) === "출발일");
+    const end = next < 0 ? rows.length : next;
+    const find = (label: string) => {
+      const matches = rows.flatMap((r, i) => i > header && i < end && text(r.values?.[1]) === label ? [i] : []);
+      if (matches.length !== 1) throw new Error(`${block.course} ${label} 행을 확인해 주세요.`);
+      return matches[0];
+    };
+    const dates = block.dates.map((_, i) => dateValue(rows[header].values?.[i + 2]));
+    if (new Set(dates).size !== block.dates.length || block.dates.some(d => !dates.includes(d))) throw new Error(`${block.course} 시트 출발일이 등록 일정과 다릅니다.`);
+    if (text(rows[header].values?.[block.dates.length + 2]) !== "합계") throw new Error(`${block.course} 합계 열을 확인해 주세요.`);
+    const variants = block.variants.map(v => {
+      const row = find(v.label);
+      return { ...v, row, priceRow: text(rows[row + 1]?.values?.[1]) === PRICE_LABEL ? row + 1 : null };
+    });
+    return { ...block, header, dates, variants, seatRow: find("보유좌석"), bookedRow: find("통합 모객석"), remainingRow: find("통합 잔여석"), totalColumn: dates.length + 2 };
+  });
+  const priceCount = blocks.flatMap(b => b.variants).filter(v => v.priceRow !== null).length;
+  const allPriceLabels = rows.filter(r => text(r.values?.[1]) === PRICE_LABEL).length;
+  if ((priceCount !== 0 && priceCount !== 5) || allPriceLabels !== priceCount) throw new Error("상품가 행이 일부만 있거나 위치가 다릅니다. 시트 구성을 확인해 주세요.");
+  return blocks;
+}
+
+/** Build and validate everything before one atomic Sheets write; prices never enter seat totals. */
+export function buildXiamenSyncRequests(departures: Departure[], reservations: Reservation[], sheet: sheets_v4.Schema$Sheet) {
+  const sheetId = sheet.properties?.sheetId;
+  if (sheetId === undefined || sheetId === null) throw new Error("좌석현황 탭을 찾을 수 없습니다.");
+  const blocks = resolveXiamenLayout(sheet);
+  const byKey = new Map<string, Departure>();
+  for (const d of departures) {
+    const key = `${d.departure_date}|${d.variant}`;
+    if (byKey.has(key)) throw new Error(`중복 출발일: ${key}`);
+    byKey.set(key, d);
+  }
+  const counts = new Map<string, number>();
+  for (const r of reservations) {
+    if (!r.departure_id || r.status === "취소") continue;
+    const count = Math.max(Number(r.people_count) || 0, r.reservation_people?.length || 0, 1);
+    counts.set(r.departure_id, (counts.get(r.departure_id) ?? 0) + count);
+  }
+  const requests: sheets_v4.Schema$Request[] = [];
+  const write = (row: number, col: number, values: (string | number)[]) => requests.push({ updateCells: {
+    range: { sheetId, startRowIndex: row, endRowIndex: row + 1, startColumnIndex: col, endColumnIndex: col + values.length },
+    rows: [{ values: values.map(value => ({ userEnteredValue: typeof value === "number" ? { numberValue: value } : value.startsWith("=") ? { formulaValue: value } : { stringValue: value } })) }], fields: "userEnteredValue",
+  } });
+  const totals: number[] = [];
+  const warnings: string[] = [];
+  for (const b of blocks) {
+    let booked = 0;
+    const seats = b.dates.map(date => {
+      const values = [...new Set(departures.filter(d => d.departure_date === date && d.seat !== null && Number.isFinite(Number(d.seat))).map(d => Number(d.seat)))];
+      if (values.length !== 1) throw new Error(`${date} 상품별 보유좌석이 없거나 서로 다릅니다.`);
+      return values[0];
+    });
+    write(b.seatRow, 2, seats);
+    for (const v of b.variants) {
+      const source = b.dates.map(date => {
+        const d = byKey.get(`${date}|${v.name}`);
+        if (!d) throw new Error(`${date} ${v.name} 출발일이 없습니다.`);
+        return d;
+      });
+      const people = source.map(d => counts.get(d.id) ?? 0);
+      booked += people.reduce((sum, n) => sum + n, 0);
+      write(v.row, 2, people);
+      write(v.row, b.totalColumn, [`=SUM(C${v.row + 1}:${column(b.totalColumn - 1)}${v.row + 1})`]);
+      if (v.priceRow !== null) {
+        write(v.priceRow, 2, source.map(d => {
+          if (d.price === null || d.price === undefined) { warnings.push(`${d.departure_date} ${v.name} 상품가 미등록`); return "미등록"; }
+          if (!Number.isFinite(Number(d.price)) || Number(d.price) < 0) throw new Error(`${d.departure_date} ${v.name} 상품가를 확인해 주세요.`);
+          return Number(d.price);
+        }));
+        write(v.priceRow, b.totalColumn, [""]);
+      }
     }
-
-    return sum + getReservationSeatCount(reservation);
-  }, 0);
-}
-
-function getDeparture(
-  departures: DepartureRow[],
-  date: string,
-  variant: string,
-) {
-  return departures.find(
-    (departure) =>
-      departure.departure_date === date && departure.variant === variant,
-  );
-}
-
-/**
- * 같은 날짜의 하문 상품들은 같은 항공 좌석을 공유합니다.
- *
- * 예:
- * 실속 seat 30
- * 고품격 seat 30
- * 골프 seat 30
- *
- * => 총 90석이 아니라 보유좌석 30석
- */
-function getSharedSeat(departures: DepartureRow[], date: string) {
-  const dateDepartures = departures.filter(
-    (departure) => departure.departure_date === date,
-  );
-
-  if (dateDepartures.length === 0) {
-    throw new Error(`${date} 하문 출발일 데이터가 없습니다.`);
+    const legacy = b.dates.map(date => b.course === "3박5일" ? counts.get(byKey.get(`${date}|하문실속`)?.id ?? "") ?? 0 : 0);
+    booked += legacy.reduce((sum, n) => sum + n, 0);
+    // Explicit references avoid summing newly inserted price rows. Legacy seat usage stays included.
+    write(b.bookedRow, 2, b.dates.map((_, i) => `=${b.variants.map(v => `${column(i + 2)}${v.row + 1}`).join("+")}${legacy[i] ? `+${legacy[i]}` : ""}`));
+    write(b.remainingRow, 2, b.dates.map((_, i) => `=IF(${column(i + 2)}${b.seatRow + 1}="","",${column(i + 2)}${b.seatRow + 1}-${column(i + 2)}${b.bookedRow + 1})`));
+    for (const row of [b.seatRow, b.bookedRow, b.remainingRow]) write(row, b.totalColumn, [`=SUM(C${row + 1}:${column(b.totalColumn - 1)}${row + 1})`]);
+    totals.push(booked);
   }
-
-  const seatValues = [
-    ...new Set(
-      dateDepartures
-        .map((departure) => departure.seat)
-        .filter(
-          (seat): seat is number =>
-            seat !== null &&
-            seat !== undefined &&
-            Number.isFinite(Number(seat)),
-        )
-        .map((seat) => Number(seat)),
-    ),
-  ];
-
-  if (seatValues.length === 0) {
-    throw new Error(`${date} 보유좌석(seat)이 없습니다.`);
+  // Google omits zero sheetId in responses. Normalise it so rules do not accumulate on every sync.
+  const soldOutRule = (rule: sheets_v4.Schema$ConditionalFormatRule) => blocks.some(b => {
+    const cell = `C${b.remainingRow + 1}`;
+    const formula = rule.booleanRule?.condition?.values?.[0]?.userEnteredValue?.replace(/\s/g, "").toUpperCase();
+    return formula === `=AND(ISNUMBER(${cell}),${cell}=0)` && rule.ranges?.length === 1 && rule.ranges.every(r => (r.sheetId ?? sheetId) === sheetId && r.startRowIndex === b.remainingRow && r.endRowIndex === b.remainingRow + 1 && r.startColumnIndex === 2 && r.endColumnIndex === b.totalColumn);
+  });
+  (sheet.conditionalFormats ?? []).map((rule, index) => ({ rule, index })).filter(x => soldOutRule(x.rule)).reverse().forEach(({ index }) => requests.push({ deleteConditionalFormatRule: { sheetId, index } }));
+  for (const b of blocks) {
+    const range = { sheetId, startRowIndex: b.remainingRow, endRowIndex: b.remainingRow + 1, startColumnIndex: 2, endColumnIndex: b.totalColumn };
+    requests.push({ repeatCell: { range, cell: { userEnteredFormat: { numberFormat: { type: "NUMBER", pattern: '0;-0;"마감"' }, backgroundColor: { red: .85, green: .91, blue: .98 }, textFormat: { foregroundColor: { red: 0, green: .2, blue: .7 } } } }, fields: "userEnteredFormat.numberFormat,userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.foregroundColor" } });
+    const cell = `C${b.remainingRow + 1}`;
+    requests.push({ addConditionalFormatRule: { index: 0, rule: { ranges: [range], booleanRule: { condition: { type: "CUSTOM_FORMULA", values: [{ userEnteredValue: `=AND(ISNUMBER(${cell}),${cell}=0)` }] }, format: { backgroundColor: { red: .85, green: .1, blue: .1 }, textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 } } } } } } });
   }
-
-  if (seatValues.length > 1) {
-    throw new Error(
-      `${date}의 상품별 보유좌석 값이 서로 다릅니다: ${seatValues.join(", ")}`,
-    );
-  }
-
-  return seatValues[0];
+  return { requests, warnings, seatUsage: { threeNight: totals[0], fourNight: totals[1], total: totals[0] + totals[1] }, priceRowCount: blocks.flatMap(b => b.variants).filter(v => v.priceRow !== null).length };
 }
 
 export async function syncXiamenSeats(supabase: SupabaseClient) {
-  // --------------------------------
-  // 1. 하문 출발일 조회
-  // --------------------------------
-
-  const { data: departureData, error: departureError } = await supabase
-    .from("departures")
-    .select(
-      `
-      id,
-      departure_date,
-      seat,
-      variant
-    `,
-    )
-    .gte("departure_date", "2026-12-03")
-    .lte("departure_date", "2027-03-25")
-    .in("variant", [...XIAMEN_VARIANTS]);
-
-  if (departureError) {
-    throw new Error(`하문 출발일 조회 실패: ${departureError.message}`);
+  const { data, error } = await supabase.from("departures").select("id,departure_date,seat,variant,price")
+    .gte("departure_date", "2026-12-03").lte("departure_date", "2027-03-25").in("variant", XIAMEN_VARIANTS);
+  if (error) throw new Error(`하문 출발일 조회 실패: ${error.message}`);
+  const departures = (data ?? []) as Departure[];
+  if (!departures.length) throw new Error("하문 출발일 데이터가 없습니다.");
+  const reservations: Reservation[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const result = await supabase.from("reservations").select("id,departure_id,people_count,status,reservation_people(id)")
+      .in("departure_id", departures.map(d => d.id)).order("id").range(offset, offset + 499);
+    if (result.error) throw new Error(`하문 예약 조회 실패: ${result.error.message}`);
+    reservations.push(...(result.data ?? []) as Reservation[]);
+    if ((result.data?.length ?? 0) < 500) break;
   }
-
-  const departures = (departureData ?? []) as DepartureRow[];
-
-  if (departures.length === 0) {
-    throw new Error("하문 출발일 데이터가 없습니다.");
-  }
-
-  const departureIds = departures.map((departure) => departure.id);
-
-  // --------------------------------
-  // 2. 하문 예약 조회
-  // --------------------------------
-
-  const { data: reservationData, error: reservationError } = await supabase
-    .from("reservations")
-    .select(
-      `
-      departure_id,
-      people_count,
-      status,
-      reservation_people (
-        id
-      )
-    `,
-    )
-    .in("departure_id", departureIds);
-
-  if (reservationError) {
-    throw new Error(`하문 예약 조회 실패: ${reservationError.message}`);
-  }
-
-  const reservations = (reservationData ?? []) as ReservationRow[];
-
-  // --------------------------------
-  // 3. 3박5일 / 목요일
-  // --------------------------------
-
-  const threeNightSeats: number[] = [];
-  const threeNightPremium: number[] = [];
-  const threeNightGolf: number[] = [];
-  const threeNightLegacyValue: number[] = [];
-
-  for (const date of THURSDAY_DATES) {
-    const valueDeparture = getDeparture(departures, date, "하문실속");
-
-    const premiumDeparture = getDeparture(departures, date, "하문고품격");
-
-    const golfDeparture = getDeparture(departures, date, "하문골프54H");
-
-    if (!premiumDeparture) {
-      throw new Error(`${date} 하문고품격 출발일이 없습니다.`);
-    }
-
-    if (!golfDeparture) {
-      throw new Error(`${date} 하문골프54H 출발일이 없습니다.`);
-    }
-
-    threeNightSeats.push(getSharedSeat(departures, date));
-
-    threeNightLegacyValue.push(
-      valueDeparture
-        ? getVariantReservationCount(valueDeparture, reservations)
-        : 0,
-    );
-
-    threeNightPremium.push(
-      getVariantReservationCount(premiumDeparture, reservations),
-    );
-
-    threeNightGolf.push(
-      getVariantReservationCount(golfDeparture, reservations),
-    );
-  }
-
-  // --------------------------------
-  // 4. 4박6일 / 일요일
-  // --------------------------------
-
-  const fourNightSeats: number[] = [];
-  const fourNightGuanzhishan: number[] = [];
-  const fourNightMuisan: number[] = [];
-  const fourNightGolf: number[] = [];
-
-  for (const date of SUNDAY_DATES) {
-    const guanzhishanDeparture = getDeparture(departures, date, "고품격관지산");
-
-    const muisanDeparture = getDeparture(departures, date, "고품격무이산");
-
-    const golfDeparture = getDeparture(departures, date, "하문골프72H");
-
-    if (!guanzhishanDeparture) {
-      throw new Error(`${date} 고품격관지산 출발일이 없습니다.`);
-    }
-
-    if (!muisanDeparture) {
-      throw new Error(`${date} 고품격무이산 출발일이 없습니다.`);
-    }
-
-    if (!golfDeparture) {
-      throw new Error(`${date} 하문골프72H 출발일이 없습니다.`);
-    }
-
-    fourNightSeats.push(getSharedSeat(departures, date));
-
-    fourNightGuanzhishan.push(
-      getVariantReservationCount(guanzhishanDeparture, reservations),
-    );
-
-    fourNightMuisan.push(
-      getVariantReservationCount(muisanDeparture, reservations),
-    );
-
-    fourNightGolf.push(getVariantReservationCount(golfDeparture, reservations));
-  }
-
-  // --------------------------------
-  // 5. Google Sheet 업데이트
-  // --------------------------------
-
   const { sheets, spreadsheetId } = getGoogleSheetsClient();
-  // 좌석현황 시트의 실제 sheetId 조회
-  const spreadsheetInfo = await sheets.spreadsheets.get({
-    spreadsheetId,
-    fields: "sheets(properties(sheetId,title))",
-  });
-
-  const targetSheet = spreadsheetInfo.data.sheets?.find(
-    (sheet) => sheet.properties?.title === SHEET_NAME,
-  );
-
-  const sheetId = targetSheet?.properties?.sheetId;
-
-  if (sheetId === undefined || sheetId === null) {
-    throw new Error("구글시트 좌석현황 탭을 찾을 수 없습니다.");
-  }
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      valueInputOption: "RAW",
-
-      data: [
-        // 3박5일 보유좌석
-        {
-          range: `${SHEET_NAME}!C7:S7`,
-          values: [threeNightSeats],
-        },
-
-        // 3박5일 상품별 모객
-        {
-          range: `${SHEET_NAME}!C10:S10`,
-          values: [threeNightPremium],
-        },
-        {
-          range: `${SHEET_NAME}!C11:S11`,
-          values: [threeNightGolf],
-        },
-        {
-          range: `${SHEET_NAME}!C12:S12`,
-          values: [Array(THURSDAY_DATES.length).fill("")],
-        },
-
-        // 4박6일 보유좌석
-        {
-          range: `${SHEET_NAME}!C17:R17`,
-          values: [fourNightSeats],
-        },
-
-        // 4박6일 상품별 모객
-        {
-          range: `${SHEET_NAME}!C20:R20`,
-          values: [fourNightGuanzhishan],
-        },
-        {
-          range: `${SHEET_NAME}!C21:R21`,
-          values: [fourNightMuisan],
-        },
-        {
-          range: `${SHEET_NAME}!C22:R22`,
-          values: [fourNightGolf],
-        },
-      ],
-    },
-  });
-
-  // --------------------------------
-  // 5-1. 잔여석 자동 마감 표시 및 색상
-  // --------------------------------
-
-  const soldOutRanges = [
-    {
-      startRowIndex: 8,
-      endRowIndex: 9,
-      endColumnIndex: 19,
-      firstCell: "C9",
-    },
-    {
-      startRowIndex: 18,
-      endRowIndex: 19,
-      endColumnIndex: 18,
-      firstCell: "C19",
-    },
-  ];
-
-  // 기존 조건부 서식 조회
-  const formatInfo = await sheets.spreadsheets.get({
-    spreadsheetId,
-    fields: "sheets(properties(sheetId),conditionalFormats)",
-  });
-
-  const existingRules =
-    formatInfo.data.sheets?.find(
-      (sheet) => sheet.properties?.sheetId === sheetId,
-    )?.conditionalFormats ?? [];
-
-  // 기존 마감 규칙만 찾아 제거
-  const deleteRequests: any[] = [];
-
-  existingRules.forEach((rule, index) => {
-    const formula =
-      rule.booleanRule?.condition?.values?.[0]?.userEnteredValue
-        ?.replace(/\s/g, "")
-        .toUpperCase() ?? "";
-
-    const isSoldOutRule = soldOutRanges.some((range) => {
-      const expectedFormula =
-        `=AND(ISNUMBER(${range.firstCell}),${range.firstCell}=0)`.toUpperCase();
-
-      const sameRange = rule.ranges?.some(
-        (r) =>
-          r.sheetId === sheetId &&
-          r.startRowIndex === range.startRowIndex &&
-          r.endRowIndex === range.endRowIndex &&
-          r.startColumnIndex === 2 &&
-          r.endColumnIndex === range.endColumnIndex,
-      );
-
-      return sameRange && formula === expectedFormula;
-    });
-
-    if (isSoldOutRule) {
-      deleteRequests.push({
-        deleteConditionalFormatRule: {
-          sheetId,
-          index,
-        },
-      });
-    }
-  });
-
-  // 뒤쪽 인덱스부터 삭제하여 순서 꼬임 방지
-  deleteRequests.sort(
-    (a, b) =>
-      b.deleteConditionalFormatRule.index - a.deleteConditionalFormatRule.index,
-  );
-
-  const formatRequests: any[] = [...deleteRequests];
-
-  for (const range of soldOutRanges) {
-    const gridRange = {
-      sheetId,
-      startRowIndex: range.startRowIndex,
-      endRowIndex: range.endRowIndex,
-      startColumnIndex: 2,
-      endColumnIndex: range.endColumnIndex,
-    };
-
-    // 잔여석 기본 배경과 글자색 복구
-    formatRequests.push({
-      repeatCell: {
-        range: gridRange,
-        cell: {
-          userEnteredFormat: {
-            numberFormat: {
-              type: "NUMBER",
-              pattern: '0;-0;"마감"',
-            },
-            backgroundColor: {
-              red: 0.85,
-              green: 0.91,
-              blue: 0.98,
-            },
-            textFormat: {
-              foregroundColor: {
-                red: 0,
-                green: 0.2,
-                blue: 0.7,
-              },
-            },
-          },
-        },
-        fields:
-          "userEnteredFormat.numberFormat," +
-          "userEnteredFormat.backgroundColor," +
-          "userEnteredFormat.textFormat.foregroundColor",
-      },
-    });
-
-    // 마감 규칙은 항상 하나만 생성
-    formatRequests.push({
-      addConditionalFormatRule: {
-        rule: {
-          ranges: [gridRange],
-          booleanRule: {
-            condition: {
-              type: "CUSTOM_FORMULA",
-              values: [
-                {
-                  userEnteredValue:
-                    `=AND(ISNUMBER(${range.firstCell}),` +
-                    `${range.firstCell}=0)`,
-                },
-              ],
-            },
-            format: {
-              backgroundColor: {
-                red: 0.85,
-                green: 0.1,
-                blue: 0.1,
-              },
-              textFormat: {
-                foregroundColor: {
-                  red: 1,
-                  green: 1,
-                  blue: 1,
-                },
-              },
-            },
-          },
-        },
-        index: 0,
-      },
-    });
-  }
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      requests: formatRequests,
-    },
-  });
-
-  // --------------------------------
-  // 6. 결과 요약
-  // --------------------------------
-
-  const threeNightBooked =
-    threeNightLegacyValue.reduce((sum, count) => sum + count, 0) +
-    threeNightPremium.reduce((sum, count) => sum + count, 0) +
-    threeNightGolf.reduce((sum, count) => sum + count, 0);
-
-  const fourNightBooked =
-    fourNightGuanzhishan.reduce((sum, count) => sum + count, 0) +
-    fourNightMuisan.reduce((sum, count) => sum + count, 0) +
-    fourNightGolf.reduce((sum, count) => sum + count, 0);
-
-  return {
-    success: true,
-    syncedAt: new Date().toISOString(),
-
-    departureCount: THURSDAY_DATES.length + SUNDAY_DATES.length,
-
-    reservationCount: reservations.length,
-
-    seatUsage: {
-      threeNight: threeNightBooked,
-      fourNight: fourNightBooked,
-      total: threeNightBooked + fourNightBooked,
-    },
-  };
+  const info = await sheets.spreadsheets.get({ spreadsheetId, ranges: [`'${SHEET_NAME}'!A1:T80`], includeGridData: true,
+    fields: "sheets(properties(sheetId,title),conditionalFormats,data(startRow,startColumn,rowData(values(userEnteredValue,effectiveValue))))" });
+  const sheet = info.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
+  if (!sheet) throw new Error("구글시트 좌석현황 탭을 찾을 수 없습니다.");
+  const plan = buildXiamenSyncRequests(departures, reservations, sheet);
+  await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests: plan.requests } });
+  return { success: true, syncedAt: new Date().toISOString(), departureCount: 33, reservationCount: reservations.length, seatUsage: plan.seatUsage, priceRowCount: plan.priceRowCount, warnings: plan.warnings };
 }
