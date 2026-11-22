@@ -41,6 +41,7 @@ export function buildXiamenAdminSyncRequests(departures: Departure[], reservatio
   const string = (cell?: sheets_v4.Schema$CellData) => cell?.userEnteredValue?.stringValue ?? "";
   if (XIAMEN_ADMIN_HEADERS.some((h, i) => string(existing[2]?.values?.[i]) !== h)) throw new Error("관리자 시트 제목 행을 확인해 주세요.");
   const locations = new Map<string, number>();
+  const totalRows: number[] = [];
   let nextRow = 3;
   existing.forEach((row, i) => {
     if (i < 3) return;
@@ -48,12 +49,21 @@ export function buildXiamenAdminSyncRequests(departures: Departure[], reservatio
     const serial = cell?.userEnteredValue?.numberValue;
     const date = serial != null ? new Date(Date.UTC(1899, 11, 30) + serial * 86400000).toISOString().slice(0, 10) : string(cell);
     if (!date) {
+      // A user may add a booked-seat total below the dates. It is not a departure.
+      const formula = row.values?.[5]?.userEnteredValue?.formulaValue?.replace(/\s/g, "").toUpperCase();
+      const onlyTotal = row.values?.every((c, column) => column === 5 || !c.userEnteredValue);
+      if (onlyTotal && formula && (/^=SUM\(\$?F\$?4:\$?F\$?\d+\)$/.test(formula) || formula === "=SUM(F4:INDEX(F:F,ROW()-1))")) {
+        totalRows.push(i);
+        return;
+      }
       if (row.values?.some(c => c.userEnteredValue)) throw new Error("날짜 없는 관리자 행을 확인해 주세요.");
       return;
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || locations.has(date)) throw new Error("관리자 시트 출발일이 중복되거나 잘못됐습니다.");
     locations.set(date, i); nextRow = Math.max(nextRow, i + 1);
   });
+  if (totalRows.some(row => row < nextRow)) throw new Error("모객 합계 행은 출발일 목록 아래에 두어 주세요.");
+  const originalEnd = nextRow;
   const values = buildXiamenAdminRows(departures, reservations);
   const dates = new Set(values.map(row => String(row[1])));
   const requests: sheets_v4.Schema$Request[] = [];
@@ -70,10 +80,17 @@ export function buildXiamenAdminSyncRequests(departures: Departure[], reservatio
   if (nextRow > 1000) throw new Error("관리자 시트 행 범위를 확인해 주세요.");
   const capacity = sheet.properties.gridProperties.rowCount;
   if (nextRow > capacity) requests.push({ appendDimension: { sheetId, dimension: "ROWS", length: nextRow - capacity } });
+  const added = nextRow - originalEnd;
+  // Make space before the footer so newly registered dates cannot overwrite it.
+  if (added && totalRows.length) requests.push({ insertRange: { range: { sheetId, startRowIndex: originalEnd, endRowIndex: nextRow, startColumnIndex: 0, endColumnIndex: 11 }, shiftDimension: "ROWS" } });
   requests.push(...writes);
   const removed = [...locations].filter(([date]) => !dates.has(date)).map(([, row]) => row).sort((a,b) => b-a);
   for (const row of removed) requests.push({ deleteRange: { range: { sheetId, startRowIndex: row, endRowIndex: row+1, startColumnIndex: 0, endColumnIndex: 11 }, shiftDimension: "ROWS" } });
   const end = nextRow - removed.length;
+  for (const row of totalRows) {
+    const index = row + added - removed.length;
+    requests.push({ updateCells: { range: { sheetId, startRowIndex: index, endRowIndex: index + 1, startColumnIndex: 5, endColumnIndex: 6 }, rows: [{ values: [{ userEnteredValue: { formulaValue: "=SUM(F4:INDEX(F:F,ROW()-1))" } }] }], fields: "userEnteredValue" } });
+  }
   requests.push({ sortRange: { range: { sheetId, startRowIndex: 3, endRowIndex: end, startColumnIndex: 0, endColumnIndex: 11 }, sortSpecs: [{ dimensionIndex: 1, sortOrder: "ASCENDING" }] } });
   requests.push({ repeatCell: { range: { sheetId, startRowIndex: 3, endRowIndex: end, startColumnIndex: 1, endColumnIndex: 2 }, cell: { userEnteredFormat: { numberFormat: { type: "DATE", pattern: "yyyy-mm-dd" } } }, fields: "userEnteredFormat.numberFormat" } });
   requests.push({ setBasicFilter: { filter: { range: { sheetId, startRowIndex: 2, endRowIndex: end, startColumnIndex: 0, endColumnIndex: 11 } } } });

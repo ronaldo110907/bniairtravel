@@ -157,14 +157,22 @@ export async function syncXiamenSeats(supabase: SupabaseClient) {
   if (!sheet) throw new Error("구글시트 좌석현황 탭을 찾을 수 없습니다.");
   const plan = buildXiamenSyncRequests(departures, reservations, sheet);
   await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests: plan.requests } });
+  let adminFailure = "관리자 시트의 연동 계정 권한과 좌석현황 탭을 확인해 주세요.";
   try {
     const result = await sheets.spreadsheets.get({ spreadsheetId: XIAMEN_ADMIN_SHEET_ID, ranges: [`'${SHEET_NAME}'!A1:K1000`], fields: "sheets(properties,conditionalFormats,data(startRow,startColumn,rowData(values(userEnteredValue))))" });
     const admin = result.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
     if (!admin) throw new Error("관리자 좌석현황 탭이 없습니다.");
-    const adminPlan = buildXiamenAdminSyncRequests(departures, reservations, admin);
+    let adminPlan;
+    try {
+      adminPlan = buildXiamenAdminSyncRequests(departures, reservations, admin);
+    } catch (error) {
+      adminFailure = error instanceof Error ? error.message : "관리자 시트 구성을 확인해 주세요.";
+      throw error;
+    }
+    adminFailure = "관리자 시트 쓰기에 실패했습니다. 보호 범위의 연동 계정 권한을 확인해 주세요.";
     await sheets.spreadsheets.batchUpdate({ spreadsheetId: XIAMEN_ADMIN_SHEET_ID, requestBody: { requests: adminPlan.requests } });
   } catch {
-    throw new Error("거래처용은 동기화 완료됐지만 하문 관리자용 동기화에 실패했습니다. 관리자 시트의 연동 계정 권한과 좌석현황 탭을 확인해 주세요.");
+    throw new Error(`거래처용은 동기화 완료됐지만 하문 관리자용 동기화에 실패했습니다. ${adminFailure}`);
   }
   return { success: true, syncedAt: new Date().toISOString(), departureCount: 33, reservationCount: reservations.length, seatUsage: plan.seatUsage, priceRowCount: plan.priceRowCount, warnings: plan.warnings, adminSynced: true };
 }
