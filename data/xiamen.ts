@@ -90,8 +90,8 @@ export const flightInfo = {
     flight: "ZE827",
     from: "청주",
     to: "샤먼",
-    departure: "23:00",
-    arrival: "01:20+1",
+    departure: "21:40",
+    arrival: "23:55",
   },
 
   inbound: {
@@ -99,8 +99,8 @@ export const flightInfo = {
     flight: "ZE828",
     from: "샤먼",
     to: "청주",
-    departure: "02:20",
-    arrival: "06:20",
+    departure: "00:55",
+    arrival: "06:00",
   },
 };
 
@@ -307,12 +307,12 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
     transport: `ZE827
 전용차량`,
 
-    time: `20:00
-23:00
-01:20+1`,
+    time: `19:00
+21:40
+23:55`,
 
     schedule: `청주 국제공항 1층 3번게이트 안쪽 에스컬레이터 앞 여행사데스크 미팅
-청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+청주 국제공항 출발 (약 3시간 15분 소요) - 이스타항공 탑승
 하문 공항 도착 후 가이드 미팅
 호텔 투숙 및 휴식`,
     image:
@@ -455,7 +455,7 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
 2. 야경 유람선($60/1인)
 3. 발+전신마사지 90분($60/1인)
 석식 후 자유일정
-23시 공항으로 이동`,
+귀국 항공편 시간에 맞춰 공항으로 이동`,
     image:
       "https://eqzrecpphisfqqqvsmjq.supabase.co/storage/v1/object/public/gallery/gallery/destinations/xiamen/tophachon.jpg",
     places: [
@@ -504,8 +504,8 @@ export const itineraryValue3N5D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:20
-06:20`,
+    time: `00:55
+06:00`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
 청주 국제공항 도착 후 해산
@@ -540,12 +540,12 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
     transport: `ZE827
 전용차량`,
 
-    time: `20:00
-23:00
-01:20+1`,
+    time: `19:00
+21:40
+23:55`,
 
     schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅 데스크 미팅
-청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+청주 국제공항 출발 (약 3시간 15분 소요) - 이스타항공 탑승
 하문 공항 도착 후 가이드 미팅
 호텔 투숙 및 휴식`,
     places: ["청주 국제공항", "샤먼 국제공항"],
@@ -640,7 +640,7 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
 ▶ 하문의 명동거리로 불리는 보행자 전용 중산로 관광
 석식 후
 [특전] 신야경유람선(루장강 나이트크루즈) 탑승 후 야경감상(약 1시간)
-자유일정 진행 후 23시 공항으로 이동`,
+자유일정 진행 후 귀국 항공편 시간에 맞춰 공항으로 이동`,
     places: [
       "전라갱토루",
       "탑하촌 토루마을",
@@ -669,8 +669,8 @@ export const itineraryPremium3N5D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:20
-06:20`,
+    time: `00:55
+06:00`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
 청주 국제공항 도착 후 해산
@@ -703,12 +703,12 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
     transport: `ZE827
 전용차량`,
 
-    time: `20:00
-23:00
-01:20+1`,
+    time: `19:00
+21:40
+23:55`,
 
     schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅 데스크 미팅
-청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+청주 국제공항 출발 (약 3시간 15분 소요) - 이스타항공 탑승
 하문 공항 도착 후 가이드 미팅
 호텔 투숙 및 휴식`,
     places: ["청주 국제공항", "샤먼 국제공항"],
@@ -849,7 +849,7 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
 1. 위젠민난($50/1인)
 2. 해물요리($50/1인)
 3. 발+전신마사지90분($60/1인)
-자유일정 진행 후 23시 공항으로 이동`,
+자유일정 진행 후 귀국 항공편 시간에 맞춰 공항으로 이동`,
     places: [
       "해상명주탑 전망대",
       "백성해변",
@@ -877,8 +877,8 @@ export const itineraryValue4N6D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:20
-06:20`,
+    time: `00:55
+06:00`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
 청주 국제공항 도착 후 해산
@@ -911,12 +911,12 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
     transport: `ZE827
 전용차량`,
 
-    time: `20:00
-23:00
-01:20+1`,
+    time: `19:00
+21:40
+23:55`,
 
     schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅 데스크 미팅
-청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+청주 국제공항 출발 (약 3시간 15분 소요) - 이스타항공 탑승
 하문 공항 도착 후 가이드 미팅
 호텔 투숙 및 휴식`,
     places: ["청주 국제공항", "샤먼 국제공항"],
@@ -1050,7 +1050,7 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
 ▶ 150만평 규모의 거대한 열대·아열대 식물원인 원림식물원
 ▶ 100여 개의 야외 온천탕과 40개의 특색 있는 테마탕을 갖춘 일월곡 온천욕
 ※ 수영복·래쉬가드 필수 지참
-자유일정 진행 후 23시 공항으로 이동`,
+자유일정 진행 후 귀국 항공편 시간에 맞춰 공항으로 이동`,
     places: [
       "해상명주탑 전망대",
       "카페거리",
@@ -1079,8 +1079,8 @@ export const itineraryPremium4N6D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:20
-06:20`,
+    time: `00:55
+06:00`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
 청주 국제공항 도착 후 해산
@@ -1110,10 +1110,10 @@ export const itineraryGuanzhishan4N6D: ItineraryItem[] = attachXiamenImages([
       "이스타항공 직항편으로 샤먼에 도착하여 가이드 미팅 후 호텔로 이동합니다.",
     region: "청주 · 하문",
     transport: "ZE827 · 전용차량",
-    time: "23:00 / 01:20+1",
-    schedule: `20:30 청주 국제공항 미팅
-23:00 청주 국제공항 출발 (ZE827)
-01:20+1 하문 국제공항 도착
+    time: "21:40 / 23:55",
+    schedule: `19:00 청주 국제공항 미팅
+21:40 청주 국제공항 출발 (ZE827)
+23:55 하문 국제공항 도착
 현지 가이드 미팅 후 호텔 이동
 호텔 투숙 및 휴식`,
     places: ["청주 국제공항", "샤먼 국제공항"],
@@ -1271,7 +1271,7 @@ export const itineraryGuanzhishan4N6D: ItineraryItem[] = attachXiamenImages([
 ▶ [특전] 신야경유람선
    루장강 나이트크루즈 탑승 (약 1시간)
 
-23:00경 공항으로 이동`,
+귀국 항공편 시간에 맞춰 공항으로 이동`,
     places: [
       "고랑서",
       "숙장화원",
@@ -1297,9 +1297,9 @@ export const itineraryGuanzhishan4N6D: ItineraryItem[] = attachXiamenImages([
       "샤먼 국제공항에서 귀국편에 탑승하여 청주 국제공항에 도착합니다.",
     region: "하문 · 청주",
     transport: "ZE828",
-    time: "02:20 / 06:20",
-    schedule: `02:20 하문 국제공항 출발 (ZE828)
-06:20 청주 국제공항 도착 후 해산
+    time: "00:55 / 06:00",
+    schedule: `00:55 하문 국제공항 출발 (ZE828)
+06:00 청주 국제공항 도착 후 해산
 
 ♣ 즐거운 여행 되세요. 감사합니다. ♣`,
     places: ["샤먼 국제공항", "청주 국제공항"],
@@ -1329,12 +1329,12 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
     transport: `ZE827
 전용차량`,
 
-    time: `20:00
-23:00
-01:20+1`,
+    time: `19:00
+21:40
+23:55`,
 
     schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅 데스크 미팅
-청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+청주 국제공항 출발 (약 3시간 15분 소요) - 이스타항공 탑승
 하문 공항 도착 후 가이드 미팅
 호텔 투숙 및 휴식`,
     places: ["청주 국제공항", "샤먼 국제공항"],
@@ -1480,7 +1480,7 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
 ▶ 하문의 명동거리로 불리는 보행자 전용 중산로 관광
 석식 후
 [특전] 신야경유람선(루장강 나이트크루즈) 탑승 후 야경감상(약 1시간)
-자유일정 진행 후 23시 공항으로 이동`,
+자유일정 진행 후 귀국 항공편 시간에 맞춰 공항으로 이동`,
     places: [
       "전라갱토루",
       "탑하촌 토루마을",
@@ -1509,8 +1509,8 @@ export const itineraryWuyishan4N6D: ItineraryItem[] = attachXiamenImages([
 
     transport: `ZE828`,
 
-    time: `02:00
-06:20`,
+    time: `00:55
+06:00`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
 청주 국제공항 도착 후 해산
@@ -1543,12 +1543,12 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
     transport: `ZE827
 전용차량`,
 
-    time: `20:00
-23:00
-01:20+1`,
+    time: `19:00
+21:40
+23:55`,
 
     schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅 데스크 미팅
-청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+청주 국제공항 출발 (약 3시간 15분 소요) - 이스타항공 탑승
 하문 공항 도착 후 가이드 미팅
 호텔 투숙 및 휴식`,
     places: ["청주 국제공항", "샤먼 국제공항"],
@@ -1632,7 +1632,7 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
 동방 골프장으로 이동(약 10분 소요)
 ※ 골프복장으로 출발!! 라운딩 종료 후 호텔로 복귀하여 샤워 후 체크아웃 진행합니다. ※
 석식 후 자유일정
-23시 공항으로 이동`,
+귀국 항공편 시간에 맞춰 공항으로 이동`,
     places: ["동방 CC", "18홀 라운딩", "공항 이동"],
     duration: "전일 골프 후 공항 이동",
     meals: {
@@ -1654,8 +1654,8 @@ export const itineraryGolf3N5D: ItineraryItem[] = [
 
     transport: `ZE828`,
 
-    time: `02:20
-06:20`,
+    time: `00:55
+06:00`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
 청주 국제공항 도착 후 해산
@@ -1688,12 +1688,12 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
     transport: `ZE827
 전용차량`,
 
-    time: `20:00
-23:00
-01:20+1`,
+    time: `19:00
+21:40
+23:55`,
 
     schedule: `청주 국제공항 1층 3번게이트 안 좌측 여행사 미팅 데스크 미팅
-청주 국제공항 출발 (약 3시간 20분 소요) - 이스타항공 탑승
+청주 국제공항 출발 (약 3시간 15분 소요) - 이스타항공 탑승
 하문 공항 도착 후 가이드 미팅
 호텔 투숙 및 휴식`,
     places: ["청주 국제공항", "샤먼 국제공항"],
@@ -1812,7 +1812,7 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
 동방 골프장으로 이동(약 10분 소요)
 ※ 골프복장으로 출발!! 라운딩 종료 후 호텔로 복귀하여 샤워 후 체크아웃 진행합니다. ※
 석식 후 자유일정
-23시 공항으로 이동`,
+귀국 항공편 시간에 맞춰 공항으로 이동`,
     places: ["동방 CC", "18홀 라운딩", "공항 이동"],
     duration: "전일 골프 후 공항 이동",
     meals: {
@@ -1834,8 +1834,8 @@ export const itineraryGolf4N6D: ItineraryItem[] = [
 
     transport: `ZE828`,
 
-    time: `02:20
-06:20`,
+    time: `00:55
+06:00`,
 
     schedule: `하문 국제공항 출발 - 이스타항공 탑승
 청주 국제공항 도착 후 해산
